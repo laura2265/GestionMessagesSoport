@@ -174,14 +174,14 @@ h6{
 
 /*grafica numero 1*/
 .diagrama1{
-    margin: auto;
     width: 55%;
-    height: 300px;
+    height: 500px;
     background-color: #e2e2e2;
     padding: 10px;
     box-sizing: border-box;
     overflow: hidden;
     margin-right: 12px;
+    margin-bottom: 12px;
     border-radius: 12px;
 }
 
