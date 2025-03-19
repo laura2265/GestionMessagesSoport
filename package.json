@@ -1,0 +1,23 @@
+{
+  "name": "my-fullstack-app",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "concurrently \"npm start --prefix my-app\" \"npm start --prefix server\""
+  },
+  "dependencies": {
+    "body-parser": "^1.20.3",
+    "bootstrap": "^5.3.3",
+    "chart.js": "^4.4.5",
+    "cors": "^2.8.5",
+    "express": "^4.21.0",
+    "jspdf": "^2.5.2",
+    "jspdf-autotable": "^3.8.4",
+    "length": "^0.0.1",
+    "react-chartjs-2": "^5.2.0",
+    "react-modal": "^3.16.1",
+    "rquest": "^0.1.0"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.1"
+  }
+}
