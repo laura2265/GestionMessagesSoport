@@ -1,0 +1,58 @@
+.contentBarraBusquedaNUmber{
+    position: relative;
+    left: 300px;
+    width: 1200px;
+    display: flex;
+}
+
+.contentBarraBusquedaNUmber input{
+    margin-top: 12px;
+    border-radius: 7px;
+    border: 1px solid #333;
+    height: 43px;
+    width: 330px;
+    margin-bottom: 12px;
+    margin-top: 10px;
+}
+
+.contentBarraBusquedaNUmber button{
+    border: 2px solid lightblue;
+    margin-top: 4px;
+    margin-left: 12px;
+    margin-bottom: 12px;
+    margin-top: 12px;
+}
+
+.contentBarraBusquedaNUmber img{
+    height: 23px;
+}
+
+.contentBarraBusquedaNUmber input::placeholder{
+    padding-left: 12px;
+}
+
+.contetnNumber{
+    width: 1200px;
+    position: relative;
+    left: 300px;
+    margin-top: 22px;
+}
+
+.contetnNumber table{
+    width: 1200px;
+}
+
+
+.contetnNumber table td{
+    border: none;
+}
+
+.susciberButton{
+    position: relative;
+    left: 550px;
+}
+
+.susciberButton button{
+    background-color: lightblue;
+    border-radius: 4px;
+}

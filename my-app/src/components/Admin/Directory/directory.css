@@ -1,0 +1,275 @@
+.containerDirectory{
+    position: relative;
+    left: 300px;
+    width: 1200px;
+    height: 75px;
+}
+
+.barraOpcionesDirectory{
+    display:  flex;
+    align-items: center;
+}
+
+.barraOpcionesDirectory input{
+    border: 1px solid #333;
+    border-radius: 7px;
+    margin: 7px;
+    height: 43px;
+    width: 302px;
+}
+
+.barraOpcionesDirectory input::placeholder{
+    padding-left: 12px;
+}
+
+.cardsReport button{
+    border: 1px solid rgb(117, 176, 196);
+    margin-top: 20px;
+    height: 43px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 2px 4px 5px lightblue;
+    position: relative;
+    left: 105px;
+}
+
+.cardsReport button:hover{
+    transition: 1s;
+    transform:  scale(1.1);
+}
+
+.contentButtonDirectory{
+    display: flex;
+    position: relative;
+    left: 345px;
+    padding-right: 12px;
+}
+
+.cardsReport button{
+    margin-left: 12px;
+}
+
+.cardsReport img{
+    width: 22px;
+    margin-right: 12px;
+}
+
+.cardsReport .button1{
+    background-color: lightblue;
+}
+
+.cuadroContentDirectory{
+    margin-top: 33px;
+    height: 600px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.cardsReport{
+    background-color: rgb(235, 235, 235);
+    margin: 12px;
+    padding-top: 33px;
+    width: 350px;
+    height: 300px;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.cardsReport .imgClient{
+    width: 100px;
+}
+
+.cardsReport:hover{
+    transition: 1s;
+    transform: scale(1.1);
+}
+.cardsReport p{
+    margin: 7px;
+    width: 250px;
+    position: relative;
+    left: 50px;text-align: justify;
+}
+
+.contentReports{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.fetch-client-btn,
+.generate-report-btn {
+    background-color: #4cadaf;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 10px;
+}
+
+.generate-report-btn {
+    background-color: #008CBA;
+}
+
+.fetch-client-btn:hover {
+    background-color: #4577a0;
+}
+
+.generate-report-btn:hover {
+    background-color: #007bb5;
+}
+
+.pdf-preview {
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background: #f9f9f9;
+    height: 480px;
+    width: 500px;
+    margin-right: 12px;
+    overflow-y: scroll;
+
+}
+
+.download-btn {
+    display: block;
+    margin-top: 10px;
+    padding: 10px;
+    background: #ff9800;
+    color: white;
+    text-align: center;
+    border-radius: 5px;
+    text-decoration: none;
+}
+
+.download-btn:hover {
+    background: #e68900;
+}
+
+
+.contentReport{
+    position: relative;
+    left: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.reports-container{
+    height: 500px;
+    overflow-y: scroll;
+    margin-left: 22px;
+    margin-right: 30px;
+
+}
+
+.contentTableReport{
+    width: 1000px;
+    margin-left: 200px;
+    margin-top: 35px;
+}
+
+.contentReports{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+.generate-report-btn {
+    background-color: #4cafad;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 20px 0;
+}
+
+.generate-report-btn:hover {
+    background-color: #457ba0;
+}
+
+/* Contenedor de reportes generados */
+.reports-container {
+    margin-top: auto;
+}
+
+.reports-container ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.report-item {
+    background-color: #c9c9c98a;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.report-item:hover{
+    transition: 1s;
+    transform: scale(.95);
+}
+
+.report-item strong {
+    font-size: 18px;
+}
+
+.report-item p {
+    margin: 5px 0;
+    color: #777;
+}
+
+.contentButton{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+}
+
+.contentLabel{
+    margin-right: 22px;
+}
+
+.contentLabel input{
+    border: 1px solid #333;
+    border-radius: 12px;
+    width: 200px;
+    height: 45px;
+    padding-left: 7px;
+    padding-right: 12px;
+}
+
+.buttonReport{
+    color: #333;
+}
+
+.buttonReports{
+    margin-top: 32px;
+    background-color: lightblue;
+    width: 110px;
+    position: relative;
+    left: 120px;
+    border-radius: 12px;
+    height: 33px;
+    text-align: center;
+    padding-top: 4px;
+    border: 1px solid #333;
+}
+
+.buttonReports a{
+    text-decoration: none;
+    color: #333;
+}
+
+.buttonReports:hover{
+    color: #333;
+}
+

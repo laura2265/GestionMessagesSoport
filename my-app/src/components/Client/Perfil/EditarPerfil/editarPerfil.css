@@ -1,0 +1,43 @@
+.contentActualizar{
+    display: flex;
+    position: relative;
+    left: 300px;
+    width: 1200px;
+}
+
+.contentAct{
+    width: 550px;
+    background-color: rgba(179, 226, 242, 0.466);
+    border-radius: 12px;
+    padding: 22px;
+    display: block;
+    align-items: center;
+    margin: 21px;
+}
+.contentInputAc{
+    margin-left: 42px;
+    margin-bottom: 22px;
+}
+.contentInputAc input, select{
+    width: 400px;
+    height: 40px;
+    border-radius: 7px;
+    border: 1px solid #bbb;
+    padding-left: 12px;
+}
+.contentInputAc label{
+    padding-left: 12px;
+}
+
+.contentAct2{
+    display: flex;
+}
+
+.buttonAct{
+    border-radius: 7px;
+    border: 1px solid lightblue;
+    box-shadow: 1px 5px 12px lightblue;
+    position: relative;
+    left: 530px;
+    background-color: aliceblue;
+}

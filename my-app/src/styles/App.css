@@ -1,0 +1,655 @@
+/* Estilos generales */
+
+* .app{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body .app{
+  width: 100vw;
+}
+
+.app {
+  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    transition: background-color 0.5s, color 0.5s; 
+  }
+  
+  /*formularios de registrro y login*/
+  /* Modo claro */
+  body .app.light{
+    background-image: url('../assets/img/imagenfondo1.jpg');
+    width: 100vw;
+    height: 100vh;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+  }
+  .app.light .BarraSupeiorL{
+    color: #333;
+    border-bottom: 1px solid rgb(0, 0, 0);
+  }
+  .app.light .BarraSuperiorR{
+    color: #333;
+    border-bottom: 1px solid rgb(0, 0, 0);
+  }
+  .app.light .BarraSuperior{
+    color: #333;
+    border-bottom: 1px solid rgb(0, 0, 0);
+  }
+  .app.light .BarraSuperiorH{
+    color: #333;
+    border-bottom: 1px solid rgb(0, 0, 0);
+
+  }
+  .app.light .container1{
+    background-color: #edebeb;
+    color: rgb(27, 27, 27);
+  }
+  .app.light .inputContainerLabel {
+    background-color: #f8f7f7;
+    color: rgb(27, 27, 27); 
+}
+  .app.light .toggleButton{
+    background: none;
+    border: none;
+    color: rgba(168, 164, 164, 0.778);
+  }
+
+  .app.light .toggleButton:hover{
+    color: #272626;
+    transition: 1s;
+  }
+
+  .app.light .inputContainerInput:focus + .inputContainerLabel,
+.app.light .inputContainerInput:valid + .inputContainerLabel {
+  background-color: #f8f7f7;
+  color: rgb(27, 27, 27);
+}
+  .app.light .InputButton{
+    border: 1px solid rgb(132, 132, 132);
+  }
+  .app.light .InputButton:hover{
+    background: rgb(211, 210, 210);
+    color: #2f2f2f;
+  }
+
+  .app.light .formContainer {
+    background-color: #faf5f5;
+    color: rgb(40, 39, 39);
+  }
+  
+.app.light .tableContainer table{
+    border-radius: 12px;
+    border: 1px solid #000;
+    height: 250px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.725);
+}
+.app.light .tableContainer1 table{
+  border-radius: 12px;
+  border: 1px solid #000;
+  height: 250px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.725);
+}
+.app.light .tableContainer th{
+    border: 1px solid #000;
+    padding: 4px;
+    background-color: rgb(48, 48, 48);
+    color: #ffffff  ;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+.app.light .tableContainer1 th{
+  border: 1px solid #000;
+  padding: 4px;
+  background-color: rgb(48, 48, 48);
+  color: #ffffff  ;
+  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+.app.light .tableContainer td{
+    border: 1px solid #000;
+    background-color: aliceblue;
+    padding: 4PX;
+    font-family: 'Courier New', Courier, monospace;
+}
+.app.light .tableContainer1 td{
+  border: 1px solid #000;
+  background-color: aliceblue;
+  padding: 4PX;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.app.light .tableContainer td:hover{
+    background-color: rgba(36, 36, 36, 0.656);
+    transition: 1s;
+    color: #ffffff;
+}
+.app.light .tableContainer1 td:hover{
+  background-color: rgba(36, 36, 36, 0.656);
+  transition: 1s;
+  color: #ffffff;
+}
+  
+
+  /* Modo oscuro */
+  * .app.dark{
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  .app.dark .inputContainerLabel {
+    background-color: #555; 
+    color: white;
+  }
+  body .app.dark{
+    background: #333;
+    width: 100vw;
+    height: 100vh;
+  }
+  .app.dark .container1{
+    background-color: #333;
+    color: white;
+
+  }
+  .app.dark .toggleButton{
+    background: none;
+    border: none;
+    color: rgba(127, 126, 126, 0.778);
+  }
+  .app.dark .toggleButton:hover{
+    color: #e2e2e2;
+    transition: 1s;
+  }
+
+  .app.dark .InputButton{
+    border: 1px solid white;
+  }
+  .app.dark .InputButton:hover{
+    background: rgb(177, 177, 177);
+    color: #333;
+  }
+
+  .app.dark .formContainer {
+    background-color: #333;
+    color: white;
+  }
+
+  .app.dark .inputContainerInput:focus + .inputContainerLabel,
+  .app.dark .inputContainerInput:valid + .inputContainerLabel {
+    background-color: #333; /* Ajustar color de fondo cuando el input está enfocado en modo oscuro */
+    color: white;
+}
+  
+  button {
+    padding: 10px 20px;
+    margin-top: 20px;
+    cursor: pointer;
+  }
+
+  /*estilos de home*/
+/*modo claro*/
+
+  .app.light .home-container{
+    background-color: white;
+    color: #333;
+  }
+
+  /*modo oscuro*/
+  .app.dark .home-container{
+    background-color: #333;
+    color: #ffffff;
+  }
+  .app.dark .navbar{
+    background-color: #333;
+    color: white;
+  }
+  .app.dark .slider{
+    a{
+      color: white;
+      text-decoration: none;
+      height: 19rem;
+    }
+  }
+
+  .app.dark .buttonRedirect{
+    border: 1px solid #e2e2e2;
+  }
+
+ .app.dark .tableContainer table{
+  border: 1px solid #ffffff;
+  height: 250px;
+  width: 1150px;
+  box-shadow: 0px 4px 10px rgba(164, 164, 164, 0.725);
+}
+.app.dark .tableContainer1 table{
+  border: 1px solid #ffffff;
+  height: 250px;
+  width: 1150px;
+  box-shadow: 0px 4px 10px rgba(164, 164, 164, 0.725);
+}
+.app.dark .tableContainer th{
+  border: 1px solid #333;
+  padding: 4px;
+  background-color: #333;
+  color: #ffffff  ;
+  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+
+.app.dark .tableContainer1 th{
+  border-radius: 7px;
+  padding: 4px;
+  background-color: #333;
+  color: #ffffff;
+  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+
+.app.dark .BarraSuperior{
+  color: white;
+}
+.app.dark .BarraSupeiorL{
+  color: white;
+  border-bottom: 1px solid white;
+}
+
+.app.dark .BarraSuperiorR{
+  color: white;
+  border-bottom: 1px solid white;
+}
+.app.dark .BarraSuperiorH{
+  color: white;
+  border-bottom: 1px solid white;
+
+  }
+.app.dark .BarraSuperior{
+  color: white;
+  border-bottom: 1px solid white;
+}
+.app.dark td{
+  background-color: rgb(195, 197, 199);
+  border-radius: 7px;
+  padding: 4PX;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.app.dark td:hover{
+  background-color: rgba(95, 95, 95, 0.656);
+  transition: 1s;
+  color: #ffffff;
+} 
+
+.navbar{
+  background-color: rgb(232, 232, 232);
+  padding: 1rem 2rem;
+  border-bottom:  1px solid gray;
+  font-size: 19px;
+}
+
+/* Estilos básicos para el navbar */
+.app.dark .navbar1 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background-color: #91919164;
+  color: rgb(255, 255, 255);
+  width: 100vw;
+}
+
+.app.light .navbar1{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background-color: #bbbbbb64;
+  color: rgb(0, 0, 0);
+  width: 100vw;
+}
+.navbar-logo h2 {
+  margin: 0;
+}
+
+.nav-links {
+  display: flex;
+  gap: 20px;
+}
+
+.app.dark .nav-links a {
+  color: rgb(255, 255, 255);
+  text-decoration: none;
+  font-size: 18px;
+}
+.app.light .nav-links a{
+  color: rgb(0, 0, 0);
+  text-decoration: none;
+  font-size: 18px;
+}
+
+.menu-icon {
+  display: none;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+/* Para pantallas pequeñas */
+@media (max-width: 768px) {
+  .nav-links {
+    position: absolute;
+    top: 60px;
+    right: 0;
+    background-color: #333;
+    flex-direction: column;
+    width: 100%;
+    display: none;
+    text-align: center;
+  }
+
+  .nav-links.open {
+    display: flex;
+  }
+
+  .menu-icon {
+    display: block;
+  }
+}
+
+
+.slider{
+  width: 17rem;
+  position: fixed;
+  justify-content: center;
+  height: calc(99vh - 52px);
+  border-right: 1px solid gray;
+
+  ul{
+    list-style: none;
+
+    li{
+      margin-bottom: 1rem;
+      margin-top: 1rem;
+      font-size: 17px;
+      .InputBuscar{
+        border: 1px solid rgb(150, 150, 150);
+        background-color: none;
+        border-radius: 7px;
+        height: 50px;
+      }
+      
+      a{
+        text-decoration: none;
+        color: #000000;
+
+      }
+    }
+  }
+}
+.flex{
+  display: flex;
+
+}
+
+/*boton para cambiar el tema*/
+
+/*modo oscuro */
+.app.dark .ButtonTheme{
+  background-color: rgba(255, 255, 255, 0.8);
+  width: 33px;
+  border-radius: 22px;
+  margin-left: 12px;
+}
+
+.app.dark .ButtonTheme:hover{
+  background-color: white;
+  transition: 1s;
+  transform: scaleX(1.1);
+}
+
+.app.dark .ButtonTheme1{
+  margin-left: 12px;
+  width: 33px;
+  border-radius: 22px;
+  height: 33px;
+  background-color: rgba(255, 255, 255, 0.789);
+}
+.app.dark .ButtonTheme1:hover{
+  background-color: white;
+  transition: 1s;
+  transform: scaleX(1.1);
+}
+.app.dark .diagrama2{
+  background-color: rgb(232, 230, 230);
+}
+/*modo claro*/
+
+.app.light .ButtonTheme{
+   margin-left: 12px;
+   width: 33px;
+   border-radius: 22px;
+
+}
+.app.light .ButtonTheme:hover{
+  transform: scale(1.1);
+  transition: 1s;
+  background-color: rgb(193, 193, 193);
+}
+
+.app.light .ButtonTheme1{
+  margin-left: 12px;
+  width: 33px;
+  border-radius: 22px;
+  height: 33px;
+}
+.app.light .ButtonTheme1:hover{
+  transform: scale(1.1);
+  transition: 1s;
+  background-color: rgb(193, 193, 193);
+}
+
+.app.light .diagrama2{
+  background-color: #dad8d8cf;
+}
+
+.app.dark .contentInfoNumber h1{
+    color: #ffffff;
+}
+.app.dark .contentInfoNumber p{
+  margin-top: -22px;
+  color: #b0b0b0;
+}
+.app.light .contentInfoNumber p{
+  color: #909090;
+  margin-top: -22px;
+}
+
+/*pagina de inicio*/
+.app.dark .home-info{
+  color: #bbb;
+}
+.app.dark .cardInfo{
+  background-color: #bbb;
+}
+
+/*pagina nosotros*/
+.app.dark .cardMap{
+  background-color: #dedbdb;
+}
+
+/*pagina registrar*/
+.app.dark .formContainer1{
+  color: #bbb;
+  background-color: #333;
+}
+
+.app.dark .barraOpcionesDirectory button{
+  background-color: #ffffff;
+}
+
+.app.dark  .tableContactsInfo th{
+  background-color: #3f3e3e;
+  color:  #ffffff;
+}
+
+/* canales*/
+
+.app.dark .contentChanells{
+  border: 1px solid #bbb;
+}
+
+.app.dark .barraOpcines button{
+  border: 1px solid #bbb; 
+}
+
+/*usuarios */
+
+.app.dark .cardFlow{
+  background-color: #dfdddd;
+}
+
+.app.dark .contentTableDataEmp{
+  background-color: #bbb;
+}
+
+.app.dark .contentTableDataEmp th{
+  border-bottom: 1px solid #333;
+}
+.app.dark .barraBuscarEmp p{
+  color: #ffffff;
+}
+.app.dark .barraBuscarEmp button{
+  background-color: #f9f9f9;
+}
+
+.app.dark .contChat{
+  color: #bbb;
+}
+.app.dark .barrasuperiorContacts {
+  color: #f9f9f9;
+}
+
+.app.dark .contentTitle{
+  color: #f9f9f9;
+}
+.app.dark .contactContent{
+  color: #f9f9f9;
+}
+
+.app.dark .contenttextMessage input{
+  background-color: #f9f9f9;
+}
+.app.dark .contenttextMessage button{
+  background-color: #f9f9f9;
+  width: 50px;
+  height: 40px;
+  margin-left: 5px;
+  border-radius: 12px;
+}
+.app.dark .contenttextMessage img{
+  margin-left: -9px;
+  margin-top: -5px;
+}
+
+.app.dark .cardF, .cardP, .cardV{
+  background-color: #e4e4e4;
+}
+
+.app.dark .contentPerfil{
+  color: #bbb;
+}
+.app.dark .BarraSuperiorP{
+  color: #f9f9f9;
+}
+.app.dark .redirect1 a{
+  background-color: #d8cdcd;
+}
+
+.app.dark .cardAsesor{
+  background-color: #f9f9f9;
+}
+
+.app.dark .barraSuperiorA input, button{
+  background-color: #f9f9f9;
+}
+
+.app.dark .colorContentDark {
+  background-color: #f9f9f9;
+  border-radius: 12px;
+  padding: 7px;
+  height: 330px;
+}
+
+.app.dark .diagrama11{
+  height: 330px;
+}
+
+.app.dark .tableContainer1 th{
+  border: none;
+}
+
+.app.dark .tableContainer1 table{
+  border: 1px solid #333;
+}
+
+.app.dark .date-label{
+  color: white;
+}
+
+.app.dark .nullData{
+  color: white;
+}
+
+.app.dark .butonClose{
+  color: rgb(255, 255, 255);
+  border: 1px solid #bbb;
+  border-radius: 7px;
+}
+
+.notificacion-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 1000;
+}
+
+.notificacion {
+  background: rgb(164, 164, 164);
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  transform: translateX(100%);
+  animation: fadeIn 1s ease-out forwards, fadeOut 5s ease-in forwards 1.5s;
+  max-width: 350px;
+  font-size: 14px;
+}
+
+.notificacion img{
+  width: 75px;
+  height: 80px;
+  border-radius: 7px;
+}
+.message-user {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+@keyframes fadeIn {
+  from {
+      opacity: 0;
+      transform: translateX(100%);
+  }
+  to {
+      opacity: 1;
+      transform: translateX(0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+      opacity: 1;
+      transform: translateX(0);
+  }
+  to {
+      opacity: 0;
+      transform: translateX(100%);
+  }
+}

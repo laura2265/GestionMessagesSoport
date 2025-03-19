@@ -1,0 +1,106 @@
+.contentFlows{
+    position: relative;
+    left: 300px;
+    width: 1200px;
+    display: flex;
+    margin-top: 32px;
+}
+.inputBuscar{
+    position: relative;
+    left: 680px;
+    margin-top: 0;
+}
+
+.inputBuscar input{
+    margin-top: 0px;
+    width: 300px;
+    height: 40px;
+    margin-bottom: 7px;
+    border-radius: 5px;
+    border: 1px solid #333;
+}
+
+.inputBuscar input::placeholder{
+    padding-left: 12px;
+}
+
+.contentCardFlows{
+    width: 1200px;
+    position: relative;
+    left: 300px;
+    height: 550px;
+    display: flex;
+    justify-content: center;
+    margin-top: 12px;
+}
+.cardFlow{
+    width: 300px;
+    height: 350px;
+    margin-top: -52px;
+    margin-left: 32px;
+    margin-right: 32px;
+    border: 1px solid #3333336b;
+    border-radius: 12px;
+    padding: 32px;
+    box-shadow: 0 5px 4px rgba(90, 90, 90, 0.588);
+}
+.cardFlow:hover{
+    cursor: pointer;
+    transition: 1s;
+    transform: scale(1.1);
+    img{
+        position: relative;
+        top: -12px;
+        transition: 1s;
+    }
+}
+
+.cantidadCards{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 600px;
+    padding: 12px;
+}
+
+.contentImgFlows{
+    display: flex;
+    justify-content: center;
+    
+}
+.contentImgFlows img{
+    width: 150px;
+}
+
+
+.statusContent{
+    background-color: rgba(173, 216, 230, 0.458);
+    width: 65px;
+    border: 2px solid rgb(115, 161, 176);
+    height: 33px;
+    display: flex;
+    justify-content: center;
+    border-radius: 7px;
+}
+.statusContent p{
+    margin-left: -1px;
+    margin-top: -3px;
+}
+
+.contentTextEm{
+    text-align: center;
+    margin-top: 24px;
+}
+
+.contentTextEm p{
+    font-size: 25px;
+}
+.contentTextEm a{
+    text-decoration: none;
+    color: #333;
+    border-radius: 12px;
+    padding: 7px;
+    border: 1px solid lightblue;
+    box-shadow: 0px 4px 7px rgb(167, 167, 167);
+    font-size: 17px;
+}

@@ -1,0 +1,126 @@
+.home-info {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 1000px;
+  }
+
+  .contentInfo{
+	display: flex;
+	margin-top: 82px;
+	width: 1350px;
+	justify-content: center;
+	align-items: center;
+  }
+
+  .cardInfo{
+	background-color: rgba(216, 216, 216, 0.541);
+	margin-left: 22px;
+	width: 250px;
+	height: 180px;
+	border-radius: 12px;
+	text-align: center;
+	padding: 7px;
+  }
+  .cardInfo:hover{
+	transition: 1s;
+	transform: scale(1.1);
+  }
+  .cardInfo img{
+	margin-top: 22px;
+  }
+
+.contentTextInfo{
+	text-align: center;
+
+}
+  .home-info h1{
+	width: 920px;
+	margin: 12px;
+	text-align: center;
+  }
+  .navbar1 {
+	display: flex;
+	justify-content: space-between;
+	padding: 1rem 2rem;
+	background-color: var(--nav-bg-color);
+  }
+  
+  .navbar-logo h2 {
+	color: var(--primary-color);
+  }
+  
+  .nav-links a {
+	margin-right: 1rem;
+	text-decoration: none;
+	color: var(--text-color);
+  }
+  
+  .menu-icon {
+	cursor: pointer;
+	font-size: 1.5rem;
+	color: var(--text-color);
+  }
+  
+  .contentHome {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 2rem;
+  }
+  
+  .home-welcome {
+	text-align: center;
+	margin-bottom: 2rem;
+  }
+  
+  .home-welcome h1 {
+	font-size: 2.5rem;
+	margin-bottom: 1rem;
+  }
+  
+  .home-welcome p {
+	font-size: 1.2rem;
+	margin-bottom: 1rem;
+  }
+  
+  .features-section {
+	text-align: center;
+	margin-top: 2rem;
+  }
+  
+  .features-section h2 {
+	font-size: 2rem;
+	margin-bottom: 2rem;
+  }
+  
+  .feature-boxes {
+	display: flex;
+	justify-content: space-around;
+	flex-wrap: wrap;
+  }
+  
+  .feature-box {
+	background-color: var(--card-bg-color);
+	padding: 1rem;
+	margin: 1rem;
+	border-radius: 8px;
+	width: 300px;
+	text-align: center;
+  }
+  
+  .feature-box img {
+	width: 100%;
+	border-radius: 8px;
+	margin-bottom: 1rem;
+  }
+  
+  .feature-box h3 {
+	font-size: 1.5rem;
+	margin-bottom: 0.5rem;
+  }
+  
+  .feature-box p {
+	font-size: 1rem;
+  }
+  

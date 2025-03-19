@@ -1,0 +1,103 @@
+.contentAsesor{
+    position: relative;
+    left: 300px;
+    width: 1200px;
+}
+
+.cardAsesor{
+    background-color: rgba(206, 206, 206, 0.634);
+    width: 300px;
+    margin-left: 12px;
+    height: 100px;
+    border-radius: 7px;
+    padding: 12px;
+    font-size: 22px;
+}
+
+.contentCardsAsesores{
+    display: flex;
+    justify-content: center;
+}
+.contentCardsAsesores p{
+    margin-left: 22px;
+    margin-bottom: 2px;
+    color: #a1a0a0;
+}
+
+.contentImgA{
+    display: flex;
+    margin-left: 22px;
+}
+
+.contentImgA p{
+    position: relative;
+    left: 120px;
+}
+.contentAsesoresT{
+    display: flex;
+    justify-content: center;
+}
+.ContentA{
+    margin: 22px;
+}
+.barraSuperiorA{
+    padding: 12px;
+    display: flex;
+}
+.barraSuperiorA input{
+    height: 50px;
+    padding: 12px;
+    border-radius: 7px;
+    border: 1px solid #919191;
+    background-color: transparent;
+}
+.barraSuperiorA button{
+    margin-top: 0;
+    margin-left: 12px;
+    border: 1px solid lightblue;
+    border-radius: 5px;
+    box-shadow: 0 3px 7px lightblue;
+}
+.containerAsesorM{
+    background-color: rgb(229, 229, 229);
+    margin-right: 32px;
+    width: 570px;
+    height: 430px;
+    margin-bottom: 22px;
+    padding: 12px;
+    margin-top: 12px;
+    border-radius: 7px;
+}
+.containerAsesorU{
+    background-color: rgb(229, 229, 229);
+    margin-left: 12px;
+    width: 570px;
+    margin-bottom: 22px;
+    padding: 12px;
+    margin-top: 12px;
+    border-radius: 7px;
+}
+
+.contentAsesores{
+    background-color: white;
+    height: 360px;
+    overflow-y: scroll; 
+    border-radius: 7px;
+}
+
+.contentAsesorN{
+    border-bottom: 1px solid #bfbebe;
+    padding-left: 12px;
+    display: flex;
+    text-align: center;
+}
+
+.contentButtonA{
+    position: relative;
+    left: 170px;
+
+}
+
+.contentButtonA button{
+    margin-top: 0;
+}

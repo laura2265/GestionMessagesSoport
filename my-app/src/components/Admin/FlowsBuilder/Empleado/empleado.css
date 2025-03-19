@@ -1,0 +1,115 @@
+.barraBuscarEmp{
+    position: relative;
+    left: 300px;
+    width: 1200px;
+    padding: 22px;
+    display: flex;
+}
+
+.barraBuscarEmp input{
+    height: 30px;
+    width: 200px;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding-left: 12px;
+    font-size: 12px;
+}
+.barraBuscarEmp p{
+    font-size: 15px;
+    margin-bottom: 0;
+}
+.barraBuscarEmp button{
+    border:  1px solid lightblue;
+    border-radius: 7px;
+    margin-left: 12px;
+    box-shadow: 0 3px 8px lightblue;
+}
+.barraBuscarEmp button:hover{
+    transform: scale(1.1);
+    transition: 1s;
+}
+.contentTableDataEmp{
+    position: relative;
+    left: 300px;
+    width: 1200px;
+    height: 500px;
+    padding: 22px;
+    overflow-y: scroll;
+    border-radius: 7px;
+}
+.contentTableDataEmp table{
+    width: 1120px;
+}
+
+.contentTableDataEmp th{
+    padding: 12px;
+    border: none;
+    border-bottom: 1px solid #bbb;
+}
+
+.contentTableDataEmp td{
+    font-size: 12px;
+    border: none;
+}
+
+.ButtonCreateEmp{
+    position: absolute;
+    top: 82px;
+    left: 980px;
+}
+
+.ButtonCreateEmp a{
+    text-decoration: none;
+    border: 1px solid #bcbcbc;
+    padding: 15px;
+    border-radius: 7px;
+    background-color: rgb(239, 239, 239);
+    color:  #333;
+    box-shadow: 0 5px 8px lightblue;
+}
+
+.ButtonCreateEmp:hover{
+    transition: 1s;
+    transform: scale(1.1);
+}
+
+.contentCreatedEmple{
+    position: relative;
+    left: 300px;
+    width: 1200px;
+    height: 660px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.contentFormCreated{
+    padding: 12px;
+    width: 800px;
+}
+
+.contentForm1Created{
+    display: flex;
+    padding: 7px;
+}
+
+.contentForm1Created input, select{
+    margin-left: 18px;
+}
+
+.buttonContent {
+    margin-top: 12px;
+}
+
+.imgCreated{
+    width: 150px;
+    position: relative;
+    left: 260px;
+}
+
+.searchId{
+    margin-left: 42px;
+}
+.searchId input{
+    margin-left: 12px;
+}

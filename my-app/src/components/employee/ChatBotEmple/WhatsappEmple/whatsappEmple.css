@@ -1,0 +1,163 @@
+.contentChatW{
+    display: flex;
+}
+.contentChat{
+    position: relative;
+    left: 310px;
+    width: 600px;
+    height: auto;
+    border-radius: 12px;
+    border: 1px solid #aaaaaa;
+}
+.contentContact{
+    width: 580px;
+    height: auto;
+    position: relative;
+    left: 300px;
+    border-radius: 12px;
+    border: 1px solid #9b9b9b;
+}
+.contentTitle{
+    padding-left: 19px;
+    padding-top: 5PX;
+    border-bottom: 1px solid #9b9b9b;
+    display: flex;
+    font-size: 28px;
+}
+.contentTitle img{
+    width: 50px;
+    margin: 7px;
+    border-radius: 32px;
+    margin-right: 32px;
+}
+
+.contenttextMessage{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 600px;
+    height: 60px;
+    position: absolute;
+    bottom: -12px;
+    padding-left: 12px;
+}
+.contenttextMessage input{
+    border-radius: 12px;
+    border:  1px solid #333;
+    width: 400px;
+    height: 40px;
+    position: relative;
+    top: -12px;
+    padding-left: 12px;
+}
+.contenttextMessage input::placeholder{
+    color: #333;
+}
+
+.contenttextMessage button{
+    position: relative;
+    top: -22px;
+}
+
+.messageContainer{
+    height: 490px;
+    overflow-y: scroll;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 60px;
+}
+
+.message.sent {
+    background-color: #d1e7dd;
+    width: auto;
+    border-right: 4px solid #0f5132;
+    margin-left: 250px;
+    animation: fadeIn 0.5s;
+    padding: 8px;
+    margin-bottom: 5px;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+.message.sent p{
+    text-align: left;
+
+}
+
+.message.received {
+    background-color: #d5e5f6;
+    border-left: 4px solid #0056b3;
+    animation: fidenIn 0.5s;
+    padding: 8px;
+    margin-right: 236px;
+    margin-bottom: 5px;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.message.received p{
+    text-align: left;
+}
+@keyframes fadeIn {
+    from {opacity: 0; transform: translateY(10px);}
+    to{opacity: 1px; transform: translateY(0);}
+}
+
+.barrasuperiorContacts{
+    border-bottom: 1px solid #aaaaaa;
+    padding-left: 22px;
+    padding-top: 5px;
+}
+
+.barrasuperiorContacts p{
+    font-size: 28px;
+}
+
+.listContactContent{
+    overflow-y: scroll;
+    height: 33rem;
+}
+
+
+.contactContent{
+    height: 60px;
+    margin-top: 13px;
+    margin-bottom: 12px;
+    padding: 7px;
+    display: flex; 
+}
+
+.contactContent img, p{
+    margin-left: 12px;
+    border-radius: 32px;
+}
+
+.contactContent img, p:hover{
+    cursor: pointer;
+}
+
+.barraDeBusqueda input{
+    background-color: none;
+    border: 1px solid #333;
+    margin-left: 12px;
+    margin-top: 12px;
+    width: 530px;
+    height: 42px;
+    padding: 12px;
+    border-radius: 17px;
+}
+
+.timestamp {
+    position: relative;
+    top: 10px;
+    left: 215px;
+    font-size: 12px;
+}
+
+.date-label{
+    position:  relative;
+    left: 200px;
+    width: 150px;
+    height: 40px;
+    text-align: center;
+    padding-top: 12px;
+}
