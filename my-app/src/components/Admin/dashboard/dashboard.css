@@ -1,16 +1,16 @@
 .dashboarContainer {
     height: 100vh;
-    overflow-y: scroll;
 }
 
 .tableContainer{
-    width: 1200px;
-    position: relative;
-    left: 300px;
+    width: 900px;
+    overflow-y: scroll;
+    height: 290px;
 }
 .tableContainer table{
     border-collapse: collapse;
-    width: 1150px;
+    width: 860px;
+
     margin: 12px;
 }
 
@@ -19,7 +19,6 @@
     padding: 8px;
     text-align: left;
 }
-
 .dashboarContainer{
     overflow-y: scroll;
     overflow-x: hidden;
@@ -71,7 +70,6 @@ h6{
 }
 
 .card2{
-    
     background-color: lightblue;
     height: 70px;
     border: 1px solid lightblue;
@@ -79,7 +77,6 @@ h6{
     display: flex;
 }
 .card3{
-    
     background-color: lightcoral;
     height: 70px;
     border: 1px solid lightcoral;
@@ -87,13 +84,13 @@ h6{
 }
 
 .card4{
-    
     background-color: rgb(240, 194, 78);
     height: 70px;
     border: 1px solid rgb(240, 194, 78);
     border-radius: 7px;
     display: flex;
 }
+
 .graficos{
     position: relative;
     left: 300px;
@@ -112,70 +109,69 @@ h6{
 }
 
 .diagrama2{
-    height: 300px;
-    width: 756px;
+    height: 360px;
+    width: 606px;
     margin-left: -10px;
     margin-right: 2px;
     border-radius: 7px; display: flex;
 }
+
 .diagrama4{
     background-color: rgba(179, 179, 179, 0.693);
-    height: 90px;
-    width: 384px;
+    height: 260px;
+    width: 244px;
     border-radius: 22px;
     position: absolute;
-    bottom: .4rem;
     right: 44px;
-    display: flex;
 }
+
 .content1{
-    width: 152px;
-    margin-left: 22px;
-    margin-top:-5px;
+    width: 202px;
+    margin-left: 40px;
+    margin-top:5px;
     margin-bottom: 12px; 
 }
+
 .content2{
-    width: 152px;
-    margin-left: 12px;
-    margin-top:-5px;
+    width: 202px;
+    margin-left: 40px;
+    margin-top: 5px;
     margin-bottom: 12px; 
     margin-right: 12px;
 }
+
 .content3{
-    width: 192px;
-    margin-left: 12px;
+    width: 262px;
+    margin-left: 22px;
     margin-bottom: 16px;
-    margin-top:-5px; 
+    margin-top:5px; 
     
 }
 .content1 h3{
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    position: relative;
+    left: 70px;
 }
 .content2 h3{
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    position: relative;
+    left: 70px;
 }
 
 .content3 h3{
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    position: relative;
+    left: 90px;
 }
 
 .img3d{
-    height: 20rem;
+    height: 15rem;
     position: relative;
     left: 4rem;
-    top: -17px;
+    top: 17px;
 }
 
 /*grafica numero 1*/
 .diagrama1{
-    width: 55%;
-    height: 500px;
+    width: 800px;
+    height: 350px;
     background-color: #e2e2e2;
     padding: 10px;
     box-sizing: border-box;
@@ -186,9 +182,9 @@ h6{
 }
 
 .titulo_grafica{
-    width: 100%;
+    width: 90%;
+    margin: 12px;
     height: 10%;
-    margin-bottom: 12px;
 }
 .titulo_grafica>h3{
     padding: 0;
@@ -198,9 +194,9 @@ h6{
 }
 .sub_board{
     width: 100%;
-    height: 98%;
+    height: 90%;
     padding: 10px;
-    margin-top: 0px;
+    margin-top: 10px;
     background-color:#f4f4f4;
     overflow: hidden;
     box-sizing: border-box;
@@ -215,7 +211,7 @@ h6{
 }
 .graf_board{
     width: 85%;
-    height: 100%;
+    height: 85%;
     float: right;
     margin-top: 0px;
     background-color: darkgrey;
@@ -262,7 +258,7 @@ h6{
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ffffff', endColorstr='#00ffffff',GradientType=0 );
 }
 .barra{
-    width:100%;
+    width:80%;
     height: 100%;
     margin-right: -30px;
     margin-left:15px;
@@ -273,7 +269,7 @@ h6{
 }
 .sub_barra{
     width: 60%;
-    height: 80%;
+    height: 90%;
     background: #82c3d5;
     background: -moz-linear-gradient(top, #87bcc9 0%, #64d1be 100%);
     background: -webkit-linear-gradient(top, #b2d3dc 0%,#64d1be 100%);
@@ -342,6 +338,9 @@ h6{
     border-radius: 26px;
     margin: 12px;
 }
+.t_grafica{
+    margin-bottom: 22px;
+}
 .BarraSuperior{
     display: flex;
     align-items: center;
@@ -351,10 +350,11 @@ h6{
     display: flex;
     margin-bottom: 12px;
 }
-.digramContainer{
-    width: 280px;
+.contentTableAndDiagram{
     display: flex;
-    margin-top: 22px;
-    margin-left: -32px;
+    width: 1200px;
+    height: 300px;
+    position: relative;
+    left: 300px;
+    top: 80px;
 }
-

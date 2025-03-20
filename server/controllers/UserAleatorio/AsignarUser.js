@@ -27,14 +27,13 @@ export const AsignarUserPost = async (req, res) => {
 
         const clientesPorCategoria = {
             'No hay conexión': ClientData.filter(client => client.id === id && client.sheet === 'Sheet1' && (client.funciono1 === 'No funciona' || client.cable === 'Cable Dañado')),
-            'Internet lento': ClientData.filter(client => client.id === id && client.sheet === 'Sheet1' && client.result === 'No funciono'),
-            'No cargan las páginas': ClientData.filter(client => client.id === id && client.sheet === 'Sheet1' && client.funcionoVpn === 'No funciono'),
-            'Señal de Televisión': ClientData.filter(client => client.id === id && client.sheet === 'Sheet1' && client.FuncionoFinal === 'No funciono'),
-            'Internet se desconecta a ratos': ClientData.filter(client => client.id === id && client.sheet === 'Sheet1' && client.resultadoFinal === 'No funciono')
+            'Internet lento': ClientData.filter(client => client.id === id && client.sheet === 'Sheet2' && client.result === 'No funciono'),
+            'No cargan las páginas': ClientData.filter(client => client.id === id && client.sheet === 'Sheet3' && client.funcionoVpn === 'No funciono'),
+            'Señal de Televisión': ClientData.filter(client => client.id === id && client.sheet === 'Sheet4' && client.FuncionoFinal === 'No funciono'),
+            'Internet se desconecta a ratos': ClientData.filter(client => client.id === id && client.sheet === 'Sheet5' && client.resultadoFinal === 'No funciono')
         };
 
         const asignaciones = [];
-        const clientesDuplicados = [];
 
         for (const categoria of Object.keys(clientesPorCategoria)) {
             const clientes = clientesPorCategoria[categoria];
@@ -43,7 +42,15 @@ export const AsignarUserPost = async (req, res) => {
             if (clientes.length > 0 && empleados.length > 0) {
                 for (const cliente of clientes) {
 
-                    console.log('chat id: ', cliente.id)
+                    console.log('chat id: ', cliente.id);
+
+                    // Verificar si el cliente ya tiene una asignación en la base de datos
+                    const yaAsignado = await AsignarUser.findOne({ cahtId: cliente.id, categoriaTicket: categoria });
+
+                    if (yaAsignado) {
+                        console.log(`⚠️ El cliente ${cliente.id} ya tiene una asignación en ${categoria}.`);
+                        continue;  // Saltar al siguiente cliente
+                    }
 
                     const empleAsignado = empleados[Math.floor(Math.random() * empleados.length)];
 
@@ -65,8 +72,7 @@ export const AsignarUserPost = async (req, res) => {
         res.status(200).json({
             success: true,
             message: `Asignaciones verificadas y procesadas correctamente.`,
-            asignaciones,
-            clientesDuplicados
+            asignaciones
         });
 
     } catch (error) {

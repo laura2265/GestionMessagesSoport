@@ -80,38 +80,29 @@ body .app{
   
 .app.light .tableContainer table{
     border-radius: 12px;
-    border: 1px solid #000;
     height: 250px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.725);
 }
 .app.light .tableContainer1 table{
   border-radius: 12px;
-  border: 1px solid #000;
   height: 250px;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.725);
 }
 .app.light .tableContainer th{
-    border: 1px solid #000;
+  border-bottom: 1px solid #333;
     padding: 4px;
-    background-color: rgb(48, 48, 48);
-    color: #ffffff  ;
-    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    color: #333;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
 }
 .app.light .tableContainer1 th{
-  border: 1px solid #000;
   padding: 4px;
   background-color: rgb(48, 48, 48);
-  color: #ffffff  ;
-  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+  color: #333;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
 }
 .app.light .tableContainer td{
-    border: 1px solid #000;
-    background-color: aliceblue;
     padding: 4PX;
     font-family: 'Courier New', Courier, monospace;
 }
 .app.light .tableContainer1 td{
-  border: 1px solid #000;
   background-color: aliceblue;
   padding: 4PX;
   font-family: 'Courier New', Courier, monospace;

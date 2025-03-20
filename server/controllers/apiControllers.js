@@ -22,7 +22,6 @@ const fetchSheetData = async (sheetNumber) => {
 // Función para consultar todas las hojas y combinar los datos
 const getDataFetch = async (req, res) => {
     console.log('Consultando datos de Google Sheets...');
-
     try {
         const promises = [];
         for (let i = 1; i <= 15; i++) {
@@ -322,11 +321,11 @@ const getDataFetch = async (req, res) => {
                             });
                         });
                     }
-                }else if(`Sheet${index+1}` === `Sheet10` && `Sheet${index+1}` === `Sheet11` && `Sheet${index+1}` === `Sheet13` && `Sheet${index+1}` === `Sheet14`){
+                }else if(`Sheet${index+1}` === `Sheet10`){
                     if(idIndex !== -1 && NameIndex !== -1 && chatIndex !== -1 && messageIndex !== -1){
                         rows.forEach(row => {
                             formattedData.push({
-                                sheet: `Sheet10`||`Sheet11`||`Sheet13`|| `Sheet14`,
+                                sheet: `Sheet10`,
                                 id: row[idIndex],
                                 Name: row[NameIndex],
                                 chatName: row[chatIndex],
@@ -389,6 +388,43 @@ const getDataFetch = async (req, res) => {
                         });
                     }
 
+                }else if(`Sheet${index+1}` === `Sheet11`){
+                    if(idIndex !== -1 && NameIndex !== -1 && chatIndex !== -1 && messageIndex !== -1){
+                        rows.forEach(row => {
+                            formattedData.push({
+                                sheet: `Sheet11`,
+                                id: row[idIndex],
+                                Name: row[NameIndex],
+                                chatName: row[chatIndex],
+                                Message: row[messageIndex],
+                            })
+                        })
+                    }
+                }else if(`Sheet${index+1}` === `Sheet13`){
+                    if(idIndex !== -1 && NameIndex !== -1 && chatIndex !== -1 && messageIndex !== -1){
+                        rows.forEach(row => {
+                            formattedData.push({
+                                sheet: `Sheet13`,
+                                id: row[idIndex],
+                                Name: row[NameIndex],
+                                chatName: row[chatIndex],
+                                Message: row[messageIndex],
+                            })
+                        })
+                    }
+
+                }else if(`Sheet${index+1}` === `Sheet14`){if(idIndex !== -1 && NameIndex !== -1 && chatIndex !== -1 && messageIndex !== -1){
+                    rows.forEach(row => {
+                        formattedData.push({
+                            sheet: `Sheet14`,
+                            id: row[idIndex],
+                            Name: row[NameIndex],
+                            chatName: row[chatIndex],
+                            Message: row[messageIndex],
+                        })
+                    })
+                }
+
                 }else if(`Sheet${index+1}` === `Sheet15`){
                     const descriptionOtro = headers.indexOf('DescripcionOtro');
 
@@ -443,6 +479,7 @@ const getDataFetch = async (req, res) => {
                 }
             }
         });
+
         res.status(200).json(formattedData);
     } catch (error) {
         console.error('Error al procesar los datos:', error);

@@ -67,9 +67,6 @@ function EmpleAssigned(idUser){
     .then((error) => console.error(error))
 }
 
-
-
-
 async function fetchUserData() {
     try {
         const response = await fetch('http://localhost:3001/api');
@@ -84,62 +81,46 @@ async function fetchUserData() {
             const idUser = item.id;
             const sheets = item.sheet;
             const problem = item.ProblemaInt;
+            const ConsultChat = item.Message;
 
             const consultProcessed = processedUsers.filter(user => user.id === idUser);
 
-            // Verificar si el usuario ya tiene ese problema asignado
-            const problemExists = consultProcessed.some(user => user.message === problem);
+            const problemExists = consultProcessed.some(user => user.message === problem  || user.Motivo === ConsultChat);
 
             if (problemExists) {
-                console.log(`⚠️ El usuario ${idUser} ya tiene el problema "${problem}" registrado.`);
+                console.log(`⚠️ El usuario ${idUser} ya tiene el problema  o motivo que es"${problem || ConsultChat}" registrado.`);
                 continue;
             }
 
-            if (!processedUsers.some(user => user.id === idUser)) {
-                lastProcessedId = idUser;
-                processedUserSet.add(idUser);
-                console.log('Nuevo usuario registrado:', idUser);
+            lastProcessedId = idUser;
+            processedUserSet.add(idUser);
+            console.log(`✅ Nuevo registro para el usuario: ${idUser}, Problema: "${problem}"`);
 
-                if(sheets === 'Sheet1'){
-                    console.log('pagina 1', sheets)
-
-                    if(item.funciono1 === 'No funciona' || item.cable === 'Cable Dañado'){
-                        console.log('Hola se asignara un empleado')
-                        EmpleAssigned(idUser)
-                    }
-
-                }else if(sheets === 'Sheet2'){
-                    console.log('pagina 2', sheets)
-                    EmpleAssigned(idUser)
-                }else if(sheets === 'Sheet3'){
-                    console.log('pagina 3', sheets)
-                    EmpleAssigned(idUser)
-                }else if(sheets === 'Sheet4'){
-                    console.log('pagina 4', sheets)
-                    EmpleAssigned(idUser)
-                }else if(sheets === 'Sheet5'){
-                    console.log('pagina 5', sheets)
-                    EmpleAssigned(idUser)
-                }else if(sheets === 'Sheet6'){
-                    console.log('pagina 6', sheets)
-                    EmpleAssigned(idUser)
-                }
-
-                processedUsers.push({ id: idUser, message: item.ProblemaInt, processedAt: new Date().toISOString()  });
-                await saveProcessedUser(processedUsers);
+            // Asignación de empleados según la hoja
+            if (['Sheet1', 'Sheet2', 'Sheet3', 'Sheet4', 'Sheet5',
+                 'Sheet6', 'Sheet7', 'Sheet8', 'Sheet9', 'Sheet10',
+                 'Sheet11', 'Sheet12', 'Sheet13', 'Sheet14', 'Sheet15'].includes(sheets)) {
+                console.log(`📄 Página ${sheets}, asignando empleado...`);
+                EmpleAssigned(idUser);
             }
-            await delay(1000);
 
+            processedUsers.push({ 
+                id: idUser, 
+                Motivo: ConsultChat,
+                message: problem || null, 
+                processedAt: new Date().toISOString()
+            });
+            
+
+            await saveProcessedUser(processedUsers);
+            await delay(1000);
         }
 
         lastProcessedId = result;
     } catch (error) {
-        console.error('Error', error);
+        console.error('❌ Error en fetchUserData:', error);
     }
 }
 
+
 setInterval(fetchUserData, 10000)
-
-
-
-

@@ -133,56 +133,59 @@ function Dashboard() {
                                             <Diagrama messageStats={messageStats} />
                                         </div>
                                         <img className="img3d" src={img3d} alt="3D Image" />
-                                        <div className="contentDiagram4">
-                                            <div className="diagrama4">
-                                                <div className="content1">
-                                                    <h5>activar usuario</h5>
-                                                    <h3>{activeUsers} </h3>
-                                                </div>
-                                                <div className="content2">
-                                                    <h5>Nuevo usuario</h5>
-                                                    <h3>{newUser}</h3>
-                                                </div>
-                                                <div className="content3">
-                                                    <h5>usuarios cancelados</h5>
-                                                    <h3> {cancelledUser} </h3>
-                                                </div>
-                                            </div>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="tableContainer">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Nombre</th>
-                                        <th>Message</th>
-                                        <th>Cédula User</th>
-                                        <th>Chat Name</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {data.length > 0 ? (
-                                        data.map((item, index) => (
-                                            <tr key={index}>
-                                                <td>{item.id}</td>
-                                                <td>{item.Name}</td>
-                                                <td>{item.Message}</td>
-                                                <td>{item.ProblemaInt}</td>
-                                                <td>{item.chatName}</td>
-                                            </tr>
-                                        ))
-                                    ) : (
+                        <div className="contentTableAndDiagram">
+                            <div className="tableContainer">
+                                <table>
+                                    <thead>
                                         <tr>
-                                            <td colSpan="4">No hay datos disponibles</td>
+                                            <th>ID</th>
+                                            <th>Nombre</th>
+                                            <th>Message</th>
+                                            <th>Problema User</th>
+                                            <th>Chat Name</th>
                                         </tr>
-                                    )}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody className="Scrolltd">
+                                        {data.length > 0 ? (
+                                            data.map((item, index) => (
+                                                <tr key={index}>
+                                                    <td>{item.id}</td>
+                                                    <td>{item.Name}</td>
+                                                    <td>{item.Message}</td>
+                                                    <td>{item.ProblemaInt || null}</td>
+                                                    <td>{item.chatName}</td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan="5">No hay datos disponibles</td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div className="contentDiagram4">
+                                <div className="diagrama4">
+                                    <div className="content1">
+                                        <h5>activar usuario</h5>
+                                        <h3>{activeUsers} </h3>
+                                    </div>
+                                    <div className="content2">
+                                        <h5>Nuevo usuario</h5>
+                                        <h3>{newUser}</h3>
+                                    </div>
+                                    
+                                    <div className="content3">
+                                        <h5>usuarios cancelados</h5>
+                                        <h3> {cancelledUser} </h3>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
