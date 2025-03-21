@@ -19,8 +19,16 @@ const fetchSheetData = async (sheetNumber) => {
     }
 };
 
-// Función para consultar todas las hojas y combinar los datos
+let cachedData = null;
+let lastFetchTime = 0;
+const CACHE_DURATION = 5 * 60 * 1000; 
+
 const getDataFetch = async (req, res) => {
+    const now = Date.now();
+    if (cachedData && (now - lastFetchTime < CACHE_DURATION)) {
+        console.log('Retornando datos desde cache');
+        return res.json(cachedData);
+    }
     console.log('Consultando datos de Google Sheets...');
     try {
         const promises = [];
@@ -207,7 +215,7 @@ const getDataFetch = async (req, res) => {
                     if(idIndex !== -1 && NameIndex !== -1 && chatIndex !== -1 && messageIndex !== -1 && DescriptionUser !== -1){
                         rows.forEach(row => {
                             let detalles = row[DescriptionUser] ? row[DescriptionUser].trim() : '';
-                
+
                             let descripcionData = {
                                 Nombre: null,
                                 Documento: null,
@@ -216,10 +224,10 @@ const getDataFetch = async (req, res) => {
                                 Servicio: null,
                                 Motivo: null
                             };
-                
+
                             if (detalles.includes(',')) {
                                 let partes = detalles.split(',').map(d => d.trim());
-                
+
                                 descripcionData = {
                                     Nombre: partes[0] || null,
                                     Documento: partes[1] || null,
@@ -228,11 +236,13 @@ const getDataFetch = async (req, res) => {
                                     Servicio: partes[4] || null,
                                     Motivo: partes.slice(5).join(' ') || null
                                 };
+
                             } else {
+
                                 let partes = detalles.split(/\s+/);
-                
+
                                 if (partes.length >= 5) {
-                                    let nombreFin = 2; 
+                                    let nombreFin = 2;
                                     while (nombreFin < partes.length && isNaN(partes[nombreFin])) {
                                         nombreFin++;
                                     }
@@ -258,6 +268,7 @@ const getDataFetch = async (req, res) => {
                             });
                         });
                     }
+
                 }else if(`Sheet${index+1}` === `Sheet8`){
                     if(idIndex !== -1 && NameIndex !== -1 && chatIndex !== -1 && messageIndex !== -1){
                         rows.forEach(row => {
@@ -275,14 +286,14 @@ const getDataFetch = async (req, res) => {
                     if(idIndex !== -1 && NameIndex !== -1 && chatIndex !== -1 && messageIndex !== -1 && DescriptionCancelacion !== -1){
                         rows.forEach(row => {
                             let detalles = row[DescriptionCancelacion] ? row[DescriptionCancelacion].trim() : '';
-                
+
                             let descripcionData = {
                                 Nombre: null,
                                 Documento: null,
                                 Servicio: null,
                                 Motivo: null
                             };
-                
+
                             if (detalles.includes(',')) {
                                 let partes = detalles.split(',').map(d => d.trim());
 
@@ -480,6 +491,8 @@ const getDataFetch = async (req, res) => {
             }
         });
 
+        cachedData = formattedData;
+        lastFetchTime = Date.now();
         res.status(200).json(formattedData);
     } catch (error) {
         console.error('Error al procesar los datos:', error);

@@ -7,10 +7,10 @@
     overflow-y: scroll;
     height: 290px;
 }
+
 .tableContainer table{
     border-collapse: collapse;
     width: 860px;
-
     margin: 12px;
 }
 
@@ -19,9 +19,19 @@
     padding: 8px;
     text-align: left;
 }
+
 .dashboarContainer{
     overflow-y: scroll;
     overflow-x: hidden;
+}
+
+.digramContainer{
+    margin-left: -32px;
+}
+
+.digramContainer img:hover{
+    transition: 1s;
+    transform: scale(1.1);
 }
 
 .contentCards{
@@ -38,6 +48,12 @@
     border-radius: 7px;
 }
 
+.titleResult{
+    font-size: 19px;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    margin-left: 26px;
+    margin-top: 12px;
+}
 .card1{
     background-color: rgb(113, 117, 204);
     height: 70px;
@@ -45,6 +61,7 @@
     border-radius: 7px;
     display: flex;
 }
+
 .texto{
     display: flex;
     position: relative;
@@ -108,16 +125,16 @@ h6{
     height: 200px;
 }
 
+
 .diagrama2{
     height: 360px;
     width: 606px;
-    margin-left: -10px;
+    padding: 12px;
     margin-right: 2px;
     border-radius: 7px; display: flex;
 }
 
 .diagrama4{
-    background-color: rgba(179, 179, 179, 0.693);
     height: 260px;
     width: 244px;
     border-radius: 22px;
@@ -127,29 +144,47 @@ h6{
 
 .content1{
     width: 202px;
-    margin-left: 40px;
+    margin-left: 20px;
     margin-top:5px;
-    margin-bottom: 12px; 
+    padding-left: 22px;
+    margin-bottom: 12px;
+    border-radius: 12px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    background-color: #ADD8E6;
 }
 
+.content1:hover{
+    transition: 1s;
+    transform: scale(1.1);
+}
+.content2:hover{
+    transition: 1s;
+    transform: scale(1.1);
+}
 .content2{
+    padding-top: 3px;
+    padding-bottom: 3px;
     width: 202px;
-    margin-left: 40px;
-    margin-top: 5px;
+    margin-left: 20px;
+    margin-top:5px;
+    padding-left: 22px;
     margin-bottom: 12px; 
-    margin-right: 12px;
+    border-radius: 12px;
+    background-color: #f56666;
 }
 
-.content3{
-    width: 262px;
-    margin-left: 22px;
-    margin-bottom: 16px;
-    margin-top:5px; 
-    
-}
 .content1 h3{
     position: relative;
     left: 70px;
+}
+
+.content1 h5{
+    margin-left: 12px;
+}
+
+.content2 h5{
+    margin-left: 12px;
 }
 .content2 h3{
     position: relative;
@@ -170,7 +205,7 @@ h6{
 
 /*grafica numero 1*/
 .diagrama1{
-    width: 800px;
+    width: 560px;
     height: 350px;
     background-color: #e2e2e2;
     padding: 10px;
@@ -186,12 +221,14 @@ h6{
     margin: 12px;
     height: 10%;
 }
+
 .titulo_grafica>h3{
     padding: 0;
     margin: 0px;
     text-align: center;
     color: #666666;
 }
+
 .sub_board{
     width: 100%;
     height: 90%;
@@ -201,14 +238,17 @@ h6{
     overflow: hidden;
     box-sizing: border-box;
 }
+
 .sep_board{
     width: 100%;
     height: 10%;
 }
+
 .cont_board{
     width: 100%;
     height: 80%;
 }
+
 .graf_board{
     width: 85%;
     height: 85%;
@@ -254,9 +294,9 @@ h6{
     rgba(0,0,0,0) 79.5%, rgba(0,0,0,0.3) 80%, rgba(0,0,0,0) 80.5%, 
     rgba(0,0,0,0) 89.5%, rgba(0,0,0,0.3) 90%, rgba(0,0,0,0) 90.5%, 
     rgba(0,0,0,0) 100%);
-
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ffffff', endColorstr='#00ffffff',GradientType=0 );
 }
+
 .barra{
     width:80%;
     height: 100%;
@@ -267,6 +307,7 @@ h6{
     flex-wrap: wrap;
     align-items: flex-end;
 }
+
 .sub_barra{
     width: 60%;
     height: 90%;
@@ -275,10 +316,10 @@ h6{
     background: -webkit-linear-gradient(top, #b2d3dc 0%,#64d1be 100%);
     background: linear-gradient(to bottom, #b2d7e1 0%,#64d1be 100%);
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00799b', endColorstr='#64d1be',GradientType=0 );
-    
     -webkit-border-radius: 3px 3px 0 0;
     border-radius: 3px 3px 0 0;
 }
+
 .tag_g{
     position: relative;
     width: 100%;
@@ -308,6 +349,7 @@ h6{
     border-bottom: 2px solid rgba(0,0,0,0);
     box-sizing: border-box;
 }
+
 .sub_tag_board{
     height: 100%;
     width: 100%;
@@ -315,6 +357,7 @@ h6{
     align-items: flex-end;
     flex-wrap: wrap;
 }
+
 .sub_tag_board>div{
     width: 100%;
     height: 10%;
@@ -338,9 +381,11 @@ h6{
     border-radius: 26px;
     margin: 12px;
 }
+
 .t_grafica{
     margin-bottom: 22px;
 }
+
 .BarraSuperior{
     display: flex;
     align-items: center;

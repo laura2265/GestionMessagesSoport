@@ -8,11 +8,18 @@ import cargando from '../../../assets/img/cargando.png';
 import grafico from '../../../assets/img/grafico-de-lineas.png';
 import img3d from '../../../assets/img/img2-Photoroom.png';
 import Diagrama from "./Diagrama";
-import { manyChatToken, ApiKeyWisphub } from '../../../config/config'
 import ThemeContext from "../../ThemeContext";
 import Navbar from "../../navbar/Navbar";
 import SliderDashboard from "../../navbar/SliderDashboard";
 import { useNavigate } from "react-router-dom";
+import { FaCheckCircle } from "react-icons/fa";
+import { VscError } from "react-icons/vsc";
+import Img3dHombre from '../../../assets/img/img3dHombre-Photoroom.png'
+import Img3dHombre2 from '../../../assets/img/img3dHombre2-Photoroom.png'
+import Img3dHombre3 from '../../../assets/img/img3dHombre3-Photoroom.png'
+import img3dMujer from '../../../assets/img/img3dMujer-Photoroom.png'
+import img3dMujer2 from '../../../assets/img/img3dMujer2-Photoroom.png'
+import img3dMujer3 from '../../../assets/img/img3dMujer3-Photoroom.png'
 
 function Dashboard() {
     const { theme, toggleTheme } = useContext(ThemeContext);
@@ -20,8 +27,27 @@ function Dashboard() {
     const [messageStats, setMessageStats] = useState({});
     const [chatStats, setChatStats] = useState({});
     const [activeUsers, setActiveUsers ] = useState(0)
-    const [ newUser, setNewUser ] = useState(0)
-    const [ cancelledUser, setCancelledUser ] = useState(0)
+    const [ newUser, setNewUser ] = useState(0);
+    const [Funciono, setFunciono] = useState(0);
+    const [noFunciono, setNoFunciono] = useState(0);
+
+    const avatars = [
+        img3d,  
+        Img3dHombre,
+        Img3dHombre2,
+        Img3dHombre3,
+        img3dMujer,
+        img3dMujer2,
+        img3dMujer3,
+    ];
+    
+    const [selectedIndex, setSelectedIndex] = useState(0);
+
+    const handleAvatarClick = () => {
+        const nextIndex = (selectedIndex + 1) % avatars.length;
+        setSelectedIndex(nextIndex);
+      };
+
     const navigate = useNavigate()
 
     useEffect(() => {
@@ -32,14 +58,51 @@ function Dashboard() {
                 setData(result)
 
                 const messageCount = result.reduce((acc, item) => {
-                    acc[item.Message] = (acc[item.Message] || 0) + 1;
+                    if (item.Message) {
+                        acc[item.Message] = (acc[item.Message] || 0) + 1;
+                    }
+
+                    if (item.ProblemaInt) {
+                        acc[item.ProblemaInt] = (acc[item.ProblemaInt] || 0) + 1;
+                    }
                     return acc;
                 }, {});
-                
+
                 const chatCount = result.reduce((acc, item) => {
                     acc[item.chatName] = (acc[item.chatName] || 0) + 1;
                     return acc;
                 }, {});
+
+                const totalFunciono = result.reduce((acc, item) => {
+                    if (
+                      item.funciono1.includes('Si funcina')&&
+                      item.result === 'Si funciono' &&
+                      item.funcionoVpn === 'Si funcina' &&
+                      item.FuncionoFinal === "Si funciono" &&
+                      item.resultadoFinal === "Si funciono"
+                    ) {
+                      console.log('Item que funciono:', item);
+                      return acc + 1;
+                    }
+
+                    return acc;
+                  }, 0);
+
+                  const totalNoFunciono = result.reduce((acc, item) => {
+                    if (
+                      item.funciono1.includes('No funciona') &&
+                      item.result.includes('No funciono') &&
+                      item.funcionoVpn.includes('No funciono') &&
+                      item.FuncionoFinal.includes( "No funciono" )&&
+                      item.resultadoFinal.includes("No funciono") 
+                    ) {
+                      return acc + 1;
+                    }
+                    return acc;
+                  }, 0);
+
+                  setNoFunciono(totalNoFunciono)
+                  setFunciono(totalFunciono);
 
                 const totalMessages = result.length;
                 setMessageStats(Object.fromEntries(
@@ -74,7 +137,6 @@ function Dashboard() {
                 </div>
 
                 <div className="dashboarContainer">
-                    
                     <div className="contentGrafic1">
                         <div className="BarraSuperior">
                             <h1>Dashboard</h1>
@@ -132,7 +194,19 @@ function Dashboard() {
                                         <div className="digramContainer">
                                             <Diagrama messageStats={messageStats} />
                                         </div>
-                                        <img className="img3d" src={img3d} alt="3D Image" />
+                                        <div style={{ padding: '20px', textAlign: 'center' }}>
+                                          <img
+                                            src={avatars[selectedIndex]}
+                                            alt={`Avatar ${selectedIndex + 1}`}
+                                            onClick={handleAvatarClick}
+                                            style={{
+                                              width: '270px',
+                                              height: '300px',
+                                              borderRadius: '50%',
+                                              cursor: 'pointer'
+                                            }}
+                                          />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -171,18 +245,14 @@ function Dashboard() {
                             </div>
                             <div className="contentDiagram4">
                                 <div className="diagrama4">
+                                    <h5 className="titleResult">Resultados ChatBot</h5>
                                     <div className="content1">
-                                        <h5>activar usuario</h5>
-                                        <h3>{activeUsers} </h3>
+                                        <h5 className="titleResult">Funciono <FaCheckCircle/> </h5>
+                                        <h3>{Funciono}</h3>
                                     </div>
                                     <div className="content2">
-                                        <h5>Nuevo usuario</h5>
-                                        <h3>{newUser}</h3>
-                                    </div>
-                                    
-                                    <div className="content3">
-                                        <h5>usuarios cancelados</h5>
-                                        <h3> {cancelledUser} </h3>
+                                        <h5 className="titleResult">No Funciono <VscError /> </h5>
+                                        <h3>{noFunciono}</h3>
                                     </div>
                                 </div>
                             </div>

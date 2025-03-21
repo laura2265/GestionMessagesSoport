@@ -34,10 +34,12 @@ function Diagrama({ messageStats }) {
   const options = {
     plugins: {
       legend: {
-        position: 'right', 
+        position: 'left', 
         labels: {
           boxWidth: 15, 
           padding: 10, 
+          usePointStyle: true, 
+          pointStyle: 'circle',
         }
       }
     }

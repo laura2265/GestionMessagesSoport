@@ -105,7 +105,7 @@ body .app{
 .app.light .tableContainer1 td{
   background-color: aliceblue;
   padding: 4PX;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
 }
 
 .app.light .tableContainer td:hover{
