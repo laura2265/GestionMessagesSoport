@@ -56,8 +56,9 @@ function Dashboard() {
                 if (!response.ok) throw new Error('Error al consultar los datos de esta API');
                 const result = await response.json();
                 setData(result)
-
+                console.log('datos: ', result)
                 const messageCount = result.reduce((acc, item) => {
+
                     if (item.Message) {
                         acc[item.Message] = (acc[item.Message] || 0) + 1;
                     }
@@ -65,6 +66,7 @@ function Dashboard() {
                     if (item.ProblemaInt) {
                         acc[item.ProblemaInt] = (acc[item.ProblemaInt] || 0) + 1;
                     }
+
                     return acc;
                 }, {});
 
@@ -73,36 +75,17 @@ function Dashboard() {
                     return acc;
                 }, {});
 
-                const totalFunciono = result.reduce((acc, item) => {
-                    if (
-                      item.funciono1.includes('Si funcina')&&
-                      item.result === 'Si funciono' &&
-                      item.funcionoVpn === 'Si funcina' &&
-                      item.FuncionoFinal === "Si funciono" &&
-                      item.resultadoFinal === "Si funciono"
-                    ) {
-                      console.log('Item que funciono:', item);
-                      return acc + 1;
-                    }
+                const itemsNoFunciono = result.filter(cant =>  
+                    cant.funciono1?.trim()?.toLowerCase() === 'no funciona' &&  
+                    cant.result?.trim()?.toLowerCase() === 'no funciono' &&  
+                    cant.funcionoVpn?.trim()?.toLowerCase() === 'no funciona' &&  
+                    cant.funcionoFinal?.trim()?.toLowerCase() === 'no funciono' &&  
+                    cant.resultadoFinal?.trim()?.toLowerCase() === 'no funciono'  
+                );
+                
+                console.log("Elementos que cumplen la condición:", itemsNoFunciono);
+                console.log("Cantidad de 'No funciono':", itemsNoFunciono.length);
 
-                    return acc;
-                  }, 0);
-
-                  const totalNoFunciono = result.reduce((acc, item) => {
-                    if (
-                      item.funciono1.includes('No funciona') &&
-                      item.result.includes('No funciono') &&
-                      item.funcionoVpn.includes('No funciono') &&
-                      item.FuncionoFinal.includes( "No funciono" )&&
-                      item.resultadoFinal.includes("No funciono") 
-                    ) {
-                      return acc + 1;
-                    }
-                    return acc;
-                  }, 0);
-
-                  setNoFunciono(totalNoFunciono)
-                  setFunciono(totalFunciono);
 
                 const totalMessages = result.length;
                 setMessageStats(Object.fromEntries(

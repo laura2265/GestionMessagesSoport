@@ -9,6 +9,14 @@ import DiagramaEmploye from "./diagramaEmploye";
 import img3d from '../../../assets/img/img2-Photoroom.png'
 import { useNavigate } from "react-router-dom";
 import MessageChat from "../../MessageChat";
+import Diagrama from "../../Admin/dashboard/Diagrama";
+import Img3dHombre from '../../../assets/img/img3dHombre-Photoroom.png'
+import Img3dHombre2 from '../../../assets/img/img3dHombre2-Photoroom.png'
+import Img3dHombre3 from '../../../assets/img/img3dHombre3-Photoroom.png'
+import img3dMujer from '../../../assets/img/img3dMujer-Photoroom.png'
+import img3dMujer2 from '../../../assets/img/img3dMujer2-Photoroom.png'
+import img3dMujer3 from '../../../assets/img/img3dMujer3-Photoroom.png'
+
 
 function DashboardEmploye(){
     
@@ -21,6 +29,23 @@ function DashboardEmploye(){
     const [ cancelledUser, setCancelledUser ] = useState(0);
     const navigate = useNavigate();
     const [ isLoggedIn, setIsLoggedIn] = useState(false);
+
+        const avatars = [
+            img3d,  
+            Img3dHombre,
+            Img3dHombre2,
+            Img3dHombre3,
+            img3dMujer,
+            img3dMujer2,
+            img3dMujer3,
+        ];
+            
+        const [selectedIndex, setSelectedIndex] = useState(0);
+    
+        const handleAvatarClick = () => {
+            const nextIndex = (selectedIndex + 1) % avatars.length;
+            setSelectedIndex(nextIndex);
+        };
 
     useEffect(()=>{
         const userId = localStorage.getItem('UserId')
@@ -67,7 +92,6 @@ function DashboardEmploye(){
             .catch(error => console.error('Error al obtener datos:', error));
     }, []);
 
-
     return(
         <>
             <div className={theme === 'light' ? 'app light' : 'app dark'}>
@@ -77,103 +101,116 @@ function DashboardEmploye(){
                         <div className="flex">
                             <SliderEmploye />
                         </div>
-                    </div> 
-                    <div className="BarraSuperior">
-                        <h1>Dashboard Empleado</h1>
-                        <a  className='ButtonTheme1' onClick={toggleTheme}><img src={theme === 'light'? ModoClaro : ModoOscuro}></img> </a>
                     </div>
-                            <div className="contentEmployee">
-                                <div className="contentDiagramEmploye">
-                                <div className="graficos1">
-                                <div className="diagrama11">
-                                    <div className="sub_board">
-                                    <h3 className="t_grafica">Distribución de Chats</h3>
-                                    <div className="graf_board">
-                                        {Object.entries(chatStats).map(([chat, percentage]) => (
-                                            <div className="barra" key={chat}>
-                                                <div className="sub_barra" style={{ height: `${percentage}%`}}>
-                                                    <div className="tag_g">{percentage}%</div>
-                                                    <div className="tag_leyenda">{chat}</div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                        <div className="cont_board">
-                                            <div className="graf_board">
-                                                {Object.entries(messageStats).map(([message, percentage], index) => (
-                                                    <div className="barra" key={index}>
-                                                        <div className="sub_barra" style={{ height: `${percentage}%` }}>
-                                                            <div className="tag_g">{percentage}%</div>
-                                                            <div className="tag_leyenda1">{message}</div>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                            <div className="tag_board">
-                                                <div className="sub_tag_board">
-                                                    <div>100</div>
-                                                    <div>90</div>
-                                                    <div>80</div>
-                                                    <div>70</div>
-                                                    <div>60</div>
-                                                    <div>50</div>
-                                                    <div>40</div>
-                                                    <div>30</div>
-                                                    <div>20</div>
-                                                    <div>10</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="sep_board"></div>
-                                    </div>
-                                </div>
 
-                                <div className="contenteDiagrams">
-                                    <div className="contentDiagramEmploye">
-                                        <div className="colorContentDark">
-                                            <p>Porcentaje De Mensajes</p>
-                                            <div className="diagrama22">
-                                                <div className="digramContainer">
-                                                    <DiagramaEmploye messageStats={messageStats} />
+                    <div className="dashboarContainer1">
+                        <div className="BarraSuperior">
+                            <h1>Dashboard Empleado</h1>
+                            <a  className='ButtonTheme1' onClick={toggleTheme}><img src={theme === 'light'? ModoClaro : ModoOscuro}></img> </a>
+                        </div>
+                        <div className="graficos1">
+                            <div className="diagrama11">
+                                <div className="sub_board">
+                                <h3 className="t_grafica">Distribución de Chats</h3>
+                                <div className="graf_board">
+                                    {Object.entries(chatStats).map(([chat, percentage]) => (
+                                        <div className="barra" key={chat}>
+                                            <div className="sub_barra" style={{ height: `${percentage}%`}}>
+                                                <div className="tag_g">{percentage}%</div>
+                                                <div className="tag_leyenda">{chat}</div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                    <div className="cont_board">
+                                        <div className="graf_board">
+                                            {Object.entries(messageStats).map(([message, percentage], index) => (
+                                                <div className="barra" key={index}>
+                                                    <div className="sub_barra" style={{ height: `${percentage}%` }}>
+                                                        <div className="tag_g">{percentage}%</div>
+                                                        <div className="tag_leyenda1">{message}</div>
+                                                    </div>
                                                 </div>
-                                                <img className="img3d1" src={img3d}></img>
+                                            ))}
+                                        </div>
+                                        <div className="tag_board">
+                                            <div className="sub_tag_board">
+                                                <div>100</div>
+                                                <div>90</div>
+                                                <div>80</div>
+                                                <div>70</div>
+                                                <div>60</div>
+                                                <div>50</div>
+                                                <div>40</div>
+                                                <div>30</div>
+                                                <div>20</div>
+                                                <div>10</div>
                                             </div>
                                         </div>
                                     </div>
+                                    <div className="sep_board"></div>
                                 </div>
                             </div>
-                            <div className="tableContainer1">
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>ID</th>
-                                            <th>Nombre</th>
-                                            <th>Message</th>
-                                            <th>Cédula User</th>
-                                            <th>Chat Name</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {data.length > 0 ? (
-                                            data.map((item, index) => (
-                                                <tr key={index}>
-                                                    <td>{item.id}</td>
-                                                    <td>{item.Name}</td>
-                                                    <td>{item.Message}</td>
-                                                    <td>{item.cedula}</td>
-                                                    <td>{item.chatName}</td>
-                                                </tr>
-                                            ))
-                                        ) : (
-                                            <tr>
-                                                <td colSpan="5">No hay datos disponibles</td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </table>
-                                {isLoggedIn && <MessageChat/>}
+                            <div className="contenteDiagrams">
+                                <div className="contentDiagramEmploye">
+                                    <div className="colorContentDark">
+                                        <p>Porcentaje De Mensajes</p>
+                                        <div className="diagrama22">
+                                        <div className="digramContainer">
+                                            <Diagrama messageStats={messageStats} />
+                                        </div>
+                                        <div style={{ padding: '20px', textAlign: 'center' }}>
+                                          <img
+                                            src={avatars[selectedIndex]}
+                                            alt={`Avatar ${selectedIndex + 1}`}
+                                            onClick={handleAvatarClick}
+                                            style={{
+                                              width: '270px',
+                                              height: '300px',
+                                              borderRadius: '50%',
+                                              cursor: 'pointer'
+                                            }}
+                                          />
+                                        </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                        <div className="contentTableAndDiagram1">
+                                <div className="tableContainer1">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Nombre</th>
+                                                <th>Message</th>
+                                                <th>Cédula User</th>
+                                                <th>Chat Name</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {data.length > 0 ? (
+                                                data.map((item, index) => (
+                                                    <tr key={index}>
+                                                        <td>{item.id}</td>
+                                                        <td>{item.Name}</td>
+                                                        <td>{item.Message}</td>
+                                                        <td>{item.cedula}</td>
+                                                        <td>{item.chatName}</td>
+                                                    </tr>
+                                                ))
+                                            ) : (
+                                                <tr>
+                                                    <td colSpan="5">No hay datos disponibles</td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                    {isLoggedIn && <MessageChat/>}
+                                </div>
+
+                            </div>
                     </div>
                 </div>
             </div>

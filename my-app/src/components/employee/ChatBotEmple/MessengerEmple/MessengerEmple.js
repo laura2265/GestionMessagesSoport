@@ -2,14 +2,15 @@ import { useContext, useEffect, useRef, useState } from "react";
 import ThemeContext from "../../../ThemeContext";
 import Navbar from "../../../navbar/Navbar";
 import SliderEmploye from "../../../navbar/SliderEmploye";
-import ModoOscuro from '../../../../assets/img/modo-oscuro.png'
-import ModoClaro from '../../../../assets/img/soleado.png'
-import Usuario from '../../../../assets/img/usuario.png'
-import Enviar from '../../../../assets/img/enviar.png'
+import ModoOscuro from '../../../../assets/img/modo-oscuro.png';
+import ModoClaro from '../../../../assets/img/soleado.png';
+import Usuario from '../../../../assets/img/usuario.png';
+import Enviar from '../../../../assets/img/enviar.png';
 import MessageChat from "../../../MessageChat";
-import '../WhatsappEmple/whatsappEmple.css'
+import '../WhatsappEmple/whatsappEmple.css';
 import { CiImageOn } from "react-icons/ci";
 import { AiFillAudio } from "react-icons/ai";
+import firebase from "firebase/compat/app";
 
 function MessengerEmple (){
     const {theme, toggleTheme} = useContext(ThemeContext)
