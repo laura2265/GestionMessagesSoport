@@ -20,14 +20,12 @@ function MessengerEmple (){
     const [currentMessage, setCurrentMessage] = useState('')
     const [ isLoggedIn, setIsLoggedIn] = useState(false);
     const fileInputRef = useRef(null);
-    const audioInputRef = useRef(null);
 
     // Manejo del envío de archivos
     const handleFileUpload = (event) => {
         const file = event.target.files[0];
         if (file) {
             console.log("Archivo seleccionado:", file);
-            // Aquí puedes enviarlo al servidor o al chat
         }
     };
         

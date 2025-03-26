@@ -185,7 +185,7 @@ function DashboardEmploye(){
                                                 <th>ID</th>
                                                 <th>Nombre</th>
                                                 <th>Message</th>
-                                                <th>Cédula User</th>
+                                                <th>Problema User</th>
                                                 <th>Chat Name</th>
                                             </tr>
                                         </thead>
@@ -196,7 +196,7 @@ function DashboardEmploye(){
                                                         <td>{item.id}</td>
                                                         <td>{item.Name}</td>
                                                         <td>{item.Message}</td>
-                                                        <td>{item.cedula}</td>
+                                                        <td>{item.ProblemaInt}</td>
                                                         <td>{item.chatName}</td>
                                                     </tr>
                                                 ))

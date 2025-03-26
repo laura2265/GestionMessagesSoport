@@ -281,6 +281,10 @@ function ReportHistoryMessage(){
                         doc.setFont("helvetica", "bold");
                         doc.text(`•  ${senderText}`, 54, yOffset);
                         doc.setFont("helvetica", "normal");
+
+                        if(message.message.includes('')){
+
+                        }
                         doc.text(`${message.message} ${new Date(message.updatedAt).toLocaleString([], {hour: '2-digit', minute: '2-digit'})}`, distancia === 'Cliente'? 75: 80, yOffset);
                         yOffset += lineHeight;
                     });
