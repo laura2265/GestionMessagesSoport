@@ -2,8 +2,7 @@
   "name": "my-fullstack-app",
   "version": "1.0.0",
   "scripts": {
-    "build": "vite build", 
-    "start": "vite preview"
+    "start": "concurrently \"npm start --prefix my-app\" \"npm start --prefix server\""
   },
   "dependencies": {
     "body-parser": "^1.20.3",
