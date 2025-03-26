@@ -190,7 +190,7 @@ function MessengerEmple (){
                 });
 
                 if (!messageResponse.ok) throw new Error('Error al guardar el mensaje en message');
-    
+
                 setMessages(prevMessages => [...prevMessages, newMessage]);
 
             } catch (error) {
