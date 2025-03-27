@@ -133,6 +133,44 @@ function TelegramEmple (){
                         console.log('el id de la primera api es: ', chatId)
                         if(user.chatName === 'ChatBotTelegram'){
                             await fetchManychat(chatId);
+
+                            const response = await fetch(`http://localhost:3001/message/?contactId=${activeContact.id}&chat=telegram`, {
+                                method: 'GET',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+            
+                            if (!response.ok) {
+                                throw new Error('Error al obtener los mensajes del contacto');
+                            }
+
+                            const result = await response.json();
+                            const data = result.data.docs;
+
+                            const exists = data.some(msg => msg.contactId === user.chatId && msg.message === user.Descripcion);
+    
+                            if (!exists) {
+                                const newMessage = {
+                                    contactId: chatId,
+                                    message: user.Descripcion,
+                                    sender: 'Cliente',
+                                    chat: 'telegram',
+                                    idMessageClient: `msg_MessageProblem-${user.Descripcion.length}`
+                                };
+    
+                                const messageResponse = await fetch('http://localhost:3001/message/', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(newMessage),
+                                });
+    
+                                if (!messageResponse.ok) throw new Error('Error al guardar el mensaje en message');
+    
+                                console.log('Mensaje guardado correctamente.');
+                            } else {
+                                console.log('El mensaje ya existe, no se enviará.');
+                            }
                         }
                     }
                 }

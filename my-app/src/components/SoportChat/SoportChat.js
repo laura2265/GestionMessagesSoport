@@ -6,12 +6,14 @@ import Enviar from '../../assets/img/enviar.png'
 import Notificacion from '../../assets/sounds/Notificacion.mp3'
 
 function SoportChat (){
+  const METODO_PAGO_URL = "https://tupagina.com/metodos-de-pago";
     const [isChatVisible, setIsChatVisible] = useState(false)
     const [waitingForDocument, setWaitingForDocument] = useState(false);
     const [serviceData, setServiceData] = useState([])
     const [message, setMessages] = useState([
         {
-            sender: 'bot', text: `Hola, bienvenido a tu chat 😊\n¿En que puedo ayudarte?\n1. Consultar datos.\n2. Personal`
+            sender: 'bot', text: `Hola, bienvenido a tu chat 😊\n¿En que puedo ayudarte?`,
+            buttons:["Falla conexión", "Cambiar Contraseña", "Cancelar Servicio", "Cambio de plan", "Traslado", "Solicitar servicio", "PQR(Peticion, Queja, Reclamo)", "Pagar Facturas", "Cambio de titular", "Otro"]
         }
     ])
 
@@ -91,25 +93,79 @@ function SoportChat (){
          setUserInput("")
     }
 
-    const handleButtonClick = async(service) => {
-        setMessages((prevMessage) => [
-            ...prevMessage,
-            {sender: 'user', text: service},
-        ])
+    const handleButtonClick = async (option) => {
+      setMessages((prevMessage) => [...prevMessage, { sender: 'user', text: option }]);
+  
+      if (option === "Falla conexión") {
+        setTimeout(() => addBotMessage(`Al parecer tienes problemas con tu servicio, vamos a hacer unas pruebas para poder ayudarte. \n¿Qué tipo de problema tiene? escoja el problema que desea solucionar:`,
+          ["✅ No tengo internet.", "🐢 Internet lento.", "🌐 No cargan páginas.", "📺 Señal de Televisión.", "⚡ Internet inestable.", "🔘Otro problema"]
+        ),1000);
+        setWaitingForDocument(true);
+      } else if (option === "Cambiar Contraseña") {
+        setTimeout(() => addBotMessage(`Para poder solicitar el cambio de contraseña, te vamos a solicitar unos datos, los cuales vas a enviar en un solo mensaje separado por *Comas*, *Tipo lista sin números ni caracteres especiales*, o tambien *De corrido pero con espacios*. \n
+            Los datos son: 
+            \n
+            1️⃣ Nombre completo del titular del servicio.
+            \n
+            2️⃣ Número de documento del titular.
+            \n
+            3️⃣Número de teléfono o contacto.
+            \n
+            4️⃣Correo electrónico registrado.
+            \n
+            5️⃣Servicio por el cual solicita el cambio de contraseña.
+            \n
+            6️⃣Motivo de cambio de contraseña.
+            \n
+            si no tiene correo registrado escriba *null*.`), 1000);
+      } else if (option === "Cancelar Servicio") {
+        setTimeout(() => addBotMessage(`Señor/a, para realizar esta acción puedes acercarte a la oficina más cercana con la fotocopia de la cedula y la carta con el motivo de porque va a cancelación el servicio.`), 1000);
+      } else if(option === "Cambio de plan"){
+        setTimeout(() => addBotMessage(`Para poder solicitar un cambio de plan, te vamos a solicitar unos datos, los cuales vas a enviar en un solo mensaje separado por *Comas*, *Tipo lista sin números ni caracteres especiales*, o tambien *De corrido pero con espacios*.\n 
 
-        const selectServiced = serviceData.find(item =>  item.usuario === service)
-
-        setTimeout(()=>addBotMessage(`Consultando detalles del servicio: ${service}`),1000)
-        if(selectServiced){
-          setTimeout(()=> addBotMessage(
-            `Detallesdel servicio seleccionado : \nNombre: ${selectServiced.nombre}\nEmail: ${selectServiced.email}\nTelefono: ${selectServiced.telefono}`
-          ),3000)
-        }else{
-          setTimeout(()=> addBotMessage(
-            `No se encontraron datos asociados al servicio 😢`
-          ),3000)
-        }
-    }
+          Los datos son: 
+          \n
+          1️⃣ Nombre completo del titular del servicio.
+          \n
+          2️⃣ Número de documento del titular.
+          \n
+          3️⃣ El servicio que desea cancelar *(Internet, TV, etc.)*.
+          \n
+          6️⃣Motivo de la cancelación del servicio.`), 1000);
+      }else if(option === 'Traslado'){
+        setTimeout(() => addBotMessage('Señor/a, para poder realizar esta acción puede pasar a la oficina más cercana con carta del traslado, copia del recibo del nuevo domicilio ya sea de la luz, del agua, etc.'), 1000)
+      }else if(option === 'Solicitar servicio'){
+        setTimeout(() => addBotMessage(`Señor/a, para realizar esta acción puede acercarse a la oficina mas cercana y llevar la *Fotocopia del documento*.
+          \nSi usted no es el dueño de la casa tiene que llevar la fotocopia del documento, con una carta firmada por el sueño de la casa dando el permiso para poder instalar el servicio y un recibo de la casa.`), 1000)
+      }else if(option === 'PQR(Peticion, Queja, Reclamo)'){
+        setTimeout(() => addBotMessage(`Para realizar la solicitud de un *PQR* te vamos a solicitar unos datos para poder pasarte con un asesor. Los datos que te solicitamos los vas a enviar en un solo mensaje donde pondrás los datos separados por *Comas*, *Tipo lista sin caracteres especiales* o *De corrido con Espacios*. 
+          \n
+            Si vas a agregar la fecha que sea de la siguiente manera *dd-mm-aa* o tambien podría ser de la siguiente manera *dd/mm/aa*.
+            \n
+            Los datos son: 
+            \n
+            📌 Nombre completo
+            \n
+            🔢 Número de documento.
+            \n
+            📂 Tipo de solicitud *(Petición, Queja, Reclamo).
+            \n
+            📆 Fecha de cuando ocurrió.
+            \n
+            📝Descripción del problema.`), 1000)
+      }else if (option === 'Pagar Facturas') {
+        setTimeout(() => addBotMessage(
+            `Señor/a, para poder realizar esta acción puede acercarse a la dirección Cra. 19c Sur #52-26, Barrio San Carlos, Bogotá, de lunes a viernes de 8 am a 4:30 pm y los sábados de 9 am a 4 pm y realizar el pago.\n\n` +
+            `Si desea realizar el pago por otro medio, haga clic en el botón:`,
+            [{ text: "🔗 Métodos de Pago", link: METODO_PAGO_URL }]
+        ), 1000);
+    }else if(option === 'Cambio de titular'){
+        setTimeout(() => addBotMessage())
+      }else if(option === 'Otro'){
+        setTimeout(() => addBotMessage(''))
+      }
+  };
+  
 
     //notificacion
     const playNotificacionSound = () =>{
@@ -135,28 +191,28 @@ function SoportChat (){
                 </div>
 
                 <button className='close-btn' onClick={closeChat}>X</button>
-                <div className='content-messages'>
-                  {message.map((message, index) => (
-                    <div key={index} className={`message ${message.sender}`}>
-                      {message.text.split("\n").map((line, i) => (
-                        <p key={i}>{line}</p>
-                      ))}
-                      {message.buttons && (
-                        <div className="buttons-container">
-                          {message.buttons.map((buttonText, btnIndex) => (
-                            <button
-                              key={btnIndex}
-                              onClick={() => handleButtonClick(buttonText)}
-                              className="service-button"
-                            >
-                              {buttonText}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                <div key={index} className={`message ${message.sender}`}>
+                  {message.text.split("\n").map((line, i) => (
+                    <p key={i}>{line}</p>
                   ))}
+                
+                  {message.buttons && Array.isArray(message.buttons) && message.buttons.length > 0 && (
+                    <div className="button-container">
+                      {message.buttons.map((btn, i) => (
+                        <a
+                          key={i} 
+                          href={btn.link} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="chat-button"
+                        >
+                          {btn.text}
+                        </a>
+                      ))}
+                    </div>
+                  )}
                 </div>
+
 
                 <div className='content-input'>
                     <input
