@@ -5,7 +5,7 @@ import cors from 'cors'
 import { ApiKeyWisphub, manyChatToken } from "./config/config.js";
 import { loadProcessedUser, saveProcessedUser } from "./controllers/ProcesarUser.js";
 import { BuscarCedulaInstagram, BuscarCedulaMessenger, BuscarCedulaTelegram } from "./controllers/BuscarCedula/BuscarCedulaUser.js";
-import { error } from "console";
+
 
 
 const app = express();

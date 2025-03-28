@@ -146,16 +146,19 @@
 }
 
 .service-button {
-  background-color: #007bff;
+  background-color: #393b3d7b;
   color: white;
   border: none;
   padding: 5px 10px;
   border-radius: 5px;
   cursor: pointer;
+  width: 170px;
 }
 
 .service-button:hover {
-  background-color: #0056b3;
+  background-color: #56585a;
+  transition: 1s;
+  transform: scale(.90);
 }
 
 .bot.message {

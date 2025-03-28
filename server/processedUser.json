@@ -95,5 +95,11 @@
     "Motivo": "Falla de conexión",
     "message": "Otro problema",
     "processedAt": "2025-03-20T18:12:08.302Z"
+  },
+  {
+    "id": "1138345911",
+    "Motivo": "Falla de conexión",
+    "message": "No tengo internet",
+    "processedAt": "2025-03-28T13:17:57.456Z"
   }
 ]

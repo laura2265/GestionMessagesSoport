@@ -6,7 +6,6 @@ import Enviar from '../../assets/img/enviar.png'
 import Notificacion from '../../assets/sounds/Notificacion.mp3'
 
 function SoportChat (){
-  const METODO_PAGO_URL = "https://tupagina.com/metodos-de-pago";
     const [isChatVisible, setIsChatVisible] = useState(false)
     const [waitingForDocument, setWaitingForDocument] = useState(false);
     const [serviceData, setServiceData] = useState([])
@@ -16,6 +15,7 @@ function SoportChat (){
             buttons:["Falla conexión", "Cambiar Contraseña", "Cancelar Servicio", "Cambio de plan", "Traslado", "Solicitar servicio", "PQR(Peticion, Queja, Reclamo)", "Pagar Facturas", "Cambio de titular", "Otro"]
         }
     ])
+    
 
     const [handleNewMessage, setHandleNewMessage] = useState(false)
     const [userInput, setUserInput] = useState("");
@@ -95,12 +95,15 @@ function SoportChat (){
 
     const handleButtonClick = async (option) => {
       setMessages((prevMessage) => [...prevMessage, { sender: 'user', text: option }]);
+
   
       if (option === "Falla conexión") {
         setTimeout(() => addBotMessage(`Al parecer tienes problemas con tu servicio, vamos a hacer unas pruebas para poder ayudarte. \n¿Qué tipo de problema tiene? escoja el problema que desea solucionar:`,
           ["✅ No tengo internet.", "🐢 Internet lento.", "🌐 No cargan páginas.", "📺 Señal de Televisión.", "⚡ Internet inestable.", "🔘Otro problema"]
         ),1000);
         setWaitingForDocument(true);
+
+        
       } else if (option === "Cambiar Contraseña") {
         setTimeout(() => addBotMessage(`Para poder solicitar el cambio de contraseña, te vamos a solicitar unos datos, los cuales vas a enviar en un solo mensaje separado por *Comas*, *Tipo lista sin números ni caracteres especiales*, o tambien *De corrido pero con espacios*. \n
             Los datos son: 
@@ -157,16 +160,127 @@ function SoportChat (){
         setTimeout(() => addBotMessage(
             `Señor/a, para poder realizar esta acción puede acercarse a la dirección Cra. 19c Sur #52-26, Barrio San Carlos, Bogotá, de lunes a viernes de 8 am a 4:30 pm y los sábados de 9 am a 4 pm y realizar el pago.\n\n` +
             `Si desea realizar el pago por otro medio, haga clic en el botón:`,
-            [{ text: "🔗 Métodos de Pago", link: METODO_PAGO_URL }]
+            ['https://clientes.portalinternet.net/saldo/super-tv/']
         ), 1000);
     }else if(option === 'Cambio de titular'){
-        setTimeout(() => addBotMessage())
+        setTimeout(() => addBotMessage(`Señor/a, para realizar esta acción  te vamos a solicitar unos datos los cuales vas a llevar al punto más cercano para poder ayudarte con esta solicitud. Los datos son los siguientes: 
+          \n1️⃣Copia de documento del *Titular anterior*
+          \n2️⃣Copia del documento de la persona a la que se le va a realizar el servicio.`), 1000)
+
       }else if(option === 'Otro'){
-        setTimeout(() => addBotMessage(''))
+        setTimeout(() => addBotMessage(`Para poder ayudarte con tu problema te vamos a pedir unos datos para poder ayudarte. Los datos los vas a enviar en un solo mensaje donde los vas a enviar *Tipo lista sin caracteres especiales*, Separados por *Comas* o tambien de corrido con *Espacios*.
+          \nAl momento colocar los datos, al llegar al punto 3 donde pregunta si es titular. Por favor colocar *Si* o *No*.
+          \n1️⃣ Nombre completo.
+          \n2️⃣ Numero de documento.
+          \n3️⃣¿Es titular de algún servicio?
+          \n4️⃣ Descripción del problema o duda que desea consultar.`),1000)
+
+      //Apartado de no tengo internet
+      }else if(option === "✅ No tengo internet."){
+        setTimeout(() => addBotMessage(`Para poder ayudare con tu problema, Podrías escoger la opción *Un equipo*, de lo contrario escoge la opción *Múltiples equipos*`,
+          ["📱 Un equipo", "💻📱 Múlples aquipos"]
+        ),1000);
+        setWaitingForDocument(true);
+
+      }else if(option === '📱 Un equipo'){
+        setTimeout(() => addBotMessage(`¿Estas conectado a *WIFI* o cable *Ethernet*?`,
+          ["📶 WIFI", "🔌 Cable Ethernet"]
+        ),1000);
+        setWaitingForDocument(true);
+      }else if(option === '📶 WIFI'){
+        setTimeout(() => addBotMessage(`Vamos a solucionar tu problema. A continuación te vamos a presentar una serie de soluciones para ayudarte con tu problema:
+          \n1️⃣ Olvida la red *WIFI* y vuelve a conectarte.
+          \n2️⃣ Prueba con otra red *WIFI* o con datos si es posible.
+          \n3️⃣ Actualiza el sistema operativo del sistema.
+          \nSi no sabes realizar el ultimo punto, escoge la opción *Ayuda*, de lo contrario escoge la opción *Seguir*`,
+          ["🆘 Ayuda", "➡️ Seguir"]
+        ),1000);
+        setWaitingForDocument(true);
+      }else if(option === '🆘 Ayuda'){
+        setTimeout(() => addBotMessage(`Para poder ayudarte con esto, nos podrías indicar que tipo de dispositivo estas utilizando.`,
+          ["🔹 Windows", "🔹Mac", "🔹 Android", "🔹iPhone"]
+        ),1000);
+        setWaitingForDocument(true);
+
+        //dispositivo internet
+      }else if(option === '🔹 Windows'){
+        setTimeout(() => addBotMessage(`A continuación te mostraremos el paso a paso para revisar si la tarjeta de red del dispositivo esta habilitada:
+
+            \n 1️⃣ Pulse *Windows+i* y haz clic en Windows Update.
+                  
+            \n 2️⃣Haz clic en *Buscar actualizaciones* y sigue las instrucciones.
+                
+            \n 3️⃣Si hay actualizaciones pendientes, instala y reinicia el *Dispositivo*.`),1000);
+
+            setTimeout(() => addBotMessage(`Si te funciono escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*.`,
+              ["✅ Si funciono", "❎ No funciono"]
+            ), 1000)
+        setWaitingForDocument(true);
+      }else if(option === '🔹Mac'){
+        setTimeout(() => addBotMessage(`A continuación te mostraremos el paso a paso para revisar si la tarjeta de red del dispositivo esta habilitada:
+            \n
+            1️⃣ Conéctate a una red *WIFI*.
+            \n
+            2️⃣ Ve a menú de Apple 🍏, luego a *Configuración del sistema* y por ultimo a *General*.
+            \n
+            3️⃣Selecciona *Actualización de software*.
+            \n
+            4️⃣ Si hay una actualización disponible, haz clic en *Actualizar ahora*.
+            \n
+            5️⃣Espera a que termine y si es necesario reinicia el *Dispositivo*.`),1000);
+            setTimeout(() => addBotMessage(`Si te funciono escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*.`,
+              ["✅ Si funciono", "❎ No funciono"]
+            ), 1000)
+        setWaitingForDocument(true);
+      }else if(option === '🔹 Android'){
+        setTimeout(() => addBotMessage(`A continuación te mostraremos el paso a paso para revisar si la tarjeta de red del dispositivo esta habilitada:
+          \n
+          1️⃣ Conéctate a una red *WIFI*.
+          \n     
+          2️⃣ Ve a *Ajustes*, luego te diriges a *Sistema* y por ultimo a *Actualización de software*.
+          \n    
+          3️⃣ Entra en *Buscar actualizaciones*.
+          \n     
+          4️⃣ Si hay actualizaciones disponibles, descárguela  e instálela.
+          \n    
+          5️⃣Si es necesario reinicie el *Dispositivo*.`),1000);
+
+          setTimeout(() => addBotMessage(`Si te funciono escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*.`,
+            ["✅ Si funciono", "❎ No funciono"]
+          ), 1000)
+        setWaitingForDocument(true);
+      }else if(option === '🔹iPhone'){
+        setTimeout(() => addBotMessage(`A continuación te mostraremos el paso a paso para revisar si la tarjeta de red del dispositivo esta habilitada:
+          \n
+          1️⃣ Conéctate a una red *WIFI*.
+          \n
+          2️⃣Ve a *Ajustes*, luego te diriges a *General* y por ultimo a *Actualización de software*
+          \n
+          3️⃣ Si hay actualizaciones pendientes, descargarlas e instalarlas.
+          \n
+          4️⃣Si es necesario reinicie el .*Dispositivo*`),1000);
+
+          setTimeout(() => addBotMessage(`Si te funciono escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*.`,
+            ["✅ Si funciono", "❎ No funciono"]
+          ), 1000)
+        setWaitingForDocument(true);
+      }else if(option === "✅ Si funciono"){
+        setTimeout(() => addBotMessage(`!Genial¡ si necesitas ayuda escribe seguir para volver iniciar 😊.`), 1000)
+      }
+
+      //partado de Internet lento
+      else if(option === "🐢 Internet lento."){
+        
+      }else if(option === "🌐 No cargan páginas."){
+        
+      }else if(option === "📺 Señal de Televisión."){
+        
+      }else if(option === "⚡ Internet inestable."){
+        
+      }else if(option === "🔘Otro problema"){
+        
       }
   };
-  
-
     //notificacion
     const playNotificacionSound = () =>{
         audioRef.current.play().catch((error)=>{
@@ -191,28 +305,40 @@ function SoportChat (){
                 </div>
 
                 <button className='close-btn' onClick={closeChat}>X</button>
-                <div key={index} className={`message ${message.sender}`}>
-                  {message.text.split("\n").map((line, i) => (
-                    <p key={i}>{line}</p>
-                  ))}
-                
-                  {message.buttons && Array.isArray(message.buttons) && message.buttons.length > 0 && (
-                    <div className="button-container">
-                      {message.buttons.map((btn, i) => (
-                        <a
-                          key={i} 
-                          href={btn.link} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className="chat-button"
-                        >
-                          {btn.text}
-                        </a>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
+                <div className='content-messages'>
+                   {message.map((message, index) => (
+                     <div key={index} className={`message ${message.sender}`}>
+                       {message.text.split("\n").map((line, i) => (
+                         <p key={i}>{line}</p>
+                       ))}
+                       {message.buttons && (
+                         <div className="buttons-container">
+                           {message.buttons.map((buttonText, btnIndex) =>{
+                            if(buttonText.includes('https://clientes.portalinternet.net/saldo/super-tv/')){
+                              return(
+                                <a key={btnIndex} href={buttonText}>
+                                  <button className="service-button">
+                                    🔗 Metodo de Pago
+                                  </button>
+                                </a>
+                              )
+                            }else{
+                              return(
+                                <button
+                                  key={btnIndex}
+                                  onClick={() => handleButtonClick(buttonText)}
+                                  className="service-button"
+                                >
+                                  {buttonText}
+                                </button>
+                              )
+                            }
+                           } )}
+                         </div>
+                       )}
+                     </div>
+                   ))}
+                 </div>
 
                 <div className='content-input'>
                     <input

@@ -1,7 +1,7 @@
 import { manyChatToken } from '../config/config.js';
 
 async function MetodoPostManychat(req, res) {
-    const { suscriberID, message, chat } = req.body;
+    const { suscriberID, message, chat, tipeMessage } = req.body;
 
     let bodyContent
     if (!suscriberID || !message ||! chat) {

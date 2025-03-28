@@ -20,16 +20,15 @@ function MessengerEmple (){
     const [ isLoggedIn, setIsLoggedIn] = useState(false);
     const fileInputRef = useRef(null);
     const [unreadMessages, setUnreadMessages] = useState({});
-
+    const [selectedImage, setSelectedImage] = useState(null);
 
     // Manejo del envío de archivos
-    const handleFileUpload = (event) => {
-        const file = event.target.files[0];
+    const handleFileUpload = (e) => {
+        const file = e.target.files[0];
         if (file) {
-            console.log("Archivo seleccionado:", file);
+            setSelectedImage(file);
         }
     };
-        
     useEffect(()=>{
         const userId = localStorage.getItem('UserId')
         const rolUser = localStorage.getItem('rol-user')
@@ -230,15 +229,17 @@ function MessengerEmple (){
                 idMessageClient: `msg_${Date.now()}-${currentMessage.length}`
             };
 
+            const rawMessage ={
+                suscriberID:activeContact.id,
+                message: currentMessage,
+                chat: 'messenger',
+            }
+
             try {
                 const response = await fetch(`http://localhost:3001/post-message`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        suscriberID: activeContact.id,
-                        message: currentMessage,
-                        chat: 'messenger',
-                    }),
+                    body: JSON.stringify(rawMessage),
                 });
 
                 if (!response.ok) throw new Error('Error al guardar el mensaje en post-message');
@@ -256,7 +257,6 @@ function MessengerEmple (){
             } catch (error) {
                 console.error('Error al guardar el mensaje: ', error);
             }
-
             setCurrentMessage("");
         }
     };
@@ -275,7 +275,7 @@ function MessengerEmple (){
             return () => clearInterval(intervalId);
     }, [activeContact]);
 
-    //enviar mensaje    
+    //enviar mensaje 
     const handleKeyPress = (e) =>{
         if(e.key === 'Enter'){
             handleSendMessage()
@@ -290,10 +290,12 @@ function MessengerEmple (){
                         <SliderEmploye />
                     </div>
                 </div>
+
                 <div className="BarraSuperior">
                     <h1>Messenger</h1>
                     <a className="ButtonTheme1" onClick={toggleTheme}> <img src={theme === 'light'? ModoClaro : ModoOscuro} /> </a>
                 </div>
+
                 <div className="contentChatW">
                     <div className="contentContact">
                         <div className="barrasuperiorContacts">
@@ -402,17 +404,20 @@ function MessengerEmple (){
                                 </div>
                                 <div className="contenttextMessage">
                                     <div className="fileContent">
+
                                     <input
                                         type="file"
                                         ref={fileInputRef}
                                         onChange={handleFileUpload}
-                                        accept="image/*"
+                                        accept="image/png, image/jpeg"
                                         style={{ display: "none" }}
                                     />
                                     <button onClick={() => fileInputRef.current.click()} className="upload-btn">
                                         <CiImageOn size={22} color="#333" />
                                     </button>
-                                    
+
+                                    {selectedImage && <p>Imagen seleccionada: <img src={selectedImage} /></p>}
+
                                     </div>
                                     <input
                                         type="text"
