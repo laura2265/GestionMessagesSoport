@@ -1,55 +1,69 @@
 .home-info {
-	display: flex;
-	justify-content: center;
-	align-items: center;
 	width: 1000px;
   }
 
+  .home-info p{
+	width: 200px;
+	margin-left: 383px;
+	color: #3333339d;
+  }
+
+  .home-info p:hover{
+	transition: 1s;
+	color: #333;
+  }
+
   .contentInfo{
-	display: flex;
-	margin-top: 82px;
+	margin-top: 32px;
 	width: 1350px;
-	justify-content: center;
-	align-items: center;
+  }
+
+  .content1cards{
+	display: flex;
+	margin-left: 105px;
   }
 
   .cardInfo{
 	background-color: rgba(216, 216, 216, 0.541);
 	margin-left: 22px;
-	width: 250px;
+	width: 350px;
 	height: 180px;
 	border-radius: 12px;
 	text-align: center;
 	padding: 7px;
+	margin-top: 12px;
   }
+
   .cardInfo:hover{
 	transition: 1s;
 	transform: scale(1.1);
   }
+
   .cardInfo img{
 	margin-top: 22px;
   }
 
 .contentTextInfo{
 	text-align: center;
-
 }
+
   .home-info h1{
 	width: 920px;
 	margin: 12px;
 	text-align: center;
   }
+
   .navbar1 {
 	display: flex;
 	justify-content: space-between;
 	padding: 1rem 2rem;
 	background-color: var(--nav-bg-color);
   }
-  
+
   .navbar-logo h2 {
 	color: var(--primary-color);
   }
-  
+
   .nav-links a {
 	margin-right: 1rem;
 	text-decoration: none;

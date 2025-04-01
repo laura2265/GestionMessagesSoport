@@ -6,8 +6,6 @@ import { ApiKeyWisphub, manyChatToken } from "./config/config.js";
 import { loadProcessedUser, saveProcessedUser } from "./controllers/ProcesarUser.js";
 import { BuscarCedulaInstagram, BuscarCedulaMessenger, BuscarCedulaTelegram } from "./controllers/BuscarCedula/BuscarCedulaUser.js";
 
-
-
 const app = express();
 const port = 3001;
 

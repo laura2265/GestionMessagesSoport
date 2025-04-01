@@ -39,13 +39,14 @@ function Nosotros() {
         </nav>
 
         <div className='contentHome'>
-          <div class="home-info">
+          <div class="home-infoNosotros">
           <h1>Nosotros</h1>
-            <p>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Aperiam eaque necessitatibus dolor, molestias animi delectus exercitationem ducimus repudiandae nulla nostrum quibusdam a vitae quas dolorem magni ipsam consequatur labore ad!</p>
+            <p>En Cablemas, llevamos más de 30 años conectando a Ciudad Bolívar con un servicio de internet confiable y de alta calidad. Nuestra historia comenzó como un pequeño negocio familiar, con un equipo reducido pero apasionado por ofrecer lo mejor a nuestra comunidad.
+              <br/>
+Con el tiempo, hemos crecido junto a nuestros clientes, expandiendo nuestros servicios y mejorando constantemente para brindar planes de internet que se adapten a las necesidades de familias, negocios y hogares modernos.</p>
           </div>
 
-          <div className='contentInfo'>
+          <div className='contentInfoNosotros'>
 
             <div className='cardMap'>
                 <div className='contentTextMap'>

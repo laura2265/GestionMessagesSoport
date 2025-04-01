@@ -8,6 +8,7 @@ import ModoClaro from '../../assets/img/soleado.png'
 import ModoOscuro from '../../assets/img/modo-oscuro.png'
 import User from '../../assets/img/dos-personas.png'
 import SoportChat from '../SoportChat/SoportChat';
+import { FaWifi, FaBuilding, FaSitemap, FaTags, FaPhoneAlt } from 'react-icons/fa';
 
 function Home() {
   const { theme, toggleTheme } = useContext(ThemeContext);
@@ -41,46 +42,48 @@ function Home() {
 
         <div className='contentHome'>
           <div className="home-info">
-          <h1>Bienvenido a la pagina de inicio </h1>
-            <p>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Aperiam eaque necessitatibus dolor, molestias animi delectus exercitationem ducimus repudiandae nulla nostrum quibusdam a vitae quas dolorem magni ipsam consequatur labore ad!</p>
+          <h1>🚀 Bienvenido a Cablemas</h1>
+            <p>Conectando tu Mundo</p>
           </div>
 
           <div className='contentInfo'>
+            <div className='content1cards'>
+              <div className='cardInfo'>
+                <FaWifi />
+                <div className='contentTextInfo'>
+                    <p>Internet de alta velocidad, Televisión digital, Servicios de telecomunicaciones, Desarrollo de software.</p>
+                </div>
+              </div>
 
-            <div className='cardInfo'>
-              <img src={User} />
-              <div className='contentTextInfo'>
-                  <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Aperiam eaque necessitatibus dolor</p>
+              <div className='cardInfo'>
+                <FaBuilding />
+                <div className='contentTextInfo'>
+                    <p>Sede principal en el barrio San Carlos, Ciudad Bolívar. Horario: Lunes a Viernes de 8:00 AM a 6:00 PM, Sábados de 9:00 AM a 2:00 PM.</p>
+                </div>
+              </div>
+
+              <div className='cardInfo'>
+                <FaSitemap/>
+                <div className='contentTextInfo'>
+                    <p>Cablemas, SuperTV, Software Redes y Telecomunicaciones.</p>
+                </div>
               </div>
             </div>
 
-            <div className='cardInfo'>
-              <img src={User} />
-              <div className='contentTextInfo'>
-                  <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Aperiam eaque necessitatibus dolor</p>
+            <div className='content1cards'>
+              <div className='cardInfo'>
+                <FaTags />
+                <div className='contentTextInfo'>
+                    <p>Paquetes de Internet y televisión a precios accesibles. Descuentos especiales por contratación anual.</p>
+                </div>
               </div>
-            </div>
 
-            <div className='cardInfo'>
-              <img src={User} />
-              <div className='contentTextInfo'>
-                  <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Aperiam eaque necessitatibus dolor</p>
+              <div className='cardInfo'>
+                <FaPhoneAlt />
+                <div className='contentTextInfo'>
+                    <p>WhatsApp: 300 123 4567<br/> Correo: soporte@cablemas.com <br/> Chat en línea disponible 24/7.</p>
+                </div>  
               </div>
-            </div>
-
-            <div className='cardInfo'>
-              <img src={User} />
-              <div className='contentTextInfo'>
-                  <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Aperiam eaque necessitatibus dolor</p>
-              </div>
-            </div>
-
-            <div className='cardInfo'>
-              <img src={User} />
-              <div className='contentTextInfo'>
-                  <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Aperiam eaque necessitatibus dolor</p>
-              </div>  
             </div>
           </div>
         </div>
