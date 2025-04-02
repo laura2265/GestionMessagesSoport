@@ -6,7 +6,7 @@ import '../../index.css'
 import '../../styles/App.css'
 import ModoClaro from '../../assets/img/soleado.png'
 import ModoOscuro from '../../assets/img/modo-oscuro.png'
-import User from '../../assets/img/dos-personas.png'
+import SoportChat from '../SoportChat/SoportChat';
 
 function Nosotros() {
   const { theme, toggleTheme } = useContext(ThemeContext);
@@ -43,7 +43,7 @@ function Nosotros() {
           <h1>Nosotros</h1>
             <p>En Cablemas, llevamos más de 30 años conectando a Ciudad Bolívar con un servicio de internet confiable y de alta calidad. Nuestra historia comenzó como un pequeño negocio familiar, con un equipo reducido pero apasionado por ofrecer lo mejor a nuestra comunidad.
               <br/>
-Con el tiempo, hemos crecido junto a nuestros clientes, expandiendo nuestros servicios y mejorando constantemente para brindar planes de internet que se adapten a las necesidades de familias, negocios y hogares modernos.</p>
+              Con el tiempo, hemos crecido junto a nuestros clientes, expandiendo nuestros servicios y mejorando constantemente para brindar planes de internet que se adapten a las necesidades de familias, negocios y hogares modernos.</p>
           </div>
 
           <div className='contentInfoNosotros'>
@@ -59,15 +59,11 @@ Con el tiempo, hemos crecido junto a nuestros clientes, expandiendo nuestros ser
                     ></iframe>
                 </div> 
             </div>
-
-            <div className='cardMap'>
-              <img src={User} />
-              <div className='contentTextInfo'>
-                  <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Aperiam eaque necessitatibus dolor</p>
-              </div>
-            </div>
-
           </div>
+        </div>
+
+        <div className='Schats'>
+          <SoportChat />
         </div>
       </div>
     </div>

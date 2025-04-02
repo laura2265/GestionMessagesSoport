@@ -43,12 +43,6 @@
     "processedAt": "2025-03-20T16:04:23.352Z"
   },
   {
-    "id": "8486345801395814",
-    "Motivo": "Cambio de plan",
-    "message": null,
-    "processedAt": "2025-03-20T16:05:13.033Z"
-  },
-  {
     "id": "7950419098379258",
     "Motivo": "Cambio de titular",
     "message": null,
@@ -101,5 +95,11 @@
     "Motivo": "Falla de conexión",
     "message": "No tengo internet",
     "processedAt": "2025-03-28T13:17:57.456Z"
+  },
+  {
+    "id": "8486345801395814",
+    "Motivo": "Cambio de plan",
+    "message": null,
+    "processedAt": "2025-04-02T19:01:06.711Z"
   }
 ]

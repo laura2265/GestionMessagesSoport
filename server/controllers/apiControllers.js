@@ -281,11 +281,13 @@ const getDataFetch = async (req, res) => {
                             })
                         })
                     }
+
                 }else if(`Sheet${index+1}` === `Sheet9`){
-                    const DescriptionCancelacion = headers.indexOf('DescripcionCancelacion');
-                    if(idIndex !== -1 && NameIndex !== -1 && chatIndex !== -1 && messageIndex !== -1 && DescriptionCancelacion !== -1){
+                    const DuracionCambioDeplan = headers.indexOf('tiempoServicio')
+                    const DescriptionCambioDelPlan = headers.indexOf('DescripcionCambioDePlan');
+                    if(idIndex !== -1 && NameIndex !== -1 && chatIndex !== -1 && messageIndex !== -1 && DescriptionCambioDelPlan !== -1){
                         rows.forEach(row => {
-                            let detalles = row[DescriptionCancelacion] ? row[DescriptionCancelacion].trim() : '';
+                            let detalles = row[DescriptionCambioDelPlan] ? row[DescriptionCambioDelPlan].trim() : '';
 
                             let descripcionData = {
                                 Nombre: null,
@@ -328,6 +330,7 @@ const getDataFetch = async (req, res) => {
                                 Name: row[NameIndex],
                                 chatName: row[chatIndex],
                                 Message: row[messageIndex],
+                                duracionServicio: row[DuracionCambioDeplan],
                                 descripcion: descripcionData
                             });
                         });

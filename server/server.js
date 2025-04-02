@@ -82,7 +82,6 @@ async function fetchUserData() {
             const ConsultChat = item.Message;
 
             const consultProcessed = processedUsers.filter(user => user.id === idUser);
-
             const problemExists = consultProcessed.some(user => user.message === problem  || user.Motivo === ConsultChat);
 
             if (problemExists) {
@@ -96,19 +95,44 @@ async function fetchUserData() {
 
             // Asignación de empleados según la hoja
             if (['Sheet1', 'Sheet2', 'Sheet3', 'Sheet4', 'Sheet5',
-                 'Sheet6', 'Sheet7', 'Sheet8', 'Sheet9', 'Sheet10',
+                 'Sheet6', 'Sheet7', 'Sheet8', 'Sheet10',
                  'Sheet11', 'Sheet12', 'Sheet13', 'Sheet14', 'Sheet15'].includes(sheets)) {
                 console.log(`📄 Página ${sheets}, asignando empleado...`);
                 EmpleAssigned(idUser);
+            }else if(['Sheet9'].includes(sheets)){
+                const nombreUser = item.Name;
+                const NameChat = item.chatName;
+                const messageProblem = item.Message;
+                const ServicioDuracion = item.duracionServicio;
+                const NameTitular = item.descripcion.Nombre;
+                const DocumentoTitular = item.descripcion.Documento;
+                const ServicioTitular = item.descripcion.Servicio;
+                const MotivoCambio = item.descripcion.Motivo;
+
+                if(NameChat === 'ChatBotMessenger'){
+                    console.log(`Cambio de plan id: ${idUser}, nombre ${nombreUser}, Nombre chat ${NameChat}, mensaje: ${messageProblem}, duracion ${ServicioDuracion}, descripcion: nombre titular${NameTitular}, docuemnto titular: ${DocumentoTitular}, servicio ${ServicioTitular}, motivo: ${MotivoCambio} `)
+
+                    if(ServicioDuracion === "0 - 6 meses"){
+                        console.log('Usted debe tener más de 6 meses, sin embargo te vamos a pasar a soporte')
+                    }else if(ServicioDuracion === "6 meses - 1 año"){
+                        console.log('Usted debe tener más de 6 meses, sin embargo te vamos a pasar a soporte')
+                    }else if(ServicioDuracion === "1 año o más"){
+                        console.log('Usted debe tener más de 6 meses, sin embargo te vamos a pasar a soporte')
+                    }
+                }else if(NameChat === "ChatBotInstagram"){
+                    console.log(`Cambio de plan id: ${idUser}, nombre ${nombreUser}, Nombre chat ${NameChat}, mensaje: ${messageProblem}, duracion ${ServicioDuracion}, descripcion: nombre titular${NameTitular}, docuemnto titular: ${DocumentoTitular}, servicio ${ServicioTitular}, motivo: ${MotivoCambio} `)
+                }else if(NameChat === "ChatBotTelegram"){
+                    console.log(`Cambio de plan id: ${idUser}, nombre ${nombreUser}, Nombre chat ${NameChat}, mensaje: ${messageProblem}, duracion ${ServicioDuracion}, descripcion: nombre titular${NameTitular}, docuemnto titular: ${DocumentoTitular}, servicio ${ServicioTitular}, motivo: ${MotivoCambio} `)
+                }
+
             }
 
-            processedUsers.push({ 
-                id: idUser, 
+            processedUsers.push({
+                id: idUser,
                 Motivo: ConsultChat,
-                message: problem || null, 
+                message: problem || null,
                 processedAt: new Date().toISOString()
             });
-            
 
             await saveProcessedUser(processedUsers);
             await delay(1000);
