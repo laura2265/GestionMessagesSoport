@@ -66,6 +66,7 @@ function SoportChat (){
       "ComputadorVpn",
       "CelularVpn"
     ]
+
     const validStateSinSeñal1 = [
       "DistorcionadaSeñalTv",
       "EnVariosCanalesSinSeñal",
@@ -90,7 +91,6 @@ function SoportChat (){
 
     const [stateChat, setStateChat] = useState(null);
     const [option, setOption] = useState(null);
-    
 
     const [handleNewMessage, setHandleNewMessage] = useState(false)
     const [userInput, setUserInput] = useState("");
@@ -108,7 +108,7 @@ function SoportChat (){
     const closeChat = () => {
         setIsChatVisible(false)
     }
-    
+
     const addBotMessage = (text, buttons) => {
       setMessages((prev) => [...prev, { sender: 'bot', text, buttons }]);
   
@@ -117,7 +117,6 @@ function SoportChat (){
           playNotificacionSound();
       }
   };
-  
 
     const wisphub = async (cedula) => {
       try {
@@ -139,7 +138,6 @@ function SoportChat (){
           setServiceData(result)
             setTimeout(() => addBotMessage(`se encontraron los siguientes servicios, si desea consultar uno has clic en el servicio a consultar. `,
                 result.map(item => item.usuario) ), 1000)
-               
         }else{
             setMessages((prevMessage) => [
                 ...prevMessage, { sender: 'bot', text: `No se encontro servicios asociados con la cedual ${cedula} 😢`}
@@ -173,7 +171,7 @@ function SoportChat (){
     const handleButtonClick = async (option) => {
       setOption(option)
       setMessages((prevMessage) => [...prevMessage, { sender: 'user', text: option }]);
-  
+
       if (option === "Falla conexión") {
         setStateChat("Falla conexión")
 
@@ -256,8 +254,6 @@ function SoportChat (){
               1000))
         setWaitingForDocument(true);
 
-
-
         //Ayuda o seguir un solo equipo wifi
       }else if(option === '🆘 Ayuda' && stateChat === "WifiUnEquipoSinInternet"){
         setStateChat("AyudaWifiSinInternetUnEquipo")
@@ -265,14 +261,14 @@ function SoportChat (){
           ["🔹 Windows", "🔹Mac", "🔹 Android", "🔹iPhone"]
         ),1000);
         setWaitingForDocument(true);
-      
+
       }else if(option === '➡️ Seguir' && stateChat === "WifiUnEquipoSinInternet"){
         setStateChat("SeguirWifiSinInternetUnEquipo")
         setTimeout(() => addBotMessage(`Si te funciono escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*.`,
           ["✅ Si funciono", "❎ No funciono"]
         ),1000);
         setWaitingForDocument(true);
-      
+
         //Ayuda o seguir un equipos cable
       }else if(option === '🆘 Ayuda' && stateChat === "CableUnEquipoSinInternet"){
         setStateChat("AyudaCableSinInternetUnEquipo")
@@ -280,14 +276,14 @@ function SoportChat (){
           ["🔹 Windows", "🔹Mac"]
         ),1000);
         setWaitingForDocument(true);
-      
+
       }else if(option === '➡️ Seguir' && stateChat === "CableUnEquipoSinInternet"){
         setStateChat("SeguirCableSinInternetUnEquipo")
         setTimeout(() => addBotMessage(`Si te funciono escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*.`,
           ["✅ Si funciono", "❎ No funciono"]
         ),1000);
         setWaitingForDocument(true);
-      
+
         //Ayuda o seguir multiples equipos wifi
       }else if(option === '🆘 Ayuda' && stateChat === "WifiMultiplesEquipoSinInternet"){
         setStateChat("AyudaWifiSinInternetMultiplesEquipo")
@@ -295,7 +291,7 @@ function SoportChat (){
           ["🔹 Windows", "🔹Mac", "🔹 Android", "🔹iPhone"]
         ),1000);
         setWaitingForDocument(true);
-      
+
         //dispositivo internet
       }else if(option === '➡️ Seguir' && stateChat === "MultiplesEquiposSinInternet"){
         setStateChat("SeguirWifiSinInternetMultiplesEquipo")
@@ -303,15 +299,13 @@ function SoportChat (){
           ["✅ Si funciono", "❎ No funciono"]
         ),1000);
         setWaitingForDocument(true);
-      
-       
-       
+
        
         //dispositivo internet de wifi un dispositivo
       }else if(option === '🔹 Windows' && stateChat === "AyudaWifiSinInternetUnEquipo"){
         setStateChat("WindowsUnEquipoSinInternet")
         setTimeout(() => addBotMessage(`A continuación te mostraremos el paso a paso para revisar si la tarjeta de red del dispositivo esta habilitada:
-        
+
             \n 1️⃣ Pulse *Windows+i* y haz clic en Windows Update.
 
             \n 2️⃣Haz clic en *Buscar actualizaciones* y sigue las instrucciones.
@@ -353,7 +347,7 @@ function SoportChat (){
           4️⃣ Si hay actualizaciones disponibles, descárguela  e instálela.
           \n    
           5️⃣Si es necesario reinicie el *Dispositivo*.`),1000);
-        
+
           setTimeout(() => addBotMessage(`Si te funciono escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*.`,
             ["✅ Si funciono", "❎ No funciono"]
           ), 1000)
@@ -369,7 +363,7 @@ function SoportChat (){
           3️⃣ Si hay actualizaciones pendientes, descargarlas e instalarlas.
           \n
           4️⃣Si es necesario reinicie el .*Dispositivo*`),1000);
-        
+
           setTimeout(() => addBotMessage(`Si te funciono escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*.`,
             ["✅ Si funciono", "❎ No funciono"]
           ), 1000)
@@ -385,12 +379,11 @@ function SoportChat (){
                 2️⃣ Busca tu conexión, que en este caso es *Ethernet*
                 \n
                 3️⃣ Si sale *Deshabilitado*, haz clic derecho en tu red y habilita la red.`),1000);
-        
+
             setTimeout(() => addBotMessage(`Si te funciono escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*.`,
               ["✅ Si funciono", "❎ No funciono"]
             ), 1000)
         setWaitingForDocument(true);
-
 
       }else if(option === '🔹Mac'&& stateChat === "AyudaCableSinInternetUnEquipo"){
         setStateChat("MacCableUnEquipoSinInternet")
@@ -412,12 +405,11 @@ function SoportChat (){
             \n 2️⃣Haz clic en *Buscar actualizaciones* y sigue las instrucciones.
 
             \n 3️⃣Si hay actualizaciones pendientes, instala y reinicia el *Dispositivo*.`),1000);
-        
+
             setTimeout(() => addBotMessage(`Si te funciono escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*.`,
               ["✅ Si funciono", "❎ No funciono"]
             ), 1000)
         setWaitingForDocument(true);
-
 
 
         //Dispositivo sin internet varios dispositivos wifi
@@ -467,7 +459,7 @@ function SoportChat (){
           3️⃣ Si hay actualizaciones pendientes, descargarlas e instalarlas.
           \n
           4️⃣Si es necesario reinicie el .*Dispositivo*`),1000);
-        
+
           setTimeout(() => addBotMessage(`Si te funciono escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*.`,
             ["✅ Si funciono", "❎ No funciono"]
           ), 1000)
@@ -476,14 +468,14 @@ function SoportChat (){
         //verificacion de si funciono el chat 
       }else if(option === "✅ Si funciono" && validStatesSinInternet.includes(stateChat)){
         setTimeout(() => addBotMessage(`!Genial¡ si necesitas ayuda escribe seguir para volver iniciar 😊.`), 1000)
-        
+
         setWaitingForDocument(true);
-      //
+
       }else if(option === "❎ No funciono" && validStatesSinInternet.includes(stateChat)){
         setStateChat("VerificacionDeEstadoDelModem")
         setTimeout(() => addBotMessage(`Vamos a verificar el estado del Modem, lo vas a realizar es mirar los bombillos de este si *LOS* esta encendido podrías indicarnos con la siguiente lista si o no esta encendido. Si no sabe interpretar la luz de los bombillos escoja la opción *No sé *:`,
           ['❎Encendido', '✅ Apagado', '❓ No sé']), 1000)
-          
+
         setWaitingForDocument(true);
 
       //verificacion de estado del modem
@@ -500,9 +492,9 @@ function SoportChat (){
             setTimeout(() => addBotMessage(`Si te funciono escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*.`,
             ["✅ Si funciono", "❎ No funciono"]
           ),1000);
-          
+
         setWaitingForDocument(true);
-      
+
       }else if(option === "✅ Apagado" && stateChat === "VerificacionDeEstadoDelModem"){
         setStateChat("EstaApagadoElBombillo")
         setTimeout(() => addBotMessage(`Vamos a solucionar tu problema. A continuación te presentaremos una serie de soluciones para ayudarte con tu problema:
@@ -518,7 +510,6 @@ function SoportChat (){
           ["✅ Si funciono", "❎ No funciono"]
         ),1000)
 
-        
         setWaitingForDocument(true);
         //Si el usuario no sabe como mirar si el bombillo esta apagado o encendido
       }else if(option === "❓ No sé" && stateChat === "VerificacionDeEstadoDelModem"){
@@ -547,8 +538,6 @@ function SoportChat (){
           \n
           3️⃣Revisa si hay un corte del servicio en la zona.`
         ), 1000)
-
-        
         setWaitingForDocument(true);
 
       }else if(option === "✅ Apagado" && stateChat === "NoSabeElUsuario"){
@@ -566,7 +555,6 @@ function SoportChat (){
           ["🔌 Cable Dañado", "➡️ Seguir"]
         ), 1000)
 
-        
         setWaitingForDocument(true);
 
         //Si funciono la ultima solucion. 
@@ -577,21 +565,20 @@ function SoportChat (){
           ["✅ Si funciono", "❎ No funciono"]
         ), 1000)
 
-        
         setWaitingForDocument(true);
       }else if(option === "✅ Si funciono" && validStatesSinInternetBombilloLos.includes(stateChat)){
 
         setStateChat("BombilloLosApagado")
         setTimeout(() => addBotMessage(`!Genial¡ si necesitas ayuda escribe seguir para volver iniciar 😊.`
         ), 1000)
-        
+
         setWaitingForDocument(true);
       }else if(option === "✅ No funciono" && validStatesSinInternetBombilloLos.includes(stateChat)){
 
         setStateChat("BombilloLosApagado")
         setTimeout(() => addBotMessage(`Ya te pasamos con un asesor😊.`
         ), 1000)
-      
+
         setWaitingForDocument(true);
 
       }else if(option === "🔌 Cable Dañado" && stateChat === "CableDañadoOSeguir"){
@@ -1368,7 +1355,7 @@ function SoportChat (){
         setWaitingForDocument(true);
       }else if(option === "❎ No funciono" && validStateSinSeñalFinal.includes(stateChat)){
         setTimeout(() => addBotMessage(`Ya te pasamos con un asesor 😊. `), 1000)
-        
+
         setWaitingForDocument(true);
 
         //Internet inestable
@@ -1540,7 +1527,7 @@ function SoportChat (){
         ),1000)
 
         setWaitingForDocument(true);
-        
+
         //tipo de conexion laptop
       }else if(option === "🔹WIFI" && stateChat === "PcNoSabeDispositivo"){
         stateChat("PcWIfiNoSabe")

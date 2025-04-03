@@ -3,10 +3,21 @@ import { ApiKeyWisphub } from '../../config/config.js';
 import { MessageService } from '../MessageService/MessageService.js';
 import { MessengerPost, TelegramPost, InstagramPost } from '../MetodoPost/MetodoPost.js';
 
+function EmpleAssigned(idUser){
+  fetch(`http://localhost:3001/asignaciones/${idUser}`,{
+      method: 'POST'
+  }).then((response) => response.json())
+  .then((error) => console.error(error))
+}
+
 // Función genérica para búsqueda de cédula
-async function buscarCedula(folder, idUser, cedula, platform) {
+async function buscarCedula(userData, platform) {
   console.log(`Buscando cédula para la plataforma ${platform}`);
-  
+
+  const {idUser, nombreUser, NameChat, messageProblem, ServicioDuracion, NameTitular, DocumentoTitular, ServicioTitular, MotivoCambio} = userData
+
+  console.log("datos", nombreUser, "nombre chat", NameChat, "mensaje", messageProblem, "servicio duracion", ServicioDuracion, "Nombre Titular", NameTitular, "Servicio titular", ServicioTitular, "motivo del cambio", MotivoCambio)
+
   let limit = 300;
   let offset = 0;
   let found = false;
@@ -14,7 +25,7 @@ async function buscarCedula(folder, idUser, cedula, platform) {
 
   while (!found) {
     try {
-      const response = await fetch(`https://api.wisphub.net/api/clientes/?cedula=${cedula}&limit=${limit}&offset=${offset}`, {
+      const response = await fetch(`https://api.wisphub.net/api/clientes/?cedula=${DocumentoTitular}&limit=${limit}&offset=${offset}`, {
         method: 'GET',
         headers: {
           'Authorization': `Api-Key ${ApiKeyWisphub}`
@@ -27,7 +38,7 @@ async function buscarCedula(folder, idUser, cedula, platform) {
 
       const data = await response.json();
       const clientes = data.results;
-
+      console.log('data client ', clientes);
       if (clientes.length > 0) {
         idAsociado = idAsociado.concat(clientes.map(cliente => cliente.usuario)); 
         offset += limit;
@@ -39,17 +50,25 @@ async function buscarCedula(folder, idUser, cedula, platform) {
           const lista = idAsociado.join(', ');
           const messege1 = `Señor/a ${clientes[0].nombre}\nIdentificado con cédula ${clientes[0].cedula}\nUsted tiene varios servicios que son: ${lista}`;
           
+          if(clientes[0].estado_facturas === 'Pagadas'){
+            console.log('Facturas pagadas correctamente, te pasaremos')
+
+          }else if(clientes[0].estado_facturas === "Pendiente de Pago"){
+            console.log('Tines facturas pendientes.')
+            EmpleAssigned(idUser)
+          }
+          
           console.log(messege1);
 
-          if (folder === 'ChatBotMessenger') {
+          if (NameChat === 'ChatBotMessenger') {
             MessengerPost(idUser, messege1, 'buscar');
-          } else if (folder === 'ChatBotTelegram') {
+          } else if (NameChat === 'ChatBotTelegram') {
             TelegramPost(idUser, messege1, 'buscar');
-          } else if (folder === 'ChatBotInstagram') {
+          } else if (NameChat === 'ChatBotInstagram') {
             InstagramPost(idUser, messege1, 'buscar');
-          }
+          } 
 
-          MessageService(folder, idUser, lista);
+          MessageService(NameChat, idUser, lista);
         } else {
           console.log('No se encontraron servicios asociados a la cédula:', cedula);
         }
@@ -61,7 +80,7 @@ async function buscarCedula(folder, idUser, cedula, platform) {
   }
 }
 
-export const BuscarCedulaMessenger = (folder, idUser, cedula) => buscarCedula(folder, idUser, cedula, 'Messenger');
-export const BuscarCedulaTelegram = (folder, idUser, cedula) => buscarCedula(folder, idUser, cedula, 'Telegram');
-export const BuscarCedulaInstagram= (folder, idUser, cedula) => buscarCedula(folder, idUser, cedula, 'Instagram');
+export const BuscarCedulaMessenger = (userData) => buscarCedula(userData, 'Messenger');
+export const BuscarCedulaTelegram = (userData) => buscarCedula(userData, 'Telegram');
+export const BuscarCedulaInstagram= (userData) => buscarCedula(userData, 'Instagram');
 

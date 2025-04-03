@@ -109,22 +109,62 @@ async function fetchUserData() {
                 const ServicioTitular = item.descripcion.Servicio;
                 const MotivoCambio = item.descripcion.Motivo;
 
+                const userData = {
+                    idUser,
+                    nombreUser,
+                    NameChat,
+                    messageProblem,
+                    ServicioDuracion,
+                    NameTitular,
+                    DocumentoTitular,
+                    ServicioTitular,
+                    MotivoCambio
+                }
+
                 if(NameChat === 'ChatBotMessenger'){
                     console.log(`Cambio de plan id: ${idUser}, nombre ${nombreUser}, Nombre chat ${NameChat}, mensaje: ${messageProblem}, duracion ${ServicioDuracion}, descripcion: nombre titular${NameTitular}, docuemnto titular: ${DocumentoTitular}, servicio ${ServicioTitular}, motivo: ${MotivoCambio} `)
 
                     if(ServicioDuracion === "0 - 6 meses"){
                         console.log('Usted debe tener más de 6 meses, sin embargo te vamos a pasar a soporte')
+                        EmpleAssigned(idUser)
                     }else if(ServicioDuracion === "6 meses - 1 año"){
-                        console.log('Usted debe tener más de 6 meses, sin embargo te vamos a pasar a soporte')
-                    }else if(ServicioDuracion === "1 año o más"){
-                        console.log('Usted debe tener más de 6 meses, sin embargo te vamos a pasar a soporte')
+                        console.log('duracion media')
+                    }else if(ServicioDuracion === "1 año o mas"){
+                        console.log('Vamos a confirmar unos datos y te verificamos el proceso')
+                        BuscarCedulaMessenger(userData)
+                    }else{
+                        console.log("no pusiste respuesta")
                     }
+
                 }else if(NameChat === "ChatBotInstagram"){
                     console.log(`Cambio de plan id: ${idUser}, nombre ${nombreUser}, Nombre chat ${NameChat}, mensaje: ${messageProblem}, duracion ${ServicioDuracion}, descripcion: nombre titular${NameTitular}, docuemnto titular: ${DocumentoTitular}, servicio ${ServicioTitular}, motivo: ${MotivoCambio} `)
+
+                    if(ServicioDuracion === "0 - 6 meses"){
+                        console.log('Usted debe tener más de 6 meses, sin embargo te vamos a pasar a soporte')
+                        EmpleAssigned(idUser)
+                    }else if(ServicioDuracion === "6 meses - 1 año"){
+                        console.log('duracion media')
+                    }else if(ServicioDuracion === "1 año o mas"){
+                        console.log('Vamos a confirmar unos datos y te verificamos el proceso')
+                        BuscarCedulaMessenger(userData)
+                    }else{
+                        console.log("no pusiste respuesta")
+                    }
                 }else if(NameChat === "ChatBotTelegram"){
                     console.log(`Cambio de plan id: ${idUser}, nombre ${nombreUser}, Nombre chat ${NameChat}, mensaje: ${messageProblem}, duracion ${ServicioDuracion}, descripcion: nombre titular${NameTitular}, docuemnto titular: ${DocumentoTitular}, servicio ${ServicioTitular}, motivo: ${MotivoCambio} `)
-                }
 
+                    if(ServicioDuracion === "0 - 6 meses"){
+                        console.log('Usted debe tener más de 6 meses, sin embargo te vamos a pasar a soporte')
+                        EmpleAssigned(idUser)
+                    }else if(ServicioDuracion === "6 meses - 1 año"){
+                        console.log('duracion media')
+                    }else if(ServicioDuracion === "1 año o mas"){
+                        console.log('Vamos a confirmar unos datos y te verificamos el proceso')
+                        BuscarCedulaMessenger(userData)
+                    }else{
+                        console.log("no pusiste respuesta")
+                    }
+                }
             }
 
             processedUsers.push({
