@@ -47,32 +47,45 @@ async function buscarCedula(userData, platform) {
       if (clientes.length < limit) {
         found = true;
         if (idAsociado.length > 0) {
-          const lista = idAsociado.join(', ');
-          const messege1 = `Señor/a ${clientes[0].nombre}\nIdentificado con cédula ${clientes[0].cedula}\nUsted tiene varios servicios que son: ${lista}`;
-          
-          if(clientes[0].estado_facturas === 'Pagadas'){
-            console.log('Facturas pagadas correctamente, te pasaremos')
+          const lista = idAsociado
+          let messege1 = ''
 
-          }else if(clientes[0].estado_facturas === "Pendiente de Pago"){
-            console.log('Tines facturas pendientes.')
-            EmpleAssigned(idUser)
+          if(lista.length > 1 ){
+          console.log('hay varios servicios')
+          }else if(lista.length === 1){
+            console.log("solo hay un servicio")
+            if(clientes[0].estado_facturas === 'Pagadas'){
+              console.log('Facturas pagadas correctamente, te pasaremos')
+              messege1 = `Señor/a ${clientes[0].nombre}, al verificar unos datos, podemos confirmar que tiene todas las facturas pagadas.`;
+              if (NameChat === 'ChatBotMessenger') {
+                MessengerPost(idUser, messege1, 'message1');
+              } else if (NameChat === 'ChatBotTelegram') {
+                TelegramPost(idUser, messege1, 'message1');
+              } else if (NameChat === 'ChatBotInstagram') {
+                InstagramPost(idUser, messege1, 'message1');
+              }
+
+            }else if(clientes[0].estado_facturas === "Pendiente de Pago"){
+              console.log('Tines facturas pendientes.')
+              messege1 = `Señor/a ${clientes[0].nombre}, al verificar unos datos, podemos confirmar que hay pagos pendientes y para realizar esta accion te pasaremos con un asesor😊.`
+              if (NameChat === 'ChatBotMessenger') {
+                MessengerPost(idUser, messege1, 'message1');
+                EmpleAssigned();
+              } else if (NameChat === 'ChatBotTelegram') {
+                TelegramPost(idUser, messege1, 'message1');
+                EmpleAssigned();
+              } else if (NameChat === 'ChatBotInstagram') {
+                InstagramPost(idUser, messege1, 'message1');
+                EmpleAssigned();
+              }
+            }
           }
-          
-          console.log(messege1);
 
-          if (NameChat === 'ChatBotMessenger') {
-            MessengerPost(idUser, messege1, 'buscar');
-          } else if (NameChat === 'ChatBotTelegram') {
-            TelegramPost(idUser, messege1, 'buscar');
-          } else if (NameChat === 'ChatBotInstagram') {
-            InstagramPost(idUser, messege1, 'buscar');
-          } 
-
-          MessageService(NameChat, idUser, lista);
         } else {
           console.log('No se encontraron servicios asociados a la cédula:', cedula);
         }
       }
+
     } catch (error) {
       console.error('Error al obtener los datos de Wisphub:', error);
       found = true;

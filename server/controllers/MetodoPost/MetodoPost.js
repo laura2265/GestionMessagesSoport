@@ -1,21 +1,22 @@
 import { manyChatToken } from '../../config/config.js';
 
-export function MessengerPost(idUser, messege1, buscar, Service, message2){
-    console.log('entro al metodo post de messenger')
-    if(buscar === 'buscar'){
+export function MessengerPost(idUser, messege1, mensaje1){
+    if(mensaje1 === "message1"){
+        console.log('entro al metodo post de messenger', idUser, "mensaje", messege1)
         const raw = ({
             "subscriber_id": idUser,
             "data": {
-                "version": "v2",
-                "content": {
-                    "messages": [
-                      {
-                        "type": "text",
-                        "text": messege1
-                      }
-                    ]
-                }
-            }
+              "version": "v2",
+              "content": {
+                "messages": [
+                  {
+                    "type": "text",
+                    "text": messege1
+                  }
+                ]
+              }
+            },
+            "message_tag": "ACCOUNT_UPDATE"
         })
         fetch('https://api.manychat.com/fb/sending/sendContent',{
             method: 'POST',
@@ -25,32 +26,9 @@ export function MessengerPost(idUser, messege1, buscar, Service, message2){
             },
             body: JSON.stringify(raw)
         })
-    }else if(Service === 'message'){
-        const raw = ({
-            "subscriber_id": idUser,
-            "data": {
-                "version": "v2",
-                "content": {
-                    "messages": [
-                      {
-                        "type": "text",
-                        "text": message2
-                      }
-                    ]
-                }
-            }
-        })
+    }else if(mensaje1 === "messageButton"){
 
-        fetch('https://api.manychat.com/fb/sending/sendContent',{
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${manyChatToken}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(raw)
-        })
     }
-    
 }
 
 export function TelegramPost(idUser, messege1, buscar, Service, message2){

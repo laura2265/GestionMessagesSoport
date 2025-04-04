@@ -32,7 +32,7 @@ export async function MessageService(folder, idUser, mensaje) {
                         const message2 = 'Entro al metodo post de messenger'
                         MessengerPost2(idUser, message2)
                     }
-                    
+
                 }else if(folder === 'ChatBotTelegram'){
                     console.log('entro al chat ', folder)
                     if(folder === chat){
