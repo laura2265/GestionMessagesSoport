@@ -1,5 +1,5 @@
 import React, {useContext, useState}from 'react';
-import './nosotros.css'; // Importar estilos específicos para Home
+import './nosotros.css';
 import { Link } from 'react-router-dom';
 import ThemeContext from '../ThemeContext';
 import '../../index.css'
@@ -9,8 +9,8 @@ import ModoOscuro from '../../assets/img/modo-oscuro.png'
 import SoportChat from '../SoportChat/SoportChat';
 
 function Nosotros() {
-  const { theme, toggleTheme } = useContext(ThemeContext);
 
+  const { theme, toggleTheme } = useContext(ThemeContext);
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleMenu = () => {
@@ -24,7 +24,6 @@ function Nosotros() {
           <div className="navbar-logo">
             <h2></h2>
           </div>
-
           <div className={`nav-links ${isOpen ? 'open' : ''}`}>
             <Link to="/">Home</Link>
             <Link to="/">Nosotros</Link>
@@ -47,7 +46,6 @@ function Nosotros() {
           </div>
 
           <div className='contentInfoNosotros'>
-
             <div className='cardMap'>
                 <div className='contentTextMap'>
                     <iframe

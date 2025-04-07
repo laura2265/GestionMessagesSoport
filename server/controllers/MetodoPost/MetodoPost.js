@@ -2,6 +2,7 @@ import { manyChatToken } from '../../config/config.js';
 
 export function MessengerPost(idUser, messege1, mensaje1){
     if(mensaje1 === "message1"){
+
         console.log('entro al metodo post de messenger', idUser, "mensaje", messege1)
         const raw = ({
             "subscriber_id": idUser,
@@ -51,6 +52,7 @@ export function TelegramPost(idUser, messege1, buscar, Service, message2){
                 }
             } 
         })
+
         fetch('https://api.manychat.com/fb/sending/sendContent',{
             method: 'POST',
             headers: {
@@ -76,6 +78,7 @@ export function TelegramPost(idUser, messege1, buscar, Service, message2){
                 }
             } 
         })
+
         fetch('https://api.manychat.com/fb/sending/sendContent',{
             method: 'POST',
             headers: {
@@ -84,6 +87,7 @@ export function TelegramPost(idUser, messege1, buscar, Service, message2){
             },
             body: JSON.stringify(raw)
         })
+
     }
 }
 
@@ -106,6 +110,7 @@ export function InstagramPost(idUser, messege1, buscar, Service){
             }
         } 
     })
+
     fetch('https://api.manychat.com/fb/sending/sendContent',{
         method: 'POST',
         headers: {
@@ -130,6 +135,7 @@ export function InstagramPost(idUser, messege1, buscar, Service){
             }
         } 
     })
+
     fetch('https://api.manychat.com/fb/sending/sendContent',{
         method: 'POST',
         headers: {

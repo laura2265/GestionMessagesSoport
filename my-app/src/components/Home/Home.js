@@ -1,12 +1,12 @@
 import React, {useContext, useState}from 'react';
-import './Home.css'; // Importar estilos específicos para Home
+import './Home.css'; 
 import { Link } from 'react-router-dom';
 import ThemeContext from '../ThemeContext';
-import '../../index.css'
-import '../../styles/App.css'
-import ModoClaro from '../../assets/img/soleado.png'
-import ModoOscuro from '../../assets/img/modo-oscuro.png'
-import User from '../../assets/img/dos-personas.png'
+import '../../index.css';
+import '../../styles/App.css';
+import ModoClaro from '../../assets/img/soleado.png';
+import ModoOscuro from '../../assets/img/modo-oscuro.png';
+import User from '../../assets/img/dos-personas.png';
 import SoportChat from '../SoportChat/SoportChat';
 import { FaWifi, FaBuilding, FaSitemap, FaTags, FaPhoneAlt } from 'react-icons/fa';
 

@@ -1,123 +1,182 @@
 /* Estilos generales */
-
-* .app{
+* .app {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
-body .app{
+
+body .app {
   width: 100vw;
+  overflow-x: hidden;
 }
 
 .app {
   font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-    transition: background-color 0.5s, color 0.5s; 
-  }
-  
-  /*formularios de registrro y login*/
-  /* Modo claro */
-  body .app.light{
-    background-image: url('../assets/img/imagenfondo1.jpg');
-    width: 100vw;
-    height: 100vh;
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-  }
-  .app.light .BarraSupeiorL{
-    color: #333;
-    border-bottom: 1px solid rgb(0, 0, 0);
-  }
-  .app.light .BarraSuperiorR{
-    color: #333;
-    border-bottom: 1px solid rgb(0, 0, 0);
-  }
-  .app.light .BarraSuperior{
-    color: #333;
-    border-bottom: 1px solid rgb(0, 0, 0);
-  }
-  .app.light .BarraSuperiorH{
-    color: #333;
-    border-bottom: 1px solid rgb(0, 0, 0);
-
-  }
-  .app.light .container1{
-    background-color: #edebeb;
-    color: rgb(27, 27, 27);
-  }
-  .app.light .inputContainerLabel {
-    background-color: #f8f7f7;
-    color: rgb(27, 27, 27); 
+  transition: background-color 0.5s, color 0.5s;
+  overflow-x: hidden;
 }
-  .app.light .toggleButton{
-    background: none;
-    border: none;
-    color: rgba(168, 164, 164, 0.778);
-  }
 
-  .app.light .toggleButton:hover{
-    color: #272626;
-    transition: 1s;
-  }
+.app {
+	min-height: 100vh;
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+}
 
-  .app.light .inputContainerInput:focus + .inputContainerLabel,
+/* Deja espacio al contenido por el navbar fijo */
+.contentHome {
+	padding-top: 100px;
+	padding-left: 1rem;
+	padding-right: 1rem;
+}
+
+/* Modo claro */
+body .app.light {
+  background-image: url('../assets/img/imagenfondo1.jpg');
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.app.light .BarraSupeiorL,
+.app.light .BarraSuperiorR,
+.app.light .BarraSuperior,
+.app.light .BarraSuperiorH {
+  color: #333;
+  border-bottom: 1px solid #000;
+}
+
+.app.light .container1 {
+  background-color: #edebeb;
+  color: rgb(27, 27, 27);
+  padding: 20px;
+  max-width: 800px;
+  margin: auto;
+  border-radius: 10px;
+}
+
+.app.light .inputContainerLabel {
+  background-color: #f8f7f7;
+  color: rgb(27, 27, 27);
+}
+
+.app.light .toggleButton {
+  background: none;
+  border: none;
+  color: rgba(168, 164, 164, 0.778);
+}
+
+.app.light .toggleButton:hover {
+  color: #272626;
+  transition: 1s;
+}
+
+.app.light .inputContainerInput:focus + .inputContainerLabel,
 .app.light .inputContainerInput:valid + .inputContainerLabel {
   background-color: #f8f7f7;
   color: rgb(27, 27, 27);
 }
-  .app.light .InputButton{
-    border: 1px solid rgb(132, 132, 132);
-  }
-  .app.light .InputButton:hover{
-    background: rgb(211, 210, 210);
-    color: #2f2f2f;
-  }
 
-  .app.light .formContainer {
-    background-color: #faf5f5;
-    color: rgb(40, 39, 39);
-  }
-  
-.app.light .tableContainer table{
-    border-radius: 12px;
-    height: 250px;
+.app.light .InputButton {
+  border: 1px solid rgb(132, 132, 132);
 }
-.app.light .tableContainer1 table{
+.app.light .InputButton:hover {
+  background: rgb(211, 210, 210);
+  color: #2f2f2f;
+}
+
+.app.light .formContainer {
+  background-color: #faf5f5;
+  color: rgb(40, 39, 39);
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.app.light .tableContainer table,
+.app.light .tableContainer1 table {
   border-radius: 12px;
-  height: 250px;
+  width: 100%;
+  height: auto;
+  border-collapse: collapse;
 }
-.app.light .tableContainer th{
+
+.app.light .tableContainer th,
+.app.light .tableContainer1 th {
   border-bottom: 1px solid #333;
-    padding: 4px;
-    color: #333;
-    font-family: Verdana, Geneva, Tahoma, sans-serif;
+  padding: 4px;
+  color: #333;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
 }
-.app.light .tableContainer1 th{
-  border-bottom: 1px solid #333;
-    padding: 4px;
-    color: #333;
-    font-family: Verdana, Geneva, Tahoma, sans-serif;
-}
-.app.light .tableContainer td{
-    padding: 4PX;
-    font-family: 'Courier New', Courier, monospace;
-}
-.app.light .tableContainer1 td{
-  padding: 4PX;
+
+.app.light .tableContainer td,
+.app.light .tableContainer1 td {
+  padding: 4px;
   font-family: 'Courier New', Courier, monospace;
 }
 
-.app.light .tableContainer td:hover{
-    background-color: rgba(36, 36, 36, 0.656);
-    transition: 1s;
-    color: #ffffff;
-}
-.app.light .tableContainer1 td:hover{
+.app.light .tableContainer td:hover,
+.app.light .tableContainer1 td:hover {
   background-color: rgba(36, 36, 36, 0.656);
   transition: 1s;
   color: #ffffff;
 }
-  
+
+/* ------------------ RESPONSIVE ------------------ */
+@media (max-width: 768px) {
+  .app.light .container1,
+  .app.light .formContainer {
+    padding: 15px;
+    max-width: 95%;
+  }
+
+  .app.light .tableContainer table,
+  .app.light .tableContainer1 table {
+    font-size: 14px;
+  }
+
+  .app.light .tableContainer th,
+  .app.light .tableContainer1 th {
+    padding: 3px;
+  }
+
+  .app.light .tableContainer td,
+  .app.light .tableContainer1 td {
+    padding: 3px;
+  }
+
+  .app.light .InputButton {
+    width: 100%;
+  }
+
+  .app.light .toggleButton {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .app.light .container1,
+  .app.light .formContainer {
+    padding: 10px;
+    max-width: 100%;
+  }
+
+  .app.light .tableContainer table,
+  .app.light .tableContainer1 table {
+    font-size: 12px;
+  }
+
+  .app.light .toggleButton {
+    font-size: 12px;
+  }
+
+  .app.light .InputButton {
+    font-size: 14px;
+    padding: 8px;
+  }
+}
+
+
+
+
 
   /* Modo oscuro */
   * .app.dark{
@@ -374,6 +433,11 @@ body .app{
   display: flex;
 
 }
+
+
+
+
+
 
 /*boton para cambiar el tema*/
 
@@ -643,3 +707,101 @@ body .app{
       transform: translateX(100%);
   }
 }
+
+/* ------------------ RESPONSIVE MEJORADO ------------------ */
+
+/* Tablets */
+@media (max-width: 1024px) {
+  .slider {
+    width: 13rem;
+  }
+
+  .app.light .container1,
+  .app.dark .container1,
+  .app.light .formContainer,
+  .app.dark .formContainer {
+    padding: 15px;
+    max-width: 90%;
+  }
+}
+
+/* Celulares */
+@media (max-width: 768px) {
+  .flex {
+    flex-direction: column;
+  }
+
+  .slider {
+    position: relative;
+    width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid gray;
+  }
+
+  .slider ul {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    padding: 10px 0;
+  }
+
+  .slider ul li {
+    margin: 0.5rem 0;
+    font-size: 15px;
+  }
+
+  .app.light .tableContainer table,
+  .app.dark .tableContainer table,
+  .app.light .tableContainer1 table,
+  .app.dark .tableContainer1 table {
+    display: block;
+    overflow-x: auto;
+    width: 100%;
+    font-size: 14px;
+  }
+
+  .InputBuscar {
+    width: 100%;
+  }
+
+  .app.light .InputButton,
+  .app.dark .InputButton {
+    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+  }
+
+  .navbar1 {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .nav-links {
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+  }
+}
+
+/* Celulares pequeños */
+@media (max-width: 480px) {
+  .navbar1 {
+    padding: 10px;
+  }
+
+  .slider ul li {
+    font-size: 13px;
+  }
+
+  .menu-icon {
+    font-size: 20px;
+  }
+
+  .app.light .toggleButton,
+  .app.dark .toggleButton {
+    font-size: 13px;
+  }
+}
+

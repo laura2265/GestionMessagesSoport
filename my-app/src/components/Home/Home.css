@@ -1,140 +1,160 @@
-.home-info {
-	width: 1000px;
-  }
-
-  .home-info p{
-	width: 200px;
-	margin-left: 383px;
-	color: #3333339d;
-  }
-
-  .home-info p:hover{
-	transition: 1s;
-	color: #333;
-  }
-
-  .contentInfo{
-	margin-top: 32px;
-	width: 1350px;
-  }
-
-  .content1cards{
-	display: flex;
-	margin-left: 105px;
-  }
-
-  .cardInfo{
-	background-color: rgba(216, 216, 216, 0.541);
-	margin-left: 22px;
-	width: 350px;
-	height: 180px;
-	border-radius: 12px;
-	text-align: center;
-	padding: 7px;
-	margin-top: 12px;
-  }
-
-  .cardInfo:hover{
-	transition: 1s;
-	transform: scale(1.1);
-  }
-
-  .cardInfo img{
-	margin-top: 22px;
-  }
-
-.contentTextInfo{
-	text-align: center;
+/* ==== GENERAL ==== */
+.home-container {
+	width: 100%;
+	max-width: 100%;
+	overflow-x: hidden;
 }
 
-  .home-info h1{
-	width: 920px;
-	margin: 12px;
-	text-align: center;
-  }
+.app {
+	min-height: 100vh;
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+}
 
-  .navbar1 {
+.navbar1{
 	display: flex;
-	justify-content: space-between;
+	justify-content: center;
+	align-items: center;
 	padding: 1rem 2rem;
-	background-color: var(--nav-bg-color);
-  }
+	background-color: var(--nav-bg-color, #fff);
+	position: sticky;
+	topo: 0;
+	z-index: 1000;
+}
 
-  .navbar-logo h2 {
-	color: var(--primary-color);
-  }
+.nav-links{
+	display: flex;
+	gap: 1rem;
+}
 
-  .nav-links a {
-	margin-right: 1rem;
-	text-decoration: none;
-	color: var(--text-color);
-  }
-  
-  .menu-icon {
+.menu-icon{
+	display: none;
+	font-size: 1.8rem;
 	cursor: pointer;
-	font-size: 1.5rem;
-	color: var(--text-color);
-  }
-  
-  .contentHome {
+}
+
+@media (max-width: 768){
+	.nav-links{
+		display: none;
+		flex-direction: column;
+		background-color: var(--nav-bg-color, #fff);
+		width: 100%;
+		padding: 1rem;
+		position: absolute;
+		top: 60px;
+		left: 0;
+		box-shadow: 0px 4px 10px rgb(0, 0, 0, 0.1);
+		z-index: 999;
+	}
+
+	.nav-links{
+		display: flex;
+	}
+
+	.menu-icon{
+		display: block;
+		color: var(--text-color, #000);
+	}
+
+	.nav-links{
+		margin: 0.5rem 0;
+	}
+}
+
+.contentHome {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	padding: 2rem;
-  }
-  
-  .home-welcome {
+	padding: 6rem 1rem 2rem;
 	text-align: center;
-	margin-bottom: 2rem;
-  }
-  
-  .home-welcome h1 {
+}
+
+.home-info h1 {
 	font-size: 2.5rem;
-	margin-bottom: 1rem;
-  }
-  
-  .home-welcome p {
+	margin: 1rem 0;
+}
+
+.home-info p {
 	font-size: 1.2rem;
-	margin-bottom: 1rem;
-  }
-  
-  .features-section {
-	text-align: center;
-	margin-top: 2rem;
-  }
-  
-  .features-section h2 {
-	font-size: 2rem;
-	margin-bottom: 2rem;
-  }
-  
-  .feature-boxes {
-	display: flex;
-	justify-content: space-around;
-	flex-wrap: wrap;
-  }
-  
-  .feature-box {
-	background-color: var(--card-bg-color);
-	padding: 1rem;
-	margin: 1rem;
-	border-radius: 8px;
-	width: 300px;
-	text-align: center;
-  }
-  
-  .feature-box img {
+	color: #3333339d;
+	margin: 0 auto;
+}
+
+.contentInfo {
 	width: 100%;
-	border-radius: 8px;
-	margin-bottom: 1rem;
-  }
-  
-  .feature-box h3 {
-	font-size: 1.5rem;
-	margin-bottom: 0.5rem;
-  }
-  
-  .feature-box p {
-	font-size: 1rem;
-  }
-  
+	max-width: 1200px;
+	margin-top: 2rem;
+	padding: 1rem;
+}
+
+.content1cards {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 1rem;
+}
+
+.cardInfo {
+	background-color: rgba(216, 216, 216, 0.541);
+	border-radius: 12px;
+	width: 100%;
+	max-width: 350px;
+	padding: 1rem;
+	text-align: center;
+	transition: transform 0.3s ease;
+}
+
+.cardInfo:hover {
+	transform: scale(1.05);
+}
+
+.cardInfo img, .cardInfo svg {
+	margin-top: 1rem;
+	width: 40px;
+	height: 40px;
+}
+
+.contentTextInfo p {
+	font-size: 0.95rem;
+	color: #444;
+	margin-top: 0.5rem;
+}
+
+@media (max-width: 768px) {
+	.menu-icon {
+		display: block;
+	}
+
+	.nav-links {
+		display: none;
+		flex-direction: column;
+		width: 100%;
+		background-color: var(--nav-bg-color);
+		margin-top: 1rem;
+		padding: 1rem 0;
+		text-align: center;
+	}
+
+	.nav-links.open {
+		display: flex;
+	}
+
+	.home-info h1 {
+		font-size: 2rem;
+	}
+
+	.home-info p {
+		width: 90%;
+	}
+
+	.cardInfo {
+		width: 90%;
+	}
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+	.content1cards {
+		justify-content: space-around;
+	}
+}

@@ -1,4 +1,4 @@
-import fetch from 'node-fetch'
+import fetch from 'node-fetch';
 import { ApiKeyWisphub } from '../../config/config.js';
 import { MessageService } from '../MessageService/MessageService.js';
 import { MessengerPost, TelegramPost, InstagramPost } from '../MetodoPost/MetodoPost.js';
@@ -48,7 +48,7 @@ async function buscarCedula(userData, platform) {
         found = true;
         if (idAsociado.length > 0) {
           const lista = idAsociado
-          let messege1 = ''
+          let messege1 = '';
 
           if(lista.length > 1 ){
           console.log('hay varios servicios')

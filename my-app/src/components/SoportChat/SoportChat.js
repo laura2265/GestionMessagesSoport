@@ -1147,24 +1147,24 @@ function SoportChat (){
           2️⃣ Prueba en otro navegador o en modo incognito.
           \n
           3️⃣ Desactiva las extensiones del navegador.`
-        ), 1000)
+        ), 1000);
 
         setTimeout(() => addBotMessage(`Si esto te funciono escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*.`,
           ["✅ Si funciono", "❎ No funciono"]
-        ), 5000)
+        ), 5000);
 
         setWaitingForDocument(true);
       }else if(option === "⏺️ No sé" && stateChat("NoFuncionoSolucionContinua")){
-        setStateChat("NoSabeVpn")
+        setStateChat("NoSabeVpn");
         setTimeout(() => addBotMessage(`Para saber si tienes una *VPN*, me puedes indicar que tipo de dispositivo estas utilizando, si es computador puedes escoge la opción *Computador*, pero si el dispositivo es un celular escoge la opción *Celular*.`,
           ["🎩 Computador", "📱Celular"]
-        ), 1000)
+        ), 1000);
 
         setWaitingForDocument(true);
 
         //Dispositivo VPN.
       }else if(option === "🎩 Computador" && validStatePaginasNoCarga1.includes(stateChat)){
-        setStateChat("ComputadorVpn")
+        setStateChat("ComputadorVpn");
         setTimeout(() => addBotMessage(`Para verificar si tienes una *VPN* en tu computador, vas a seguir los siguientes pasos:
           \n
           1. Abrir configuraciones.
@@ -1184,7 +1184,7 @@ function SoportChat (){
 
         setWaitingForDocument(true);
       }else if(option === "📱Celular" && validStatePaginasNoCarga1.includes(stateChat)){
-        setStateChat("CelularVpn")
+        setStateChat("CelularVpn");
         setTimeout(() => addBotMessage(`Para verificar si tu celular tiene un *VPN* activo. Vas a realizar los siguientes pasos: 
           \n
           1. Te vas a dirigir a configuraciones.
@@ -1203,7 +1203,7 @@ function SoportChat (){
         setWaitingForDocument(true);
         //Si funciono final vpn.
       }else if(option === "✅ Si funciono" && validStatePaginasNoCargaVpn.includes(stateChat)){
-        setStateChat("SeguirVariosDispositivos")
+        setStateChat("SeguirVariosDispositivos");
         setTimeout(() => addBotMessage(`!Genial¡ si necesitas ayuda escribe seguir para volver iniciar 😊.`), 1000)
 
         setWaitingForDocument(true);
@@ -1216,7 +1216,7 @@ function SoportChat (){
 
         //Señal de television.
       }else if(option === "📺 Señal de Televisión." && stateChat === "Falla conexión"){
-        setStateChat("SeñalDeTelevision")
+        setStateChat("SeñalDeTelevision");
         setTimeout(() => addBotMessage(`¿Tu televiso muestra *Sin señal* o solo se ve distorsionado?`,
           ["📶Sin señal", "📺Distorsionada", "➡️ Otro problema."]
         ), 1000)
@@ -1224,13 +1224,13 @@ function SoportChat (){
         setWaitingForDocument(true);
         //opciones de la señal de television
       }else if(option === "📶Sin señal" && stateChat === "SeñalDeTelevision"){
-        setStateChat("SinSeñalTv")
+        setStateChat("SinSeñalTv");
         setTimeout(() => addBotMessage(`Nos podrías indicar a cuantos canales les pasa este problema.`,
           ["📺 En ningún canal", "📺 En varios canales"]
         ), 1000)
         setWaitingForDocument(true);
       }else if(option === "📺Distorsionada"){
-        setStateChat("DistorcionadaSeñalTv")
+        setStateChat("DistorcionadaSeñalTv");
         setTimeout(() => addBotMessage(`Vamos a solucionar tu problema. A continuación te presentaremos una serie de revisiones que puedes hacer para detectar el problema.
           \n
           1️⃣Revisa que el cable que esta conectado a el televisor este bien conectado y sin daños visibles.
@@ -1242,7 +1242,7 @@ function SoportChat (){
 
         setTimeout(() => addBotMessage(`Si el problema persiste escoge la opción *No funciono*, de lo contrario escoja la opción *Si funciono*.`,
           ["✅ Si funciono", "❎ No funciono"]
-        ),1000)
+        ),1000);
 
         setWaitingForDocument(true);
         //problema y mensaje especifico
@@ -1259,7 +1259,7 @@ function SoportChat (){
 
         setTimeout(() => addBotMessage(`Si el problema persiste escoge la opción *No funciono*, de lo contrario escoja la opción *Si funciono*.`,
           ["✅ Si funciono", "❎ No funciono"]
-        ),1000)
+        ),1000);
 
         setWaitingForDocument(true);
         //problema y mensaje especifico
@@ -1267,7 +1267,7 @@ function SoportChat (){
         setStateChat("EnNingunCanalSinSeñal")
         setTimeout(() => addBotMessage(`Revisa si el cable que va conectado a al televisor esta bien conectado.`,
           ["🔌Conectado", "🔌Desconectado"]
-        ), 1000)
+        ), 1000);
         setWaitingForDocument(true);
       }else if(option === "📺 En varios canales"){
         setStateChat("EnVariosCanalesSinSeñal")
@@ -1278,20 +1278,20 @@ function SoportChat (){
           2️⃣Si utilizas decodificador, revisa que la lista de canales este actualizada.
           \n
           3️⃣Si sigues con el problema, puede ser que los canales estén fuera de servicio temporalmente.`),
-        1000)
+        1000);
 
         setTimeout(() => addBotMessage(`Si el problema persiste escoge la opción *No funciono*, de lo contrario escoja la opción *Si funciono*.`,
           ["✅ Si funciono", "❎ No funciono"]
-        ),1000)
+        ),1000);
         setWaitingForDocument(true);
 
       }else if(option === "🔌Conectado"){
-        setStateChat("CableConectadoSinSeñal")
+        setStateChat("CableConectadoSinSeñal");
         setTimeout(() => addBotMessage(`Intenta apagar el *Modem* y después de 3 minutos vuelve a encenderlo.`), 1000)
 
         setTimeout(() => addBotMessage(`Si el problema persiste después de haber hecho lo anterior por favor escoge la opción *No funciono*, de lo contrario escoge la opción *Si funciono*`,
           ["✅ Si funciono", "❎ No funciono"]
-        ), 1000)
+        ), 1000);
         setWaitingForDocument(true);
 
       }else if(option === "🔌Desconectado"){
@@ -1323,15 +1323,15 @@ function SoportChat (){
           4️⃣Prueba con otro televisor o otra toma.
           \n
           5️⃣Revisa si el problema es general y a tus vecinos les sucede el mismo problema.`), 
-        1000)
+        1000);
 
         setTimeout(() => addBotMessage(`Si el problema persiste después de haber hecho lo anterior por favor escoge la opción *No funciono*, de lo contrario escoge la opción *Si funciono*`,
           ["✅ Si funciono", "❎ No funciono"]
-        ),1000)
+        ),1000);
         setWaitingForDocument(true);
 
       }else if(option === "❎ Apagado" && stateChat === "NoFuncionoSeñalTelevision"){
-        stateChat("ApagadoCatv")
+        stateChat("ApagadoCatv");
         setTimeout(() => addBotMessage(`Vamos a solucionar tu problema. A continuación te vamos a dar una serie de soluciones para que puedas revisar si te funcionan:
           \n
           1️⃣ Verifica que el cable este bien conectado en ambos extremos (ONT y televisor/decodificador).
@@ -1341,11 +1341,11 @@ function SoportChat (){
           3️⃣Prueba con otro cable si tienes uno al alcance.
           \n
           4️⃣ Conéctalo a otro televisor o dispositivo por el cual puedas conectarlo.`), 
-        1000)
+        1000);
 
         setTimeout(() => addBotMessage(`Si el problema persiste después de haber hecho lo anterior por favor escoge la opción *No funciono*, de lo contrario escoge la opción *Si funciono*`,
           ["✅ Si funciono", "❎ No funciono"]
-        ),1000)
+        ),1000);
 
         setWaitingForDocument(true);
 
@@ -1360,37 +1360,37 @@ function SoportChat (){
 
         //Internet inestable
       }else if(option === "⚡ Internet inestable." && stateChat === "Falla conexión"){
-        stateChat("InternetInestable")
+        stateChat("InternetInestable");
         setTimeout(() => addBotMessage(`Podrías escoger la opción por la cual estas conectado.`,
           ["🔹Cable de red *LAN*", "🔹*WIFI* (2.4G/5G)", "🔹 No sé"]
-        ), 1000)
+        ), 1000);
 
         setWaitingForDocument(true);
       }else if(option === "🔹Cable de red *LAN*" && stateChat === "InternetInestable"){
         stateChat("CableLanRedInestable")
         setTimeout(() => addBotMessage(`Por favor verifica si estos están conectados al* Modem*, esto lo puedes ver en el modem si los bombillos de *Lan1* y *Lan2* están encendidos, escoja la opción *Encendidos*. Si no escoge *Apagados*.`,
           ["🔹Encendidos", "🔹Apagado"]
-        ), 1000)
+        ), 1000);
 
         setWaitingForDocument(true);
       }else if(option === "🔹*WIFI* (2.4G/5G)" && stateChat === "InternetInestable" ){
         stateChat("wIFIInestable")
         setTimeout(() => addBotMessage(`Para poder ayudarte con tu problema, podrías escoger la opción que necesites: `,
           ["🔹La señal débil", "🔹La red no aparece.", "🔹 Se desconecta"]
-        ), 1000)
+        ), 1000);
 
         setWaitingForDocument(true);
       }else if(option === "🔹 No sé" && stateChat === "InternetInestable"){
         stateChat("NoSabeDispositivoRedInestable")
         setTimeout(() => addBotMessage(`Para poder ayudarte os podrías escoge la opción del dispositivo que estas utilizando.`,
           ["🔹Celular/Tablet", "🔹PC/Laptop"]
-        ), 1000)
+        ), 1000);
 
         setWaitingForDocument(true);
 
         //opciones de las opciones de la reed inestable
       }else if(option === "🔹Encendidos" && stateChat === "CableLanRedInestable"){
-        stateChat("EncendidoCanleLan")
+        stateChat("EncendidoCanleLan");
         setTimeout(() => addBotMessage(`Vamos a solucionar tu problema. A continuación te presentaremos una serie de solucionas para que puedas solucionar tu problema:
           \n
           1️⃣Prueba con otro cable para verificar la conexión de este.
@@ -1400,11 +1400,11 @@ function SoportChat (){
 
         setTimeout(() => addBotMessage(`Nos podrías confirmar si esto te funciono seleccionando la opción *Si funciono*, de lo contrario escoge la opción *No funciono*.`,
           ["✅ Si funciono", "❎ No funciono"]  
-        ), 1000)
+        ), 1000);
 
         setWaitingForDocument(true);
       }else if(option === "🔹Apagado" && stateChat === "CableLanRedInestable"){
-        stateChat("ApagadoCanleLan")
+        stateChat("ApagadoCanleLan");
         setTimeout(() => addBotMessage(`¡Vamos a solucionar tu problema! 
           \n
           A continuación te presentamos una serie de soluciones para solucionar tu problema:
@@ -1414,11 +1414,11 @@ function SoportChat (){
           2️⃣Si es posible utiliza otro cable.
           \n
           3️⃣Apaga el *Modem* y después de 30 segundos vuelve a encenderlo.`
-        ), 1000)
+        ), 1000);
 
         setTimeout(() => addBotMessage(`Nos podrías confirmar si esto te funciono seleccionando la opción *Si funciono*, de lo contrario escoge la opción *No funciono*.`,
           ["✅ Si funciono", "❎ No funciono"]
-        ), 1000)
+        ), 1000);
 
         setWaitingForDocument(true);
       }else if(option === "🔹La señal débil" && stateChat === "wIFIInestable"){
@@ -1428,11 +1428,11 @@ function SoportChat (){
           1️⃣Apaga el *Modem* y después de 30 segundos vuelve a encenderlo.
           \n
           2️⃣ Utiliza la red *2.4g* ya que esta tiene más alcance que la *5g*.`
-        ), 1000)
+        ), 1000);
 
         setTimeout(() => addBotMessage(`Podrías confirmarnos con las siguientes opciones si funciono con la opción *Si funciono*, si esto no funciono escoge la opción *No funciono*. `,
           ["✅ Si funciono", "❎ No funciono"]
-        ), 1000)
+        ), 1000);
 
         setWaitingForDocument(true);
       }else if(option === "🔹La red no aparece." && stateChat === "wIFIInestable"){
@@ -1444,11 +1444,11 @@ function SoportChat (){
           2️⃣Apaga el *Modem* y después de 30 segundos vuelve a encenderlo.
           \n
           3️⃣Asegúrate en el *Modem* que las dos redes estén encendidas.`
-        ), 1000)
+        ), 1000);
 
         setTimeout(() => addBotMessage(`Para confirmarnos que estén activas puedes escoger la opción correcta. Escoge *Encendido*, si los bombillos de estas redes están encendidos. Si los bombillos están apagados escoge la opción* Apagado*.`,
           ["🔹Encendido", "🔹Apagado"]
-        ), 1000)
+        ), 1000);
 
         setWaitingForDocument(true);
       }else if(option === "🔹 Se desconecta" && stateChat === "wIFIInestable"){
@@ -1464,35 +1464,35 @@ function SoportChat (){
           4️⃣Apaga el *Modem* y después de 30 segundos vuelve a encenderlo.
           \n
           5️⃣Aleja el *Modem* de los electrodomésticos o paredes gruesas.`
-        ), 1000)
+        ), 1000);
 
         setTimeout(() => addBotMessage(`Podrías confirmarnos con las siguientes opciones si funciono con la opción *Si funciono*, si esto no funciono escoge la opción *No funciono*. `,
           ["✅ Si funciono", "❎ No funciono"]
-        ), 1000)
+        ), 1000);
 
         setWaitingForDocument(true);
       }else if(option === "🔹Celular/Tablet" && stateChat === "NoSabeDispositivoRedInestable"){
-        stateChat("CelularOTabletNoseDispositivo")
+        stateChat("CelularOTabletNoseDispositivo");
         setTimeout(() => addBotMessage(`Para verificar que red *WIFI* tienes, ve a configuraciones, has clic en *WIFI*, mira la red a la que estas conectado. Si estas conectado a la 5G intenta conectarte a la 2.4G ya que la 5G es mas rápida pero tiene menos alcance.`), 1000)
 
         setTimeout(() => addBotMessage(`Podrías confirmarnos con las siguientes opciones si funciono con la opción *Si funciono*, si esto no funciono escoge la opción *No funciono*. `,
           ["✅ Si funciono", "❎ No funciono"]
-        ), 1000)
+        ), 1000);
 
         setWaitingForDocument(true);
       }else if(option === "🔹PC/Laptop" && stateChat === "NoSabeDispositivoRedInestable"){
-        stateChat("PcNoSabeDispositivo")
+        stateChat("PcNoSabeDispositivo");
         setTimeout(() => addBotMessage(`Si su *PC/Laptop* no tiene un cable de internet conectado lo más probable es que este conectado a *WIFI*.
           \n
           Nos podías confirmar si es por cable o por *WIFI*`,
           ["🔹WIFI", "🔹 Cable"]
-        ), 1000)
+        ), 1000);
 
         setWaitingForDocument(true);
 
         //lared no aparece
       }else if(option === "🔹Encendido" && stateChat === "LaRedNoAparece"){
-        stateChat("EncendidoLaRedNoAparece")
+        stateChat("EncendidoLaRedNoAparece");
         setTimeout(() => addBotMessage(`Te vamos a dar una serie de soluciones para que puedas verificar y solucionar tu problema:
           \n
           1️⃣ Verifica que la red no este oculta.
@@ -1504,11 +1504,11 @@ function SoportChat (){
           4️⃣ Si estas lejos del *Modem* conéctate a la red *2.4g* ya que esta tiene mas alcance.
           \n
           5️⃣Apaga el *Modem* y después de 30 segundo vuelve a encenderlo.`
-        ), 1000)
+        ), 1000);
 
         setTimeout(() => addBotMessage(`Si te funciono las soluciones elige la opción *Si funciono*, de lo contrario escoge la opción *No funciono*.`,
           ["✅ Si funciono", "❎ No funciono"]
-        ),1000)
+        ),1000);
 
         setWaitingForDocument(true);
       }else if(option === "🔹Apagado" && stateChat === "NoSabeDispositivoRedInestable"){
@@ -1520,11 +1520,11 @@ function SoportChat (){
           2️⃣Prueba mirar en otro dispositivo.
           \n
           3️⃣Si es posible conecta un cable *Ethernet* para verificar la conexión a internet.`
-        ), 1000)
+        ), 1000);
 
         setTimeout(() => addBotMessage(`Si te funciono las soluciones elige la opción *Si funciono*, de lo contrario escoge la opción *No funciono*.`,
           ["✅ Si funciono", "❎ No funciono"]
-        ),1000)
+        ),1000);
 
         setWaitingForDocument(true);
 
@@ -1532,31 +1532,31 @@ function SoportChat (){
       }else if(option === "🔹WIFI" && stateChat === "PcNoSabeDispositivo"){
         stateChat("PcWIfiNoSabe")
         setTimeout(() => addBotMessage(`Como esta conectado con *WIFI*, por favor revise que tipo de red esta conectado, si la red tiene 5G, cambie la red a la 2.4G ya que la 5G es más rápido, pero tiene menor alcance.`
-        ), 1000)
+        ), 1000);
 
         setTimeout(() => addBotMessage(`Si te funciono las soluciones elige la opción *Si funciono*, de lo contrario escoge la opción *No funciono*.`,
           ["✅ Si funciono", "❎ No funciono"]
-        ),1000)
+        ),1000);
 
         setWaitingForDocument(true);
       }else if(option === "🔹 Cable" && stateChat === "PcNoSabeDispositivo"){
         stateChat("cablePcNoSabe")
         setTimeout(() => addBotMessage(`Como estas conectado con cable, lo que tienes que hacer es conectarlo en otro puerto de *LAN*. Si esto no funciona intenta utilizar otro cable.`
-        ), 1000)
+        ), 1000);
 
         setTimeout(() => addBotMessage(`Si te funciono las soluciones elige la opción *Si funciono*, de lo contrario escoge la opción *No funciono*.`,
           ["✅ Si funciono", "❎ No funciono"]
-        ),1000)
+        ),1000);
 
         setWaitingForDocument(true);
       }else if(option === "✅ Si funciono" && validStateRedInestableFinal.includes(stateChat)){
         stateChat("cablePcNoSabe")
         setTimeout(() => addBotMessage(`!Genial¡ si necesitas ayuda escribe seguir para volver iniciar 😊.`
-        ), 1000)
+        ), 1000);
 
         setWaitingForDocument(true);
       }else if(option === "❎ No funciono" && validStateRedInestableFinal.includes(stateChat)){
-        stateChat("cablePcNoSabe")
+        stateChat("cablePcNoSabe");
         setTimeout(() => addBotMessage(`Ya te pasamos con un asesor 😊`), 1000)
 
         setWaitingForDocument(true);
@@ -1572,7 +1572,7 @@ function SoportChat (){
           2️⃣Número de documento del titular del servicio.
           \n
           3️⃣Descripción del problema.`),
-        1000)
+        1000);
 
         setWaitingForDocument(true);
       }

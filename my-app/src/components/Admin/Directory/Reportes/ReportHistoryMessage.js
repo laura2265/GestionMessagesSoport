@@ -38,7 +38,7 @@ function ReportHistoryMessage(){
                     acc[item.message] = (acc[item.message] || 0) + 1;
                     return acc;
                 }, {});
-                
+
                 const chatCount = result.reduce((acc, item) => {
                     acc[item.chat] = (acc[item.chat] || 0) + 1;
                     return acc;
@@ -54,7 +54,7 @@ function ReportHistoryMessage(){
                 ));
 
                 console.log("Estadísticas de mensajes:", messageStats);
-                console.log("Estadísticas de chats:", chatStats); 
+                console.log("Estadísticas de chats:", chatStats);
             })
             .catch(error => console.error('Error al obtener datos:', error));
     }, []);
@@ -145,10 +145,12 @@ function ReportHistoryMessage(){
 
     const fetchManychat = async (chatId) => {
         try {
+
             const responseMany = await fetch(`http://localhost:3001/manychat/${chatId}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             });
+
             if (!responseMany.ok) throw new Error(`Error al consultar ManyChat`);
             const resultMessage = await responseMany.json();
             return resultMessage.cliente.data || null;
@@ -214,7 +216,7 @@ function ReportHistoryMessage(){
             if (yOffset + lineHeight > pageHeight) {
                 doc.addPage();
                 yOffset = marginTop;
-                addHeader(); 
+                addHeader();
             }
         }
     

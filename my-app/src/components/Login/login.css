@@ -1,151 +1,163 @@
-  .container{
-    height: 68vh;
-    width: 850px;
-  }
-  .container-login{
-    height: 100vh;
-  }
-  
-  .containerForm{
-    display: flex;
-    margin-top: 152px;
-    position: relative;
-    left: 15px;
+/* ----- ESTILOS GENERALES ----- */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+.container {
+  height: 68vh;
+  width: 100%;
+  max-width: 850px;
+  margin: auto;
+}
+
+.container-login {
+  height: 100vh;
+}
+
+.containerForm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 50px;
+}
+
+.BarraSupeiorL {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 22px;
+  width: 100%;
+}
+
+.cont {
+  width: 300px;
+  height: 300px;
+  object-fit: cover;
+  padding: 15px;
+}
+
+.formContainer {
+  flex: 1;
+  width: 100%;
+  max-width: 350px;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.351);
+  margin-left: 20px;
+}
+
+.inputContainer {
+  position: relative;
+  margin-top: 20px;
+}
+
+.inputContainerInput {
+  width: 252px;
+  color: #000;
+  padding: 10px;
+  border: 2px solid #9d9d9d;
+  border-radius: 4px;
+  outline: 2px solid rgb(119, 119, 119);
+  background-color: transparent;
+  transition: outline-color 500ms;
+}
+
+.inputContainerInput:is(:focus, :valid) {
+  outline-color: rgb(164, 164, 164);
+}
+
+.inputContainerLabel {
+  position: absolute;
+  top: 0;
+  left: 60px;
+  transform: translateY(30%);
+  padding: 0 5px;
+  font-size: 16px;
+  color: #c6c5c5;
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+.inputContainerInput:focus + .inputContainerLabel,
+.inputContainerInput:valid + .inputContainerLabel {
+  padding-inline: 10px;
+  translate: 0px -15px;
+  scale: 0.8;
+  font-size: 20px;
+}
+
+.InputButton1 {
+  background: none;
+  border: 1px solid #000;
+  width: 100px;
+  height: 40px;
+  border-radius: 4px;
+  margin-top: 20px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.InputButton1:hover {
+  transform: scale(1.1);
+  background-color: rgb(203, 203, 203);
+}
+
+.error {
+  color: tomato;
+  font-size: 12px;
+  margin-top: 5px;
+  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 
+               'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+
+/* ----- RESPONSIVE ----- */
+@media (max-width: 768px) {
+  .containerForm {
+    flex-direction: column;
+    align-items: center;
+    margin-top: 30px;
   }
 
-  .BarraSupeiorL{
-    display: flex;
-    width: 1240px;
-    position: relative;
-    right: 73px;
-    padding-top: 12px;
-    padding-left: 22px;
+  .formContainer {
+    width: 90%;
+    margin-left: 0;
   }
-  .cont {
-    width: 300px;
-    height: 300px;
-    object-fit: cover;
-    padding: 15px;
+
+  .inputContainerInput {
+    width: 100%;
   }
-  .formContainer{
-    flex: 1;
-    max-width: 350px;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.351);
-    margin-left: 20px;
+
+  .inputContainerLabel {
+    left: 20px;
+    font-size: 14px;
   }
-  
-  .inputContainer {
-    position: relative;
+
+  .InputButton1 {
+    left: 0;
+    margin-top: 15px;
   }
-  
-  
-  .inputContainerInput{
-    width: 252px;
-    color: #000;
+
+  .BarraSupeiorL {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .container {
+    height: auto;
     padding: 10px;
-    border: 2px solid #9d9d9d;
-    border-radius: 4px;
-    outline: 2px solid rgb(119, 119, 119);
-    background-color: transparent;
-    transition: outline-color 500ms;
-  }
-  .inputContainerInput:is(:focus, :valid){
-    outline-color: rgb(164, 164, 164);
-  }
-  
-  .inputContainerLabel{
-    position: absolute;
-      top: 0;
-      position: absolute;
-      left: 60px;
-      transform: translateY(30%);
-      padding: 0 5px;
-      font-size: 16px;
-      color: #c6c5c5;
-      pointer-events: none;
-      transition: all 0.3s ease;
-    }
-  
-  
-  .InputButton1{
-    background: none;
-    border: 1px solid #000;
-    width: 100px;
-    height: 40px;
-    border-radius: 4px;
-    position: relative;
-    left: 100px;
-  }
-  
-  .InputButton:hover{
-    transform: scale(1.1);
-    transition: 1s;
-    background-color: rgb(203, 203, 203);
-  }
-  @media(max-width: 600px){
-    *{
-      box-sizing: border-box;
-    }
-    body{
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      width: 100vw;
-    }
-    .container{
-      width: 95%; 
-      padding: 5px;
-    }
-    .container1{
-      display: none;
-      height: 12rem;
-
-    }
-
-    .inputContainerLabel{
-      position: absolute;
-        top: 0;
-        position: absolute;
-        left: 40px;
-        transform: translateY(30%);
-        padding: 0 5px;
-        font-size: 16px;
-        color: #c6c5c5;
-        pointer-events: none;
-        transition: all 0.3s ease;
-      }
-    .inputContainerInput{
-      width: 250px;
-      color: #000;
-      padding: 10px;
-      border: 2px solid #000;
-      border-radius: 4px;
-      outline: 2px solid white;
-      background-color: transparent;
-      transition: outline-color 500ms;
-    }
-  }
-  .inputContainerInput:focus + .inputContainerLabel,
-  .inputContainerInput:valid + .inputContainerLabel {
-      padding-inline: 10px;
-      translate: 0px -15px;
-      scale: 0.8;
-      font-size: 20px;
-  }
-  
-  /*input validacion*/
-  
-  .error {
-    color: tomato;
-    font-size: 12px;
-    margin-top: 5px;
-    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
   }
 
-  
-
- 
-  
+  .cont {
+    width: 100%;
+    height: auto;
+  }
+}
