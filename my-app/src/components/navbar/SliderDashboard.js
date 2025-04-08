@@ -33,7 +33,7 @@ const  SliderDashboard = () => {
                     <Link to="/numbers">Configuración</Link>
                 </li>
                 <li>
-                    <button onClick={handleLogout}>Cerrar Sesión</button>
+                    <button className="cerrarSesion" onClick={handleLogout}>Cerrar Sesión</button>
                 </li>
             </ul>
         </div>

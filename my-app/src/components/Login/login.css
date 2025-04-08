@@ -119,7 +119,6 @@ body {
                'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
 }
 
-/* ----- RESPONSIVE ----- */
 @media (max-width: 768px) {
   .containerForm {
     flex-direction: column;

@@ -152,6 +152,7 @@ body .app.light {
   }
 }
 
+
 @media (max-width: 480px) {
   .app.light .container1,
   .app.light .formContainer {
@@ -173,8 +174,6 @@ body .app.light {
     padding: 8px;
   }
 }
-
-
 
 
 
@@ -203,6 +202,7 @@ body .app.light {
     border: none;
     color: rgba(127, 126, 126, 0.778);
   }
+
   .app.dark .toggleButton:hover{
     color: #e2e2e2;
     transition: 1s;
@@ -211,6 +211,7 @@ body .app.light {
   .app.dark .InputButton{
     border: 1px solid white;
   }
+
   .app.dark .InputButton:hover{
     background: rgb(177, 177, 177);
     color: #333;
@@ -223,15 +224,29 @@ body .app.light {
 
   .app.dark .inputContainerInput:focus + .inputContainerLabel,
   .app.dark .inputContainerInput:valid + .inputContainerLabel {
-    background-color: #333; /* Ajustar color de fondo cuando el input está enfocado en modo oscuro */
+    background-color: #333; 
     color: white;
 }
-  
-  button {
-    padding: 10px 20px;
-    margin-top: 20px;
-    cursor: pointer;
-  }
+
+.app.dark .cerrarSesion{
+  color: #fff;
+  border: 1px solid #fff;
+  border-radius: 12px;
+}
+.app.dark .cerrarSesion:hover{
+  transition: 1s;
+  transform: scale(1.1);
+
+}
+
+.app.light .cerrarSesion{
+  border: 1px solid #000000;
+  border-radius: 12px;
+}
+.app.light .cerrarSesion:hover{
+  transition: 1s;
+  transform: scale(1.1);
+}
 
   /*estilos de home*/
 /*modo claro*/
@@ -263,29 +278,22 @@ body .app.light {
   }
 
  .app.dark .tableContainer table{
-  border: 1px solid #ffffff;
   height: 250px;
   width: 1150px;
-  box-shadow: 0px 4px 10px rgba(164, 164, 164, 0.725);
 }
 .app.dark .tableContainer1 table{
-  border: 1px solid #ffffff;
   height: 250px;
   width: 1150px;
-  box-shadow: 0px 4px 10px rgba(164, 164, 164, 0.725);
 }
 .app.dark .tableContainer th{
-  border: 1px solid #333;
   padding: 4px;
-  background-color: #333;
-  color: #ffffff  ;
+  color: #ffffff;
+  margin-bottom: 1px solid #fff;
   font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
 }
 
 .app.dark .tableContainer1 th{
-  border-radius: 7px;
   padding: 4px;
-  background-color: #333;
   color: #ffffff;
   font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
 }
@@ -312,16 +320,16 @@ body .app.light {
   border-bottom: 1px solid white;
 }
 .app.dark td{
-  background-color: rgb(195, 197, 199);
+  color: #fff;
   border-radius: 7px;
   padding: 4PX;
   font-family: 'Courier New', Courier, monospace;
 }
 
 .app.dark td:hover{
-  background-color: rgba(95, 95, 95, 0.656);
+  background-color: rgba(208, 208, 208, 0.656);
   transition: 1s;
-  color: #ffffff;
+  color: #000;
 } 
 
 .navbar{

@@ -16,10 +16,10 @@ import Img3dHombre3 from '../../../assets/img/img3dHombre3-Photoroom.png'
 import img3dMujer from '../../../assets/img/img3dMujer-Photoroom.png'
 import img3dMujer2 from '../../../assets/img/img3dMujer2-Photoroom.png'
 import img3dMujer3 from '../../../assets/img/img3dMujer3-Photoroom.png'
-
+import { FaCheckCircle } from "react-icons/fa";
+import { VscError } from "react-icons/vsc";
 
 function DashboardEmploye(){
-    
     const { theme, toggleTheme  } = useContext(ThemeContext);
     const [data, setData] = useState([]);
     const [messageStats, setMessageStats] = useState({});
@@ -39,7 +39,7 @@ function DashboardEmploye(){
             img3dMujer2,
             img3dMujer3,
         ];
-            
+
         const [selectedIndex, setSelectedIndex] = useState(0);
     
         const handleAvatarClick = () => {
@@ -63,7 +63,7 @@ function DashboardEmploye(){
             navigate('/login')
         }
     },[navigate])
-    
+
     useEffect(() => {
         fetch('http://localhost:3001/api')
             .then(async response => {
@@ -108,31 +108,21 @@ function DashboardEmploye(){
                             <h1>Dashboard Empleado</h1>
                             <a  className='ButtonTheme1' onClick={toggleTheme}><img src={theme === 'light'? ModoClaro : ModoOscuro}></img> </a>
                         </div>
-                        <div className="graficos1">
-                            <div className="diagrama11">
-                                <div className="sub_board">
-                                <h3 className="t_grafica">Distribución de Chats</h3>
-                                <div className="graf_board">
-                                    {Object.entries(chatStats).map(([chat, percentage]) => (
-                                        <div className="barra" key={chat}>
-                                            <div className="sub_barra" style={{ height: `${percentage}%`}}>
-                                                <div className="tag_g">{percentage}%</div>
-                                                <div className="tag_leyenda">{chat}</div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                                    <div className="cont_board">
-                                        <div className="graf_board">
-                                            {Object.entries(messageStats).map(([message, percentage], index) => (
-                                                <div className="barra" key={index}>
-                                                    <div className="sub_barra" style={{ height: `${percentage}%` }}>
-                                                        <div className="tag_g">{percentage}%</div>
-                                                        <div className="tag_leyenda1">{message}</div>
-                                                    </div>
+                            <div className="graficos">
+                                <div className="diagrama1">
+                                    <div className="sub_board">
+                                    <h3 className="t_grafica">Distribución de Chats</h3>
+                                    <div className="graf_board">
+                                        {Object.entries(chatStats).map(([chat, percentage]) => (
+                                            <div className="barra" key={chat}>
+                                                <div className="sub_barra" style={{ height: `${percentage}%`}}>
+                                                    <div className="tag_g">{percentage}%</div>
+                                                    <div className="tag_leyenda">{chat}</div>
                                                 </div>
-                                            ))}
-                                        </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="cont_board">
                                         <div className="tag_board">
                                             <div className="sub_tag_board">
                                                 <div>100</div>
@@ -148,37 +138,36 @@ function DashboardEmploye(){
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="sep_board"></div>
                                 </div>
                             </div>
                             <div className="contenteDiagrams">
                                 <div className="contentDiagramEmploye">
                                     <div className="colorContentDark">
-                                        <p>Porcentaje De Mensajes</p>
-                                        <div className="diagrama22">
-                                        <div className="digramContainer">
-                                            <Diagrama messageStats={messageStats} />
-                                        </div>
-                                        <div style={{ padding: '20px', textAlign: 'center' }}>
-                                          <img
-                                            src={avatars[selectedIndex]}
-                                            alt={`Avatar ${selectedIndex + 1}`}
-                                            onClick={handleAvatarClick}
-                                            style={{
-                                              width: '270px',
-                                              height: '300px',
-                                              borderRadius: '50%',
-                                              cursor: 'pointer'
-                                            }}
-                                          />
-                                        </div>
+                                        <div className="diagrama2">
+                                            <div className="digramContainer">
+                                                <Diagrama messageStats={messageStats} />
+                                            </div>
+                                            <div style={{ padding: '20px', textAlign: 'center' }}>
+                                              <img
+                                                src={avatars[selectedIndex]}
+                                                alt={`Avatar ${selectedIndex + 1}`}
+                                                onClick={handleAvatarClick}
+                                                style={{
+                                                  width: '270px',
+                                                  height: '300px',
+                                                  borderRadius: '50%',
+                                                  cursor: 'pointer'
+                                                }}
+                                              />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div className="contentTableAndDiagram1">
-                                <div className="tableContainer1">
+
+                        <div className="contentTableAndDiagram">
+                                <div className="tableContainer">
                                     <table>
                                         <thead>
                                             <tr>
@@ -209,7 +198,19 @@ function DashboardEmploye(){
                                     </table>
                                     {isLoggedIn && <MessageChat/>}
                                 </div>
-
+                                <div className="contentDiagram4">
+                                    <div className="diagrama4">
+                                        <h5 className="titleResult">Resultados ChatBot</h5>
+                                        <div className="content1">
+                                            <h5 className="titleResult">Funciono <FaCheckCircle/> </h5>
+                                            <h3>0</h3>
+                                        </div>
+                                        <div className="content2">
+                                            <h5 className="titleResult">No Funciono <VscError /> </h5>
+                                            <h3>0</h3>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                     </div>
                 </div>

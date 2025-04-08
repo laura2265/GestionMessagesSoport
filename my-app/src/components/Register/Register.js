@@ -205,7 +205,7 @@ function Register(){
                     <img src={fondo} alt="Fondo" className="cont" />
                   </div>
                   <div className='formContainer1'>
-                    <p>Registrarse</p>
+                    <p className='title'>Registrarse</p>
                     <br />
                     <div>
                       <form id='formValidation' onSubmit={handleSubmit}>

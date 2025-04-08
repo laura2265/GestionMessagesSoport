@@ -29,7 +29,7 @@ function SliderEmploye(){
                     <Link to="/chatBot-emple">Chats</Link>
                 </li>
                 <li>
-                    <button className="butonClose" onClick={handleLogout}>Cerrar Sesión</button>
+                    <button className="cerrarSesion" onClick={handleLogout}>Cerrar Sesión</button>
                 </li>
             </ul>
         </div>

@@ -140,36 +140,24 @@ function Dashboard() {
                                         </div>
                                     ))}
                                 </div>
-                                    <div className="cont_board">
-                                        <div className="graf_board">
-                                            {Object.entries(messageStats).map(([message, percentage], index) => (
-                                                <div className="barra" key={index}>
-                                                    <div className="sub_barra" style={{ height: `${percentage}%` }}>
-                                                        <div className="tag_g">{percentage}%</div>
-                                                        <div className="tag_leyenda1">{message}</div>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-
-                                        <div className="tag_board">
-                                            <div className="sub_tag_board">
-                                                <div>100</div>
-                                                <div>90</div>
-                                                <div>80</div>
-                                                <div>70</div>
-                                                <div>60</div>
-                                                <div>50</div>
-                                                <div>40</div>
-                                                <div>30</div>
-                                                <div>20</div>
-                                                <div>10</div>
-                                            </div>
+                                <div className="cont_board">
+                                    <div className="tag_board">
+                                        <div className="sub_tag_board">
+                                            <div>100</div>
+                                            <div>90</div>
+                                            <div>80</div>
+                                            <div>70</div>
+                                            <div>60</div>
+                                            <div>50</div>
+                                            <div>40</div>
+                                            <div>30</div>
+                                            <div>20</div>
+                                            <div>10</div>
                                         </div>
                                     </div>
-                                    <div className="sep_board"></div>
                                 </div>
                             </div>
+                        </div>
 
                             <div className="contenteDiagrams">
                                 <div className="contentDiagram">

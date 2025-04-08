@@ -1,4 +1,5 @@
-.container2{
+/* --- ESTILOS GENERALES --- */
+.container2 {
   margin-top: 63px;
   height: 68vh;
   width: 98.5vw;
@@ -7,174 +8,220 @@
   align-items: center;
 }
 
-  .container1{
-    flex: 1;
+.container1 {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #fff;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.351);
+  border-radius: 10px;
+}
+
+.cont {
+  width: 350px;
+  object-fit: cover;
+}
+
+.containerFormRegister {
+  display: flex;
+  margin-top: 32px;
+  position: relative;
+  left: 15px;
+  width: 1400px;
+}
+
+.BarraSuperiorR {
+  display: flex;
+  width: 1240px;
+  position: relative;
+  right: 73px;
+  padding-top: 12px;
+  padding-left: 22px;
+}
+
+.formContainer1 {
+  width: 700px;
+  flex: 1;
+  padding: 20px;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.351);
+  margin-left: 20px;
+}
+.formContainer1 .title{
+  font-size: 22px;
+  position: relative;
+  left: 33px;
+  top: 40px;
+
+}
+.inputContainer {
+  position: relative;
+}
+
+.inputContainerInput {
+  width: 300px;
+  height: 40px;
+  color: #000;
+  padding: 10px;
+  border: 2px solid #9d9d9d;
+  border-radius: 4px;
+  outline: 2px solid rgb(148, 148, 148);
+  background-color: transparent;
+  transition: outline-color 500ms;
+  margin-top: 12px;
+}
+.inputContainer select{
+  position: relative;
+  left: -13px;
+}
+
+.inputContainerInput:is(:focus, :valid) {
+  outline-color: rgb(154, 154, 154);
+}
+
+.inputContainerLabel {
+  position: absolute;
+  top: 12px;
+  left: 10px;
+  transform: translateY(30%);
+  background-color: #fff;
+  padding: 0 5px;
+  font-size: 16px;
+  color: #636262;
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+.inputContainerInput:focus + .inputContainerLabel,
+.inputContainerInput:valid + .inputContainerLabel {
+  padding-inline: 10px;
+  translate: 0px -25px;
+  scale: 0.8;
+  font-size: 20px;
+}
+
+.InputButton {
+  background: none;
+  border: 1px solid #000;
+  width: 100px;
+  height: 40px;
+  border-radius: 4px;
+  position: relative;
+  left: 290px;
+  top: -16px;
+}
+
+.InputButton:hover {
+  transform: scale(1.1);
+  transition: 1s;
+  background-color: rgb(203, 203, 203);
+}
+
+/* --- ESTILOS DE VALIDACIÓN --- */
+.error {
+  color: tomato;
+  font-size: 12px;
+  margin-top: 5px;
+  font-family: 'Lucida Sans', 'Lucida Sans Regular', sans-serif;
+}
+
+/* --- ORGANIZACIÓN DE INPUTS Y BOTONES --- */
+.contenttodosInput {
+  display: flex;
+  padding: 7px;
+}
+.contentinput3 {
+  margin-left: 15px;
+}
+.butonsRedirectInput {
+  height: 80px;
+  padding: 0;
+}
+.butonsRedirectInput .toggleButton {
+  position: relative;
+  left: 100px;
+  top: 30px;
+}
+
+/* --- MEDIA QUERY para TABLETS y pantallas MEDIANAS --- */
+@media(max-width: 768px) {
+  .container2 {
+    flex-direction: column;
+    height: auto;
+  }
+  .containerFormRegister {
+    flex-direction: column;
+    width: 95%;
+    left: 0;
+    align-items: center;
+  }
+  .formContainer1 {
+    width: 100%;
+    margin-left: 0;
+  }
+  .InputButton {
+    left: 180px;
+    top: 0;
+  }
+  .inputContainerInput {
+    width: 90%;
+  }
+}
+
+/* --- MEDIA QUERY para dispositivos PEQUEÑOS (celulares) --- */
+@media(max-width: 778px) {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: rgb(255, 255, 255);
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.351);
-    border-radius: 10px;
+    height: 100vh;
+    width: 100vw;
   }
-  .cont {
-    width: 350px;
-    object-fit: cover;
+
+  .container1 {
+    display: none;
   }
-  .containerFormRegister{
-    display: flex;
-    margin-top: 32px;
-    position: relative;
-    left: 15px;
-    width: 1400px;
+
+  .containerFormRegister {
+    width: 95%;
+    flex-direction: column;
+    left: 0;
+    margin-top: 20px;
   }
-  .BarraSuperiorR{
-    display: flex;
-    width: 1240px;
-    position: relative;
-    right: 73px;
-    padding-top: 12px;
-    padding-left: 22px;
+
+  .formContainer1 {
+    width: 100%;
+    padding: 15px;
+    margin: 0;
   }
-  .formContainer1{
-    width: 700px;
-    flex: 1;
-    padding: 20px;
-    background-color: white;
-    border-radius: 10px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.351);
-    margin-left: 20px;
+
+  .inputContainerInput {
+    width: 100%;
   }
-  
-  .inputContainer {
-    position: relative;
+
+  .InputButton {
+    left: -2px;
+    margin-top: 10px;
   }
-  
-  
-  .inputContainerInput{
-    width: 300px;
-    height: 40px;
+  .toggleButton{
     color: #000;
-    padding: 10px;
-    border: 2px solid #9d9d9d;
-    border-radius: 4px;
-    outline: 2px solid rgb(148, 148, 148);
-    background-color: transparent;
-    transition: outline-color 500ms;
-    margin-top: 12px;
+    position: relative;
+    left: 100px;
+    top: -25px;
   }
-  .inputContainerInput:is(:focus, :valid){
-    outline-color: rgb(154, 154, 154);
-  }
-  
-  .inputContainerLabel{
-    position: absolute;
-      top: 12px;
-      position: absolute;
-      left: 10px;
-      transform: translateY(30%);
-      background-color: rgb(255, 255, 255);
-      padding: 0 5px;
-      font-size: 16px;
-      color: #636262;
-      pointer-events: none;
-      transition: all 0.3s ease;
-    }
   
   .inputContainerInput:focus + .inputContainerLabel,
   .inputContainerInput:valid + .inputContainerLabel {
-      padding-inline: 10px;
-      translate: 0px -25px;
-      scale: 0.8;
-      font-size: 20px;
+    padding-inline: 1px;
+    scale: 0.8;
+    font-size: 18px;
   }
-  .InputButton{
-    background: none;
-    border: 1px solid #000;
-    width: 100px;
-    height: 40px;
-    border-radius: 4px;
-    position: relative;
-    left: 290px;
-    top: -16px;
-  }
-  
-  .InputButton:hover{
-    transform: scale(1.1);
-    transition: 1s;
-    background-color: rgb(203, 203, 203);
-  }
-  @media(max-width: 487px){
-    *{
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    body{
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      width: 100vw;
-    }
-    .container{
-      width: 95%; 
-      padding: 5px;
-    }
-    .container1{
-      display: none;
-    }
-    .inputContainerInput{
-      width: 250px;
-      color: #000;
-      padding: 10px;
-      border: 2px solid #a8a8a8;
-      border-radius: 4px;
-      outline: 2px solid white;
-      background-color: transparent;
-      transition: outline-color 500ms;
-    }
-    .inputContainerInput:focus + .inputContainerLabel,
-    .inputContainerInput:valid + .inputContainerLabel {
-        padding-inline: 1px;
-        scale: 0.8;
-        font-size: 18px;
-    }
-    .InputButton{
-      background: none;
-      border: 1px solid #000;
-      width: 100px;
-      height: 40px;
-      border-radius: 4px;
-      position: relative;
-      left: 50px;
-    }
-  }
-
-
-  /*input validacion*/
-  
-  .error {
-    color: tomato;
-    font-size: 12px;
-    margin-top: 5px;
-    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-  }
-  
-  .contenttodosInput{
-    display: flex;
-    padding: 7px;
-  }
-  .contentinput3{
-    margin-left: 15px;
-  }
-  
-  .butonsRedirectInput{
-    height: 80px;
-    padding: 0;
-  }
-  
-  .butonsRedirectInput .toggleButton{
-    position: relative;
-    left: 100px;
-    top: 30px;
-  }
+}

@@ -135,7 +135,6 @@ async function fetchUserData() {
                     }else{
                         console.log("no pusiste respuesta")
                     }
-
                 }else if(NameChat === "ChatBotInstagram"){
                     console.log(`Cambio de plan id: ${idUser}, nombre ${nombreUser}, Nombre chat ${NameChat}, mensaje: ${messageProblem}, duracion ${ServicioDuracion}, descripcion: nombre titular${NameTitular}, docuemnto titular: ${DocumentoTitular}, servicio ${ServicioTitular}, motivo: ${MotivoCambio} `)
 

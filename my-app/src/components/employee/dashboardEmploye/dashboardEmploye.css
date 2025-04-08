@@ -1,4 +1,4 @@
-.contentEmployee{
+.contentEmployee {
     position: relative;
     left: 300px;
     width: 1200px;
@@ -6,86 +6,168 @@
     padding: 22px;
 }
 
-.contentDiagramEmploye{
+.contentDiagramEmploye {
     height: 300px;
 }
 
-.diagrama11{
-    margin: auto;
-    width: 55%;
-    height: 300px;
+.diagrama11 {
+    width: 560px;
+    height: 350px;
     background-color: #e2e2e2;
     padding: 10px;
     box-sizing: border-box;
     overflow: hidden;
     margin-right: 12px;
+    margin-bottom: 12px;
     border-radius: 12px;
 }
 
-.graficos1{
-    width: 1150px;
-    height: 200px;
+.graficos1 {
     display: flex;
-    height: 300px;  
+    justify-content: space-between;
+    flex-wrap: wrap;
+    width: 1150px;
+    height: 300px;
     position: relative;
     left: 300px;
+    gap: 10px;
 }
 
-.digramContainer{
+.digramContainer {
     width: 350px;
     display: flex;
     position: relative;
     left: 82px;
     top: -22px;
+    margin-bottom: 32px;
 }
 
-.diagrama22{
+.diagrama22 {
     height: 300px;
     width: 456px;
-    margin-left: -10px;
-    margin-right: 2px;
-    border-radius: 7px; display: flex;
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-left: 12px;
+    margin: 0 12px;
     padding: 0;
+    border-radius: 7px;
 }
 
-.tableContainer1{
+.tableContainer1 {
+    margin-top: 30px;
     width: 900px;
     overflow-y: scroll;
-    height: 280px;
+    height: 290px;
 }
-.tableContainer1 table{
+
+.tableContainer1 table {
     border-collapse: collapse;
     width: 860px;
     margin: 12px;
 }
 
-.tableContainer1 th, td{
-    border: none;   
+.tableContainer1 th, td {
+    border: none;
     padding: 8px;
     text-align: left;
 }
 
-.dashboarContainer{
-    overflow-y: scroll;
+.dashboarContainer {
+    overflow-y: auto;
     overflow-x: hidden;
 }
 
-.img3d1{
+.img3d1 {
     height: 10rem;
     width: 102px;
     position: relative;
     top: 32px;
 }
 
-.contentTableAndDiagram1{
+.contentTableAndDiagram1 {
     display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
     width: 1200px;
     height: 300px;
     position: relative;
     left: 300px;
     top: 20px;
+    gap: 20px;
+}
+
+/* ----------- RESPONSIVE DESIGN ----------- */
+
+@media (max-width: 1024px) {
+    .contentEmployee,
+    .graficos1,
+    .contentTableAndDiagram1 {
+        left: 0;
+        width: 80%;
+        padding: 10px;
+        flex-direction: column;
+        align-items: center;
+        height: auto;
+    }
+
+    .diagrama11,
+    .diagrama22 {
+        width: 90%;
+        height: auto;
+        margin: 10px 0;
+    }
+
+    .digramContainer {
+        left: 0;
+        top: 0;
+        width: 100%;
+        justify-content: center;
+        margin-top: 10px;
+    }
+
+    .tableContainer1 {
+        width: 95%;
+        height: auto;
+        max-height: 300px;
+    }
+
+    .tableContainer1 table {
+        width: 100%;
+    }
+
+    .img3d1 {
+        height: 8rem;
+        width: 80px;
+        top: 20px;
+    }
+}
+
+@media (max-width: 487px) {
+    .graficos1,
+    .contentTableAndDiagram1 {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .diagrama11,
+    .diagrama22 {
+        width: 95%;
+        margin: 10px auto;
+    }
+
+    .contentEmployee {
+        width: 95%;
+        padding: 10px;
+        left: 0;
+    }
+
+    .img3d1 {
+        height: 6rem;
+        width: 65px;
+        top: 15px;
+    }
+
+    .tableContainer1 {
+        overflow-x: auto;
+    }
 }

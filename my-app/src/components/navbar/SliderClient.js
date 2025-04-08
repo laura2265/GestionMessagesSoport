@@ -28,7 +28,7 @@ function SliderClient(){
                     <Link to="/asesor-preferido">Asesores Contactados</Link>
                 </li>
                 <li>
-                    <button onClick={handleLogout}>Cerrar Sesión</button>
+                    <button className="cerrarSesion" onClick={handleLogout}>Cerrar Sesión</button>
                 </li>
             </ul>
         </div>
