@@ -1,11 +1,11 @@
 import { Link, useNavigate } from "react-router-dom";
 
 function SliderClient(){
-    const navigate = useNavigate()
+    const navigate = useNavigate();
 
     const handleLogout = () => {
-        localStorage.removeItem('UserId')
-        navigate('/login')
+        localStorage.removeItem('UserId');
+        navigate('/login');
     }
 
     return(

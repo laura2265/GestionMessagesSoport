@@ -409,19 +409,80 @@ h6{
 
 @media(max-width: 1299px){
     .graficos{
+        position: relative;
+        left: 100px;
         width: 600px;
         height: 750px;
     }
+
+    .BarraSuperior{
+        position: relative;
+        left: 100px;
+        width: 85%;
+    }
+
+    .digramContainer{
+        margin-left: 52px;
+    }
+
     .diagrama2{
         position: absolute;
         top: 25rem;
-        left: -12px;
+        left: 12px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 600px;
+        height: 400px;
     }
+
+    .diagrama4{
+        position: relative;
+        left: -350px;
+        top: -803px;
+        width: 170px;
+    }
+    
+    .diagrama4 .content1, .content2{
+        width: 130px;
+    }
+
+    .content1 h5{
+        margin-left: -12px;
+    }
+
+    .content1 h3{
+        position: relative;
+        left: 30px;
+    }
+
+    .content2 h5{
+        margin-left: -12px;
+    }
+
+    .content2 h3{
+        position: relative;
+        left: 30px;
+    }
+
     .diagrama1{
         width: 500px;
     }
+
     .tag_leyenda{
         position: static;
         left: 82px;
     }
+
+    .tableContainer{
+        position: relative;
+        left: -200px;
+        width: 650px;
+        overflow-y: scroll;
+    }
+
+    .dashboarContainer1{
+        width: auto;
+    }
+
 }

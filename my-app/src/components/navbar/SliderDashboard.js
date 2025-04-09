@@ -1,13 +1,13 @@
-import { useContext } from "react"
-const { Link, useNavigate } = require("react-router-dom")
+import { useContext } from "react";
+const { Link, useNavigate } = require("react-router-dom");
 
 const  SliderDashboard = () => {
 
     const navigate = useNavigate(); 
 
     const handleLogout = () => {
-        localStorage.removeItem('UserId')
-        navigate('/login')
+        localStorage.removeItem('UserId');
+        navigate('/login');
     }
 
     return(
@@ -15,22 +15,20 @@ const  SliderDashboard = () => {
         <div className="slider">
             <ul>
                 <li>
-                    <input className="InputBuscar" placeholder='🔍 Buscar' />
+                    <span className="icon">📊</span>
+                    <Link className="text" to="/dashboard">Dashboard</Link>
                 </li>
                 <li>
-                    <Link to="/dashboard">Dashboard</Link>
+                    <Link className="text" to="/flow-build">Usuarios</Link>
                 </li>
                 <li>
-                    <Link to="/flow-build">Usuarios</Link>
+                    <Link className="text" to="/directorio">Reportes</Link>
                 </li>
                 <li>
-                    <Link to="/directorio">Reportes</Link>
+                    <Link className="text" to="/perfil-Admin">Perfil</Link>
                 </li>
                 <li>
-                    <Link to="/perfil-Admin">Perfil</Link>
-                </li>
-                <li>
-                    <Link to="/numbers">Configuración</Link>
+                    <Link className="text" to="/numbers">Configuración</Link>
                 </li>
                 <li>
                     <button className="cerrarSesion" onClick={handleLogout}>Cerrar Sesión</button>

@@ -96,8 +96,6 @@
     gap: 20px;
 }
 
-/* ----------- RESPONSIVE DESIGN ----------- */
-
 @media (max-width: 1024px) {
     .contentEmployee,
     .graficos1,
@@ -108,13 +106,6 @@
         flex-direction: column;
         align-items: center;
         height: auto;
-    }
-
-    .diagrama11,
-    .diagrama22 {
-        width: 90%;
-        height: auto;
-        margin: 10px 0;
     }
 
     .digramContainer {
@@ -142,32 +133,3 @@
     }
 }
 
-@media (max-width: 487px) {
-    .graficos1,
-    .contentTableAndDiagram1 {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .diagrama11,
-    .diagrama22 {
-        width: 95%;
-        margin: 10px auto;
-    }
-
-    .contentEmployee {
-        width: 95%;
-        padding: 10px;
-        left: 0;
-    }
-
-    .img3d1 {
-        height: 6rem;
-        width: 65px;
-        top: 15px;
-    }
-
-    .tableContainer1 {
-        overflow-x: auto;
-    }
-}

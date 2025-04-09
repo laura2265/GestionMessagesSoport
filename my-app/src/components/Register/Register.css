@@ -211,13 +211,14 @@
     left: -2px;
     margin-top: 10px;
   }
+
   .toggleButton{
     color: #000;
     position: relative;
     left: 100px;
     top: -25px;
   }
-  
+
   .inputContainerInput:focus + .inputContainerLabel,
   .inputContainerInput:valid + .inputContainerLabel {
     padding-inline: 1px;

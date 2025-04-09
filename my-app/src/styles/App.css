@@ -239,14 +239,6 @@ body .app.light {
 
 }
 
-.app.light .cerrarSesion{
-  border: 1px solid #000000;
-  border-radius: 12px;
-}
-.app.light .cerrarSesion:hover{
-  transition: 1s;
-  transform: scale(1.1);
-}
 
   /*estilos de home*/
 /*modo claro*/
@@ -716,12 +708,51 @@ body .app.light {
   }
 }
 
-/* ------------------ RESPONSIVE MEJORADO ------------------ */
+/* Por defecto (pantallas grandes): mostrar texto y ocultar íconos */
+.slider .icon {
+  display: none;
+}
 
-/* Tablets */
+.slider .text{
+  display: inline;
+}
+
+.slider .textCerrarSesion{
+  display: inline;
+  border: 1px solid #000000;
+  border-radius: 12px;
+  padding: 7px;
+}
+
+.slider .textCerrarSesion:hover{
+  position: relative;
+  top: 5px;
+  transition: 1s;
+  cursor: pointer;
+}
+
+.navImg{
+  width: 30px;
+  margin-left: -3px;
+}
+
+/* En pantallas pequeñas */
 @media (max-width: 1024px) {
+
   .slider {
-    width: 13rem;
+    width: 5rem;
+  }
+
+  .slider .icon {
+    display: inline;
+  }
+
+  .slider .text{
+    display: none;
+  }
+
+  .slider .textCerrarSesion{
+    display: none;
   }
 
   .app.light .container1,
@@ -791,6 +822,7 @@ body .app.light {
     align-items: flex-start;
     width: 100%;
   }
+
 }
 
 /* Celulares pequeños */
@@ -811,5 +843,6 @@ body .app.light {
   .app.dark .toggleButton {
     font-size: 13px;
   }
+
 }
 
