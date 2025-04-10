@@ -1,40 +1,37 @@
-import { timeStamp } from "console";
-import mongoose, { mongo } from "mongoose";
-import mongoosePaginate from 'mongoose-paginate-v2';
-import { type } from "os";
+import mongoose from "mongoose";
+import mongoosePaginate from "mongoose-paginate-v2";
 
-const MessageServerScheme = new mongoose.Schema({
-    de: String,
-    mensaje: String,
-    timeStamp:{
-        type: Date, 
-        default: Date.now
-    }
-})
+const MessageServerSchema = new mongoose.Schema({
+  de: String,
+  mensaje: String,
+  timeStamp: {
+    type: Date,
+    default: Date.now,
+  },
+});
 
-const conversacionScheme = new mongoose.Schema({
-    id: String,
-    usuario:{
-        nombre: String,
-        email: String,
-        navegador: String,
-        ip: String
-    },
-    fechaInicio:{
-        type: Date, 
-        default: Date.now
-    },
-    fechaUltimoMensaje:{
-        type: Date, 
-        default: Date.now
-    },
-    estadoActual: String,
-    conversacion: [MessageServerScheme],
-    finalizacion: Boolean
-})
+const ConversacionSchema = new mongoose.Schema({
+  id: String,
+  usuario: {
+    nombre: String,
+    email: String,
+    navegador: String,
+    ip: String,
+  },
+  fechaInicio: {
+    type: Date,
+    default: Date.now,
+  },
+  fechaUltimoMensaje: {
+    type: Date,
+    default: Date.now,
+  },
+  estadoActual: String,
+  conversacion: [MessageServerSchema],
+  finalizacion: Boolean,
+});
 
-conversacionScheme.plugin(mongoosePaginate);
+ConversacionSchema.plugin(mongoosePaginate);
 
-export default mongoose.model('chatbot-server', conversacionScheme)
-
-
+// Cambiamos el nombre del modelo para que sea más claro
+export default mongoose.model("Conversacion", ConversacionSchema);

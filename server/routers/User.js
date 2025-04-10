@@ -7,6 +7,7 @@ import MetodoPostManychat from "../controllers/MetodoPostManychat.js";
 import { getDataMessageId, postDataMessage, getDataMesage } from "../controllers/Mongo/Message.js";
 import { AsignarUserPost, AsignarUserGet } from "../controllers/UserAleatorio/AsignarUser.js";
 import WisphubApi from "../controllers/WisphubApi.js";
+import { crearConversacion, getConversacionBot, updateMessage } from "../controllers/Mongo/MessageBotServer.js";
 
 const router = express.Router();
 const path = "user";
@@ -17,6 +18,7 @@ const pathMessage = 'post-message';
 const pathHistoryMessage = 'message'
 const pathAsignar = 'asignaciones';
 const phatWisphub = 'wisphub-data'
+const pathConversacion = 'conversacion-server'
 
 // Ruta para obtener datos (GET)
 router.get(`/${path}`, getData);
@@ -52,5 +54,10 @@ router.get(`/${pathAsignar}`, AsignarUserGet);
 
 //Api wisphub
 router.get(`/${phatWisphub}/:cedula`, WisphubApi)
+
+//conversacion chatbot del servidor
+router.post(`/${pathConversacion}`, crearConversacion);
+router.get(`/${pathConversacion}`, getConversacionBot);
+router.put(`/${pathConversacion}/:id/mensaje`, updateMessage);
 
 export default router;
