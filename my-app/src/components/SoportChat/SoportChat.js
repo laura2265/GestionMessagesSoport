@@ -13,47 +13,13 @@ function SoportChat (){
     const [chatHistory, setChatHistory] = useState([]);
     const [message, setMessages] = useState([
         {
-            sender: 'bot', text: `Hola, bienvenido a tu chat 😊\n¿En que puedo ayudarte?`,
-            buttons:["Falla conexión", "Cambiar Contraseña", "Cancelar Servicio", "Cambio de plan", "Traslado", "Solicitar servicio", "PQR(Peticion, Queja, Reclamo)", "Pagar Facturas", "Cambio de titular", "Otro"]
+          sender: 'bot', text: `Hola, bienvenido a tu chat de confianza 😊\n¿Como te llamas?`
         }
     ]);
+    const [stateChat, setStateChat] = useState(null);
+    const [option, setOption] = useState(null);
 
-    const enviarMensaje = async (idConversacion, de, mensaje) => {
-      try{
-        const response = await  fetch(`http://localhost:3001/conversacion-server/${idConversacion}/mensaje`,{
-          method: 'PUT',
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            de,
-            mensaje
-          })
-        });
-
-        const data = await response.json();
-        console.log("Mensaje guardado: ", data);
-
-      }catch(error){
-        console.error(`Error al guardar el mensaje: ${error}`);
-      }
-    }
-
-    const handleSendMessage = (texto) => {
-      setMessages((prev) => [...prev, {sender: "user", text: texto}])
-      enviarMensaje(userId, "usuario", texto);
-    }
-
-    const handleBotResponse = (texto) => {
-      setMessages((prev) => [...prev, {de: 'bot', mensaje: texto}]);
-      enviarMensaje(userId, "bot", texto);
-
-      if(isChatVisible){
-        setHandleNewMessage(true);
-        playNotificacionSound();
-      }
-    };
-
+    //variables de confirmacion 
     const validStatesSinInternet = [
       "SeguirWifiSinInternetMultiplesEquipo",
       "SeguirCableSinInternetUnEquipo",
@@ -128,8 +94,162 @@ function SoportChat (){
       "cablePcNoSabe"
     ];
 
-    const [stateChat, setStateChat] = useState(null);
-    const [option, setOption] = useState(null);
+    //variables para el historial de mensajes
+    const [conversacionState, setConversacionState] = useState(false);
+    const [nombre, setNombre] = useState("");
+    const [nombreTemporal, setNombreTemporal] = useState("");
+    const [email, setEmail] = useState("");
+    const [estado, setEstado] = useState("esperando_nombre");
+    const chatIdUser = localStorage.getItem("chatUserId")
+
+    //metodo de actualizar los mensajes guardadosF
+    const enviarMensaje = async (idConversacion, de, mensaje) => {
+      try{
+        const response = await  fetch(`http://localhost:3001/conversacion-server/${idConversacion}/mensaje`,{
+          method: 'PUT',
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            de,
+            mensaje
+          })
+        });
+
+        const data = await response.json();
+        console.log("Mensaje guardado: ", data);
+
+      }catch(error){
+        console.error(`Error al guardar el mensaje: ${error}`);
+      }
+    }
+
+    const handleSendMessage = (texto) => {
+      setMessages((prev) => [...prev, {sender: "user", text: texto}])
+      enviarMensaje(localStorage.getItem('chatUserId'), "usuario", texto);
+    }
+
+    const getPublicIp = async () => {
+      try{
+        const response = await fetch('https://api.ipify.org?format=json');
+        const data = await response.json();
+        console.log('la ip: ', data.ip);
+        return data.ip;
+      }catch(error){
+        console.error(`Error al obtener la IP: `, error)
+        return "Desconocida";
+      }
+    }
+
+    useEffect(() =>{
+      const iniciarConversacion = async () => {
+        let existingUserId = localStorage.getItem('chatUserId');
+        if(!existingUserId){
+          const newId = crypto.randomUUID();
+          localStorage.setItem("chatUserId", newId)
+
+          setUserid(newId);
+          setEstado('esperando_nombre')
+        }else{
+          setUserid(existingUserId)
+        }
+      }
+      iniciarConversacion();
+    },[]);
+
+    const addBotMessage = (text, buttons) => {
+      setMessages((prev) => [...prev, { sender: 'bot', text, buttons }]);
+      enviarMensaje(chatIdUser, "bot", buttons);
+
+      if (isChatVisible) {
+          setHandleNewMessage(true);
+          playNotificacionSound();
+      }
+  };
+
+    const sendMessage = async() => {
+      if(userInput.trim() === "" ) return;
+
+      setMessages((prevMessage) => [...prevMessage, {sender: "user", text: userInput}]);
+      if (estado === "esperando_nombre") {
+        setNombre(userInput);
+        setNombreTemporal(userInput);
+        setTimeout(() => addBotMessage(`¡Gracias ${userInput}! ¿Cual es tu correo electronico?`), 1000);
+        setEstado("esperando_email");
+        setUserInput("");
+        return;
+      }
+
+      if(!conversacionState){
+        if (estado === "esperando_email") {
+          setEmail(userInput);
+        
+          const ip = await getPublicIp();
+          const navegador = navigator.userAgent;
+        
+          console.log("Datos enviados:", {
+            id: localStorage.getItem("chatUserId"),
+            usuario: {
+              nombre: nombreTemporal,
+              email: userInput,
+              navegador,
+              ip,
+            },
+            fechaInicio: new Date().toISOString(),
+          });
+        
+          await fetch('http://localhost:3001/conversacion-server', {
+            method: 'POST',
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              id: localStorage.getItem("chatUserId"),
+              usuario: {
+                nombre: nombreTemporal,
+                email: userInput,
+                navegador,
+                ip,
+              },
+              fechaInicio: new Date().toISOString()
+            })
+          });
+  
+          setTimeout(() => addBotMessage(
+            `¡Perfecto, ${nombreTemporal}! Ya puedes comenzar a chatear con nosotros\n ¿En qué podemos ayudarte?`,
+            [
+              "Falla conexión", "Cambiar Contraseña", "Cancelar Servicio", "Cambio de plan",
+              "Traslado", "Solicitar servicio", "PQR(Peticion, Queja, Reclamo)",
+              "Pagar Facturas", "Cambio de titular", "Otro"
+            ]), 1000);
+        
+          setEstado("conversacion");
+          setUserInput("");
+          return;
+        }
+        setConversacionState(true)
+      }
+      
+
+      if(estado === "conversacion"){
+        handleSendMessage(userInput);
+
+        if (waitingForDocument) {
+          wisphub(userInput);
+          setWaitingForDocument(false);
+       } else if (userInput.toLowerCase().includes('seguir')){
+          setTimeout(()=> addBotMessage('Hola, bienvenido a tu chat 😊\n¿En que puedo ayudarte?',
+            ["Falla conexión", "Cambiar Contraseña", "Cancelar Servicio", "Cambio de plan", "Traslado", "Solicitar servicio", "PQR(Peticion, Queja, Reclamo)", "Pagar Facturas", "Cambio de titular", "Otro"]
+          ),1000);
+          setWaitingForDocument(true);
+       }else{
+            setTimeout(() => addBotMessage('Lo siento, no entiendo esa solicitud 😢'),1000);
+            setWaitingForDocument(true);
+       }
+       setUserInput("");
+
+      }
+    }
 
     const [handleNewMessage, setHandleNewMessage] = useState(false)
     const [userInput, setUserInput] = useState("");
@@ -148,14 +268,7 @@ function SoportChat (){
         setIsChatVisible(false);
     }
 
-    const addBotMessage = (text, buttons) => {
-      setMessages((prev) => [...prev, { sender: 'bot', text, buttons }]);
-  
-      if (isChatVisible) {
-          setHandleNewMessage(true);
-          playNotificacionSound();
-      }
-  };
+    
 
     const wisphub = async (cedula) => {
       try {
@@ -187,37 +300,6 @@ function SoportChat (){
       }
     }
 
-   /* useEffect(()=>{
-      let existingUserId = localStorage.getItem('chatUsers');
-      if(!existingUserId){
-        const newId = Crypto.randomUUID();
-        localStorage.setItem('chatUserId', newId);
-        existingUserId = newId
-      }
-      setUserid(existingUserId);
-    })*/
-
-    const sendMessage = () => {
-        if(userInput.trim() === "" ) return;
-
-        handleSendMessage(userInput);
-
-         setMessages((prevMessage) => [...prevMessage, {sender: "user", text: userInput}]);
-
-         if (waitingForDocument) {
-            wisphub(userInput);
-            setWaitingForDocument(false);
-          } else if (userInput.toLowerCase().includes('seguir')){
-            setTimeout(()=> handleBotResponse('Hola, bienvenido a tu chat 😊\n¿En que puedo ayudarte?',
-              ["Falla conexión", "Cambiar Contraseña", "Cancelar Servicio", "Cambio de plan", "Traslado", "Solicitar servicio", "PQR(Peticion, Queja, Reclamo)", "Pagar Facturas", "Cambio de titular", "Otro"]
-            ),1000);
-            setWaitingForDocument(true);
-          }else{
-            setTimeout(() => addBotMessage('Lo siento, no entiendo esa solicitud 😢'),1000);
-          }
-         setUserInput("");
-    }
-
     const handleButtonClick = async (option) => {
       setOption(option);
       handleSendMessage(option)
@@ -226,21 +308,21 @@ function SoportChat (){
       if (option === "Falla conexión") {
         setStateChat("Falla conexión");
 
-        setTimeout(() => handleBotResponse(`Al parecer tienes problemas con tu servicio, vamos a hacer unas pruebas para poder ayudarte. \n¿Qué tipo de problema tiene? escoja el problema que desea solucionar:`,
+        setTimeout(() => addBotMessage(`Al parecer tienes problemas con tu servicio, vamos a hacer unas pruebas para poder ayudarte. \n¿Qué tipo de problema tiene? escoja el problema que desea solucionar:`,
           ["✅ No tengo internet.", "🐢 Internet lento.", "🌐 No cargan páginas.", "📺 Señal de Televisión.", "⚡ Internet inestable.", "🔘Otro problema"]
         ),1000);
         setWaitingForDocument(true);
 
       }else if(option === "✅ No tengo internet." &&  stateChat === "Falla conexión"){
         setStateChat("sininternet");
-        setTimeout(() => handleBotResponse(`Para poder ayudare con tu problema, Podrías escoger la opción *Un equipo*, de lo contrario escoge la opción *Múltiples equipos*`,
+        setTimeout(() => addBotMessage(`Para poder ayudare con tu problema, Podrías escoger la opción *Un equipo*, de lo contrario escoge la opción *Múltiples equipos*`,
           ["📱 Un equipo", "💻📱 Múlples aquipos"]
         ),1000);
         setWaitingForDocument(true);
 
       }else if(option === '📱 Un equipo' &&  stateChat === "sininternet"){
         setStateChat("UnEquipoSinInternet")
-        setTimeout(() => handleBotResponse(`¿Estas conectado a *WIFI* o cable *Ethernet*?`,
+        setTimeout(() => addBotMessage(`¿Estas conectado a *WIFI* o cable *Ethernet*?`,
           ["📶 WIFI", "🔌 Cable Ethernet"]
         ),1000);
         setWaitingForDocument(true);
@@ -273,6 +355,7 @@ function SoportChat (){
           \nSi no sabes realizar el ultimo punto, escoge la opción *Ayuda*, de lo contrario escoge la opción *Seguir*`,
           ["🆘 Ayuda", "➡️ Seguir"]
         ),1000);
+
         setWaitingForDocument(true);
 
         //wifi o cable multiples equipos

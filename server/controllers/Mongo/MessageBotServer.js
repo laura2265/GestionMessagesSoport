@@ -49,27 +49,37 @@ export const getOneChat = async(req, res) =>{
 
 export const crearConversacion = async (req, res) => {
     try {
-      const {
-        id,
-        usuario,
-        estadoActual,
-        conversacion,
-        finalizacion,
-      } = req.body;
+        const existingUser = await conversacionScheme.findOne({$or: [{id}]})
 
-      const nuevaConversacion = new conversacionScheme({
-        id,
-        usuario,
-        estadoActual,
-        conversacion,
-        finalizacion,
-      });
-      const guardado = await nuevaConversacion.save();
-      res.status(201).json({
-        success: true,
-        message: "Conversación guardada correctamente",
-        data: guardado,
-      });
+        if(existingUser){
+            return res.status(404).json({
+                seccess: false,
+                message: "El usuario ya existe con el mismo id"
+            }); 
+        }
+
+        const {
+          id,
+          usuario,
+          estadoActual,
+          conversacion,
+          finalizacion,
+        } = req.body;
+
+        const nuevaConversacion = new conversacionScheme({
+          id,
+          usuario,
+          estadoActual,
+          conversacion,
+          finalizacion,
+        });
+
+        const guardado = await nuevaConversacion.save();
+        res.status(201).json({
+          success: true,
+          message: "Conversación guardada correctamente",
+          data: guardado,
+        });
     } catch (error) {
       console.error("Error al guardar conversación:", error.message);
       res.status(500).json({
@@ -105,8 +115,8 @@ export const updateMessage = async(req, res) => {
                 success: false,
                 message: `Conversacion no encontrada`
             });
-        };
-        
+        }
+
         res.status(200).json({
             success: true,
             data: conversacion
