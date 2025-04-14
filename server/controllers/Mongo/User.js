@@ -1,7 +1,6 @@
 import mongoose, { model } from 'mongoose';
 import User from '../../models/User.js';
 
-
 //Buscar Todos los usuarios
 export const getData = async (req, res) => {
     try {
@@ -12,7 +11,6 @@ export const getData = async (req, res) => {
             limit: parseInt(limit),
             sort: { createdAt: -1},
         }
-
         const users = await User.paginate({},options);
 
         res.status(200).json({
@@ -39,12 +37,10 @@ export const getOneUserId = async(req, res)=>{
                 message: `Usuario con ID ${id} no encontrado`
             })
         }
-
         res.status(200).json({
             success: true,
             data: user
         })
-
     }catch(err){
         res.status(500).json({
             success: false,
@@ -56,12 +52,9 @@ export const getOneUserId = async(req, res)=>{
 
 export const insertData = async (req, res) => {
     console.log("Datos recibidos en la solicitud:", req.body);
-
     try {
         const { tipoDocument, numberDocument, name, lasName, email, password, rol, telefono, direccion, estado,cargo, categoria, area } = req.body;
-
         const existingUser = await User.findOne({ $or: [{ email }, { numberDocument }] });
-
         if (existingUser) {
             return res.status(400).json({
                 success: false,
@@ -92,6 +85,7 @@ export const insertData = async (req, res) => {
             message: "Usuario y rol creado exitosamente",
             data: newUser,
         });
+
     } catch (error) {
         console.error("Error general detectado:", error.message);
         res.status(500).json({
@@ -101,7 +95,7 @@ export const insertData = async (req, res) => {
         });
     }
 };
- 
+
 //Actualizar Usuario
 export const updateData = async (req, res) => {
     try{
@@ -132,6 +126,7 @@ export const updateData = async (req, res) => {
         })
     }
 }
+
 export const updateState = async (req, res) => {
     try {
         const { id } = req.params;

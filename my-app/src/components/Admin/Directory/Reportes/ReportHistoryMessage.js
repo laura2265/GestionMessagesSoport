@@ -65,7 +65,7 @@ function ReportHistoryMessage(){
             navigate('/login')
         }
 
-    },[navigate])
+    },[navigate]);
 
     const fetchMessage = async (chatId) => {
         try {
@@ -114,7 +114,7 @@ function ReportHistoryMessage(){
                 const message = await fetchMessage(chatId);
 
                 return { idEmple, chatId, chatContact,FechaRegister, userData, manychatData, message };
-            }));    
+            }));  
 
             setEmpleAsociado(empleadosConDatos);
             setShowPreview(false);
@@ -132,9 +132,8 @@ function ReportHistoryMessage(){
             });
 
             if (!responseUser.ok) throw new Error("Error al consultar usuario");
-
-            const resultUser = await responseUser.json();
-            const dataUser = resultUser.data.docs;
+                const resultUser = await responseUser.json();
+                const dataUser = resultUser.data.docs;
 
             return dataUser.filter((user) => user._id === idEmple) || null;
         } catch (error) {
@@ -179,7 +178,7 @@ function ReportHistoryMessage(){
             alert('No hay datos para generar el reporte.');
             return;
         }
-    
+
         const doc = new jsPDF({
             orientation: 'p',
             unit: "mm",
@@ -201,6 +200,7 @@ function ReportHistoryMessage(){
                 reader.readAsDataURL(blob);
             });
         };
+
         const addHeader = () => {
             doc.setFontSize(18);
             const logBae64 = loadImageAsBase64()
@@ -219,16 +219,16 @@ function ReportHistoryMessage(){
                 addHeader();
             }
         }
-    
+
         addHeader();
-    
+
         empleAsociado.forEach((emple, index) => {
             addNewPageIfNeeded();
     
             doc.setFontSize(14);
             doc.setFont("helvetica", "bold");
             doc.text(`Empleado:`, 14, yOffset);
-    
+
             doc.setFontSize(12);
             doc.setFont("helvetica", "normal");
             doc.text(`${emple.userData[0].name} (${emple.userData[0].email})`, 40, yOffset);

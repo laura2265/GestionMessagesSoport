@@ -49,7 +49,7 @@ export const getOneChat = async(req, res) =>{
 
 export const crearConversacion = async (req, res) => {
     try {
-        const existingUser = await conversacionScheme.findOne({$or: [{id}]})
+        const existingUser = await conversacionScheme.findOne({ id })
 
         if(existingUser){
             return res.status(404).json({
@@ -92,8 +92,15 @@ export const crearConversacion = async (req, res) => {
 
 export const updateMessage = async(req, res) => {
     try{
-        const {id} = req.params;
+        const { id } = req.params;
         const { de, mensaje } = req.body;
+
+        if(!de || !mensaje){
+            return res.status(400).json({
+                success: false,
+                message: "Faltan datos necesarios para guardar el mensaje"
+            });
+        }
 
         const nuevoMensaje = {
             de,
@@ -101,8 +108,10 @@ export const updateMessage = async(req, res) => {
             timeStamp: new Date()
         };
 
-        const conversacion = await conversacionScheme.findByIdAndUpdate(
-            id,
+        console.log("Nuevo mensaje recibido: ", nuevoMensaje);
+
+        const conversacion = await conversacionScheme.findOneAndUpdate(
+            { id },
             {
                 $push: {conversacion: nuevoMensaje},
                 $set: {fechaUltimoMensaje: new Date()}
@@ -123,9 +132,11 @@ export const updateMessage = async(req, res) => {
         });
 
     }catch(error){
+        console.error('Error al actualizar la conversacion ', error)
         res.status(500).json({
             success: false,
-            message: `Error al momento de actualizar la conversacion`
+            message: `Error al momento de actualizar la conversacion`,
+            error: error.message
         })
     }
 }
