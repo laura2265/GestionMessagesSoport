@@ -36,7 +36,7 @@ function SoportChat (){
       "AndroidMultiplesEquipoSinInternet",
       "iPhoneMultiplesEquipoSinInternet"
     ];
-
+    
     const validStatesSinInternetBombilloLos = [
       "EstaEncendidoElBombillo",
       "EstaApagadoElBombillo",
@@ -44,13 +44,13 @@ function SoportChat (){
       "BombilloLosApagado",
       "BombilloLosApagadoSeguir"
     ];
-
+    
     const validStatesTestVelocidad = [
       "MasDel50InternetInestable",
       "MenosDel50InternetInestable",
       "InternetLentoOInestable"
     ];
-
+    
     const validStatePaginasNoCarga1 = [
       "UnaPaginaNoCarga",
       "WindowsVariasPaginas", 
@@ -64,25 +64,25 @@ function SoportChat (){
       "AndroidVariosDispositivos",
       "MacVariosDispositivos"
     ];
-
+    
     const validStatePaginasNoCargaVpn = [
       "ConfirmacionVPN",
       "NoTieneVPN",
       "ComputadorVpn",
       "CelularVpn"
     ];
-
+    
     const validStateSinSeñal1 = [
       "DistorcionadaSeñalTv",
       "EnVariosCanalesSinSeñal",
       "CableDesconectadoSinSeñal",
       "CableConectadoSinSeñal"
     ];
-
+    
     const validStateSinSeñalFinal = [
       "ApagadoCatv","EncendidoCatv"
     ];
-
+    
     const validStateRedInestableFinal =[
       "EncendidoCanleLan",
       "ApagadoCanleLan",
@@ -94,7 +94,7 @@ function SoportChat (){
       "PcWIfiNoSabe",
       "cablePcNoSabe"
     ];
-
+    
     //variables para el historial de mensajes
     const [conversacionState, setConversacionState] = useState(false);
     const [nombre, setNombre] = useState("");
@@ -102,7 +102,7 @@ function SoportChat (){
     const [email, setEmail] = useState("");
     const [estado, setEstado] = useState("esperando_nombre");
     const chatIdUser = localStorage.getItem("chatUserId")
-
+    
     //metodo de actuali zar los mensajes guardadosF
     const enviarMensaje = async (idConversacion, de, mensaje) => {
       try{
@@ -116,7 +116,6 @@ function SoportChat (){
             mensaje
           })
         });
-
         const data = await response.json();
         console.log("Mensaje guardado: ", data);
       }catch(error){
@@ -174,7 +173,6 @@ function SoportChat (){
 
     const sendMessage = async() => {
       if(userInput.trim() === "" ) return;
-
       setMessages((prevMessage) => [...prevMessage, {sender: "user", text: userInput}]);
       if (estado === "esperando_nombre") {
         setNombre(userInput);
@@ -219,7 +217,6 @@ function SoportChat (){
               fechaInicio: new Date().toISOString()
             })
           });
-
           setTimeout(() => addBotMessage(
             `¡Perfecto, ${nombreTemporal}! Ya puedes comenzar a chatear con nosotros\n ¿En qué podemos ayudarte?`,
             [
@@ -231,16 +228,13 @@ function SoportChat (){
           setUserInput("");
           return;
         }
-        setConversacionState(true)
+        setConversacionState(true);
       }
-
       if(estado === "conversacion"){
         handleSendMessage(userInput);
-
         if (waitingForDocument) {
           wisphub(userInput);
           setWaitingForDocument(false);
-
        } else if (userInput.toLowerCase().includes('seguir')){
           setTimeout(()=> addBotMessage('Hola, bienvenido a tu chat 😊\n¿En que puedo ayudarte?',
             ["Falla conexión", "Cambiar Contraseña", "Cancelar Servicio", "Cambio de plan", "Traslado", "Solicitar servicio", "PQR(Peticion, Queja, Reclamo)", "Pagar Facturas", "Cambio de titular", "Otro"]
@@ -257,16 +251,13 @@ function SoportChat (){
     const [handleNewMessage, setHandleNewMessage] = useState(false)
     const [userInput, setUserInput] = useState("");
     const audioRef = useRef(new Audio(Notificacion));
-
     const toggleChat=()=>{
         setIsChatVisible(!isChatVisible);
         setHandleNewMessage(false);
     }
-
     const handleUserInput = (e) => {
         setUserInput(e.target.value);
     }
-
     const closeChat = () => {
         setIsChatVisible(false);
     }
@@ -278,7 +269,6 @@ function SoportChat (){
             'Content-Type': 'application/json'
           }
         });
-
         if(!response.ok){
           throw new Error(`Error al momento de consultar los datos da la cedula: ${cedula}`); 
         };
@@ -304,35 +294,30 @@ function SoportChat (){
       setOption(option);
       handleSendMessage(option);
       setMessages((prevMessage) => [...prevMessage, { sender: 'user', text: option }]);
-
       if (option === "Falla conexión"){
         setStateChat("Falla conexión");
         setTimeout(() => addBotMessage(`Al parecer tienes problemas con tu servicio, vamos a hacer unas pruebas para poder ayudarte. \n¿Qué tipo de problema tiene? escoja el problema que desea solucionar:`,
           ["✅ No tengo internet.", "🐢 Internet lento.", "🌐 No cargan páginas.", "📺 Señal de Televisión.", "⚡ Internet inestable.", "🔘Otro problema"]
         ),1000);
         setWaitingForDocument(true);
-
       }else if(option === "✅ No tengo internet." &&  stateChat === "Falla conexión"){
         setStateChat("sininternet");
         setTimeout(() => addBotMessage(`Para poder ayudare con tu problema, Podrías escoger la opción *Un equipo*, de lo contrario escoge la opción *Múltiples equipos*`,
           ["📱 Un equipo", "💻📱 Múlples aquipos"]
         ),1000);
         setWaitingForDocument(true);
-
       }else if(option === '📱 Un equipo' &&  stateChat === "sininternet"){
         setStateChat("UnEquipoSinInternet")
         setTimeout(() => addBotMessage(`¿Estas conectado a *WIFI* o cable *Ethernet*?`,
           ["📶 WIFI", "🔌 Cable Ethernet"]
         ),1000);
         setWaitingForDocument(true);
-
       }else if(option === '💻📱 Múlples aquipos'){
         setStateChat("MultiplesEquiposSinInternet")
         setTimeout(() => addBotMessage(`¿Estás conectado por *WIFI* o por cable *Ethernet*?`,
           ["📶WIFI", "🔌Cable Ethernet"]
         ),1000);
         setWaitingForDocument(true);
-
         //wifi o cable un solo equipo
       }else if(option === '📶 WIFI' && stateChat === "UnEquipoSinInternet"){
         setStateChat("WifiUnEquipoSinInternet");
@@ -344,7 +329,6 @@ function SoportChat (){
           ["🆘 Ayuda", "➡️ Seguir"]
         ),1000);
         setWaitingForDocument(true);
-
       }else if(option === '🔌 Cable Ethernet'&& stateChat === "UnEquipoSinInternet"){
         setStateChat('CableUnEquipoSinInternet');
         setTimeout(() => addBotMessage(`Vamos a solucionar tu problema. A continuación te vamos a presentar una serie de soluciones para ayudarte con tu problema:
@@ -355,7 +339,6 @@ function SoportChat (){
           ["🆘 Ayuda", "➡️ Seguir"]
         ),1000);
         setWaitingForDocument(true);
-
         //wifi o cable multiples equipos
       }else if(option === '📶WIFI' && stateChat === "MultiplesEquiposSinInternet"){
         setStateChat("WifiMultiplesEquipoSinInternet");
@@ -366,23 +349,17 @@ function SoportChat (){
           ["🆘 Ayuda", "➡️ Seguir"]
         ),1000);
         setWaitingForDocument(true);
-
       }else if(option === '🔌Cable Ethernet'&& stateChat === "MultiplesEquiposSinInternet"){
         setStateChat("CableMultiplesEquipoSinInternet");
         setTimeout(() => addBotMessage(`Vamos a solucionar tu problema. A continuación te vamos a dar una serie de soluciones que puedes utilizar:
-          \n
-            1️⃣ Revisa que el cale este bien conectado en ambos extremos.
-            \n
-            2️⃣ Si es posible prueba otro cable
-            \n
-            3️⃣ Apaga el *Modem*  y el dispositivo, después de encender los dispositivos.
-            \n
-            4️⃣ Prueba conectado en otro puerto el cable.`),1000);
+          \n1️⃣ Revisa que el cale este bien conectado en ambos extremos.
+          \n2️⃣ Si es posible prueba otro cable
+          \n3️⃣ Apaga el *Modem*  y el dispositivo, después de encender los dispositivos.
+          \n4️⃣ Prueba conectado en otro puerto el cable.`),1000);
             setTimeout(() => addBotMessage(`Si esto te funciono, podrías escoger la opción *Si funciono*, de lo contrario *No funciono*.`,
               ['✅ Si funciono', '❎ No funciono'],
               1000));
         setWaitingForDocument(true);
-
         //Ayuda o seguir un solo equipo wifi
       }else if(option === '🆘 Ayuda' && stateChat === "WifiUnEquipoSinInternet"){
         setStateChat("AyudaWifiSinInternetUnEquipo");
@@ -444,16 +421,11 @@ function SoportChat (){
       }else if(option === '🔹Mac'&& stateChat === "AyudaWifiSinInternetUnEquipo"){
         setStateChat("MacUnEquipoSinInternet");
         setTimeout(() => addBotMessage(`A continuación te mostraremos el paso a paso para revisar si la tarjeta de red del dispositivo esta habilitada:
-            \n
-            1️⃣ Conéctate a una red *WIFI*.
-            \n
-            2️⃣ Ve a menú de Apple 🍏, luego a *Configuración del sistema* y por ultimo a *General*.
-            \n
-            3️⃣Selecciona *Actualización de software*.
-            \n
-            4️⃣ Si hay una actualización disponible, haz clic en *Actualizar ahora*.
-            \n
-            5️⃣Espera a que termine y si es necesario reinicia el *Dispositivo*.`),1000);
+            \n1️⃣ Conéctate a una red *WIFI*.
+            \n2️⃣ Ve a menú de Apple 🍏, luego a *Configuración del sistema* y por ultimo a *General*.
+            \n3️⃣Selecciona *Actualización de software*.
+            \n4️⃣ Si hay una actualización disponible, haz clic en *Actualizar ahora*.
+            \n5️⃣Espera a que termine y si es necesario reinicia el *Dispositivo*.`),1000);
             setTimeout(() => addBotMessage(`Si te funciono escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*.`,
               ["✅ Si funciono", "❎ No funciono"]
             ), 1000);
@@ -462,16 +434,11 @@ function SoportChat (){
       }else if(option === '🔹Android'&& stateChat === "AyudaWifiSinInternetUnEquipo"){
         setStateChat("AndroidUnEquipoSinInternet");
         setTimeout(() => addBotMessage(`A continuación te mostraremos el paso a paso para revisar si la tarjeta de red del dispositivo esta habilitada:
-          \n
-          1️⃣ Conéctate a una red *WIFI*.
-          \n
-          2️⃣ Ve a *Ajustes*, luego te diriges a *Sistema* y por ultimo a *Actualización de software*.
-          \n
-          3️⃣ Entra en *Buscar actualizaciones*.
-          \n
-          4️⃣ Si hay actualizaciones disponibles, descárguela  e instálela.
-          \n
-          5️⃣Si es necesario reinicie el *Dispositivo*.`),1000);
+          \n1️⃣ Conéctate a una red *WIFI*.
+          \n2️⃣ Ve a *Ajustes*, luego te diriges a *Sistema* y por ultimo a *Actualización de software*.
+          \n3️⃣ Entra en *Buscar actualizaciones*.
+          \n4️⃣ Si hay actualizaciones disponibles, descárguela  e instálela.
+          \n5️⃣Si es necesario reinicie el *Dispositivo*.`),1000);
           setTimeout(() => addBotMessage(`Si te funciono escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*.`,
             ["✅ Si funciono", "❎ No funciono"]
           ), 1000);
@@ -526,16 +493,11 @@ function SoportChat (){
       }else if(option === '🔹Mac'&& stateChat === "AyudaWifiSinInternetMultiplesEquipo"){
         setStateChat("MacMultiplesEquipoSinInternet");
         setTimeout(() => addBotMessage(`A continuación te mostraremos el paso a paso para revisar si la tarjeta de red del dispositivo esta habilitada:
-            \n
-            1️⃣ Conéctate a una red *WIFI*.
-            \n
-            2️⃣ Ve a menú de Apple 🍏, luego a *Configuración del sistema* y por ultimo a *General*.
-            \n
-            3️⃣Selecciona *Actualización de software*.
-            \n
-            4️⃣ Si hay una actualización disponible, haz clic en *Actualizar ahora*.
-            \n
-            5️⃣Espera a que termine y si es necesario reinicia el *Dispositivo*.`),1000);
+            \n1️⃣ Conéctate a una red *WIFI*.
+            \n2️⃣ Ve a menú de Apple 🍏, luego a *Configuración del sistema* y por ultimo a *General*.
+            \n3️⃣Selecciona *Actualización de software*.
+            \n4️⃣ Si hay una actualización disponible, haz clic en *Actualizar ahora*.
+            \n5️⃣Espera a que termine y si es necesario reinicia el *Dispositivo*.`),1000);
             setTimeout(() => addBotMessage(`Si te funciono escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*.`,
               ["✅ Si funciono", "❎ No funciono"]
             ), 1000);
@@ -544,16 +506,11 @@ function SoportChat (){
       }else if(option === '🔹 Android'&& stateChat === "AyudaWifiSinInternetMultiplesEquipo"){
         setStateChat("AndroidMultiplesEquipoSinInternet")
         setTimeout(() => addBotMessage(`A continuación te mostraremos el paso a paso para revisar si la tarjeta de red del dispositivo esta habilitada:
-          \n
-          1️⃣ Conéctate a una red *WIFI*.
-          \n     
-          2️⃣ Ve a *Ajustes*, luego te diriges a *Sistema* y por ultimo a *Actualización de software*.
-          \n    
-          3️⃣ Entra en *Buscar actualizaciones*.
-          \n     
-          4️⃣ Si hay actualizaciones disponibles, descárguela  e instálela.
-          \n    
-          5️⃣Si es necesario reinicie el *Dispositivo*.`),1000);
+          \n1️⃣ Conéctate a una red *WIFI*.
+          \n2️⃣ Ve a *Ajustes*, luego te diriges a *Sistema* y por ultimo a *Actualización de software*.
+          \n3️⃣ Entra en *Buscar actualizaciones*.
+          \n4️⃣ Si hay actualizaciones disponibles, descárguela  e instálela.
+          \n5️⃣Si es necesario reinicie el *Dispositivo*.`),1000);
           setTimeout(() => addBotMessage(`Si te funciono escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*.`,
             ["✅ Si funciono", "❎ No funciono"]
           ), 1000);
@@ -562,14 +519,10 @@ function SoportChat (){
       }else if(option === '🔹iPhone'&& stateChat === "AyudaWifiSinInternetMultiplesEquipo "){
         setStateChat("iPhoneMultiplesEquipoSinInternet")
         setTimeout(() => addBotMessage(`A continuación te mostraremos el paso a paso para revisar si la tarjeta de red del dispositivo esta habilitada:
-          \n
-          1️⃣ Conéctate a una red *WIFI*.
-          \n
-          2️⃣Ve a *Ajustes*, luego te diriges a *General* y por ultimo a *Actualización de software*
-          \n
-          3️⃣ Si hay actualizaciones pendientes, descargarlas e instalarlas.
-          \n
-          4️⃣Si es necesario reinicie el .*Dispositivo*`),1000);
+          \n1️⃣ Conéctate a una red *WIFI*.
+          \n2️⃣Ve a *Ajustes*, luego te diriges a *General* y por ultimo a *Actualización de software*
+          \n3️⃣ Si hay actualizaciones pendientes, descargarlas e instalarlas.
+          \n4️⃣Si es necesario reinicie el .*Dispositivo*`),1000);
           setTimeout(() => addBotMessage(`Si te funciono escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*.`,
             ["✅ Si funciono", "❎ No funciono"]
           ), 1000);
@@ -590,12 +543,9 @@ function SoportChat (){
       }else if(option === "❎Encendido" && stateChat === "VerificacionDeEstadoDelModem"){
         setStateChat("EstaEncendidoElBombillo")
         setTimeout(() => addBotMessage(`Vamos a solucionar tu problema. A continuación te daremos una serie de soluciones que puedes utilizar para solucionar tu problema.
-          \n
-            1️⃣ Apaga el *Modem* y después de 30 segundos vuélvelo a encender.
-            \n
-            2️⃣ Revisa que los cables que estén bien conectados.
-            \n
-            3️⃣Revisa si hay un corte del servicio en la zona.`), 1000);
+          \n1️⃣ Apaga el *Modem* y después de 30 segundos vuélvelo a encender.
+          \n2️⃣ Revisa que los cables que estén bien conectados.
+          \n3️⃣Revisa si hay un corte del servicio en la zona.`), 1000);
             setTimeout(() => addBotMessage(`Si te funciono escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*.`,
             ["✅ Si funciono", "❎ No funciono"]
           ),1000);
@@ -604,12 +554,9 @@ function SoportChat (){
       }else if(option === "✅ Apagado" && stateChat === "VerificacionDeEstadoDelModem"){
         setStateChat("EstaApagadoElBombillo")
         setTimeout(() => addBotMessage(`Vamos a solucionar tu problema. A continuación te presentaremos una serie de soluciones para ayudarte con tu problema:
-          \n
-          1️⃣Revisa el cable de fibra óptica si esta bien conectado y sin daños.
-          \n
-          2️⃣Apaga el *Modem* y después de 30 segundos vuelve a encenderlo.
-          \n
-          3️⃣Revisa si hay cortes en la zona`
+          \n1️⃣Revisa el cable de fibra óptica si esta bien conectado y sin daños.
+          \n2️⃣Apaga el *Modem* y después de 30 segundos vuelve a encenderlo.
+          \n3️⃣Revisa si hay cortes en la zona`
         ), 1000);
         setTimeout(() => addBotMessage(`Si te funciono escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*.`,
           ["✅ Si funciono", "❎ No funciono"]
@@ -620,12 +567,9 @@ function SoportChat (){
       }else if(option === "❓ No sé" && stateChat === "VerificacionDeEstadoDelModem"){
         setStateChat("NoSabeElUsuario");
         setTimeout(() => addBotMessage(`Para poder interpretar estos bombillos vamos a tener en cuenta lo siguiente:
-          \n
-          🔴 Por lo general *LOS* cuando se enciende es de color rojo.
-          \n
-          🟢Por lo general *PON* siempre va a alumbrar de color verde.
-          \n
-          Entonces nos podrías confirmar si *LOS* esta encendido:`,
+          \n🔴 Por lo general *LOS* cuando se enciende es de color rojo.
+          \n🟢Por lo general *PON* siempre va a alumbrar de color verde.
+          \nEntonces nos podrías confirmar si *LOS* esta encendido:`,
           ["❎Encendido", "✅ Apagado"]
         ), 1000);
         setWaitingForDocument(true);
@@ -634,26 +578,19 @@ function SoportChat (){
       }else if(option === "❎Encendido" && stateChat === "NoSabeElUsuario"){
         setStateChat("BombilloLosEncendido");
         setTimeout(() => addBotMessage(`Vamos a solucionar tu problema. A continuación te daremos una serie de soluciones que puedes utilizar para solucionar tu problema.
-          \n
-          1️⃣ Apaga el *Modem* y después de 30 segundos vuélvelo a encender.
-          \n
-          2️⃣ Revisa que los cables que estén bien conectados.
-          \n
-          3️⃣Revisa si hay un corte del servicio en la zona.`
+          \n1️⃣ Apaga el *Modem* y después de 30 segundos vuélvelo a encender.
+          \n2️⃣ Revisa que los cables que estén bien conectados.
+          \n3️⃣Revisa si hay un corte del servicio en la zona.`
         ), 1000);
         setWaitingForDocument(true);
 
       }else if(option === "✅ Apagado" && stateChat === "NoSabeElUsuario"){
         setStateChat("CableDañadoOSeguir");
         setTimeout(() => addBotMessage(`Vamos a solucionar tu problema. A continuación te presentaremos una serie de soluciones para poder solucionar tu problema:
-          \n
-          1️⃣ Apaga el *Modem*  espera 30 segundos y vuelve a encenderlo.
-          \n      
-          2️⃣Fíjate que el cable de fibra no este doblad, sucio o desconectado.
-          \n      
-          3️⃣Si *LOS* sigue apagado puede haber un daño en la zona.
-          \n    
-          si el cable de fibra esta dañado por favor escoja la opción *Cabe dañado*, de lo contrario escoja la opción *Seguir*.`,
+          \n1️⃣ Apaga el *Modem*  espera 30 segundos y vuelve a encenderlo.
+          \n2️⃣Fíjate que el cable de fibra no este doblad, sucio o desconectado.
+          \n3️⃣Si *LOS* sigue apagado puede haber un daño en la zona.
+          \nsi el cable de fibra esta dañado por favor escoja la opción *Cabe dañado*, de lo contrario escoja la opción *Seguir*.`,
           ["🔌 Cable Dañado", "➡️ Seguir"]
         ), 1000);
         setWaitingForDocument(true);
@@ -687,20 +624,13 @@ function SoportChat (){
       }else if (option === "Cambiar Contraseña") {
         setTimeout(() => addBotMessage(`Para poder solicitar el cambio de contraseña, te vamos a solicitar unos datos, los cuales vas a enviar en un solo mensaje separado por *Comas*, *Tipo lista sin números ni caracteres especiales*, o tambien *De corrido pero con espacios*. \n
             Los datos son: 
-            \n
-            1️⃣ Nombre completo del titular del servicio.
-            \n
-            2️⃣ Número de documento del titular.
-            \n
-            3️⃣Número de teléfono o contacto.
-            \n
-            4️⃣Correo electrónico registrado.
-            \n
-            5️⃣Servicio por el cual solicita el cambio de contraseña.
-            \n
-            6️⃣Motivo de cambio de contraseña.
-            \n
-            si no tiene correo registrado escriba *null*.`), 1000);
+            \n1️⃣Nombre completo del titular del servicio.
+            \n2️⃣Número de documento del titular.
+            \n3️⃣Número de teléfono o contacto.
+            \n4️⃣Correo electrónico registrado.
+            \n5️⃣Servicio por el cual solicita el cambio de contraseña.
+            \n6️⃣Motivo de cambio de contraseña.
+            \nsi no tiene correo registrado escriba *null*.`), 1000);
         setWaitingForDocument(true);
 
       } else if (option === "Cancelar Servicio") {
@@ -709,16 +639,11 @@ function SoportChat (){
 
       } else if(option === "Cambio de plan"){
         setTimeout(() => addBotMessage(`Para poder solicitar un cambio de plan, te vamos a solicitar unos datos, los cuales vas a enviar en un solo mensaje separado por *Comas*, *Tipo lista sin números ni caracteres especiales*, o tambien *De corrido pero con espacios*.\n 
-          \n
-          Los datos son: 
-          \n
-          1️⃣ Nombre completo del titular del servicio.
-          \n
-          2️⃣ Número de documento del titular.
-          \n
-          3️⃣ El servicio que desea cancelar *(Internet, TV, etc.)*.
-          \n
-          6️⃣Motivo de la cancelación del servicio.`), 1000);
+          \nLos datos son:
+          \n1️⃣ Nombre completo del titular del servicio.
+          \n2️⃣ Número de documento del titular.
+          \n3️⃣ El servicio que desea cancelar *(Internet, TV, etc.)*.
+          \n6️⃣Motivo de la cancelación del servicio.`), 1000);
         setWaitingForDocument(true);
 
       }else if(option === 'Traslado'){
@@ -732,20 +657,13 @@ function SoportChat (){
 
       }else if(option === 'PQR(Peticion, Queja, Reclamo)'){
         setTimeout(() => addBotMessage(`Para realizar la solicitud de un *PQR* te vamos a solicitar unos datos para poder pasarte con un asesor. Los datos que te solicitamos los vas a enviar en un solo mensaje donde pondrás los datos separados por *Comas*, *Tipo lista sin caracteres especiales* o *De corrido con Espacios*. 
-          \n
-            Si vas a agregar la fecha que sea de la siguiente manera *dd-mm-aa* o tambien podría ser de la siguiente manera *dd/mm/aa*.
-            \n
-            Los datos son: 
-            \n
-            📌 Nombre completo
-            \n
-            🔢 Número de documento.
-            \n
-            📂 Tipo de solicitud *(Petición, Queja, Reclamo).
-            \n
-            📆 Fecha de cuando ocurrió.
-            \n
-            📝Descripción del problema.`), 1000);
+          \nSi vas a agregar la fecha que sea de la siguiente manera *dd-mm-aa* o tambien podría ser de la siguiente manera *dd/mm/aa*.
+            \nLos datos son: 
+            \n📌 Nombre completo
+            \n🔢 Número de documento.
+            \n📂 Tipo de solicitud *(Petición, Queja, Reclamo).
+            \n📆 Fecha de cuando ocurrió.
+            \n📝 Descripción del problema.`), 1000);
             setWaitingForDocument(true);
 
       }else if (option === 'Pagar Facturas') {
@@ -787,8 +705,7 @@ function SoportChat (){
       }else if(option === "✅ Buena velocidad"){
         setStateChat("BuenaVelocidadInternetLento");
         setTimeout(() => addBotMessage(`Tu velocidad esta dentro del rango esperado. El problema puede deberse a una interferencia o saturación de tu dispositivo.
-          \n
-          Si necesitas ayuda en otra cosa escribe *seguir* para volver al menú principal 😊.`
+          \nSi necesitas ayuda en otra cosa escribe *seguir* para volver al menú principal 😊.`
         ),1000);
         setWaitingForDocument(true);
 
@@ -796,14 +713,10 @@ function SoportChat (){
       }else if(option === "⚠️ Lento o inestable"){
         setStateChat("InternetLentoOInestable");
         setTimeout(() => addBotMessage(`Vamos a solucionar tu problema. A continuación te vamos a dar una serie de soluciones para ayudarte con tu problema:
-          \n
-            1️⃣ Apaga tu *Modem* durante 5 minutos, después lo vuelves a encender.
-            \n
-            2️⃣ Evita interferencia (Aleja tu *Modem* de electrodomésticos o paredes gruesas).
-            \n
-            3️⃣ Prueba con otro dispositivo.
-            \n
-            4️⃣ Si estas conectado con *WIFI*, conéctate con un cable *Ethernet*.`
+          \n1️⃣ Apaga tu *Modem* durante 5 minutos, después lo vuelves a encender.
+          \n2️⃣ Evita interferencia (Aleja tu *Modem* de electrodomésticos o paredes gruesas).
+          \n3️⃣ Prueba con otro dispositivo.
+          \n4️⃣ Si estas conectado con *WIFI*, conéctate con un cable *Ethernet*.`
         ),1000);
         setTimeout(()=> addBotMessage('Si esto te funciono escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*.',
           ["✅ Si funciono", "❎ No funciono"]
@@ -821,14 +734,10 @@ function SoportChat (){
       }else if(option === "Menos del 50%" && stateChat === "NoseAnalisarTest"){
         setStateChat("MenosDel50InternetInestable");
         setTimeout(() => addBotMessage(`Vamos a solucionar tu problema. A continuación te vamos a dar una serie de soluciones para ayudarte con tu problema:
-          \n
-          1️⃣ Apaga tu *Modem* durante 5 minutos, después lo vuelves a encender.
-          \n
-          2️⃣ Evita interferencia (Aleja tu *Modem* de electrodomésticos o paredes gruesas).
-          \n
-          3️⃣ Prueba con otro dispositivo.
-          \n
-          4️⃣ Si estas conectado con *WIFI*, conéctate con un cable *Ethernet*.`
+          \n1️⃣ Apaga tu *Modem* durante 5 minutos, después lo vuelves a encender.
+          \n2️⃣ Evita interferencia (Aleja tu *Modem* de electrodomésticos o paredes gruesas).
+          \n3️⃣ Prueba con otro dispositivo.
+          \n4️⃣ Si estas conectado con *WIFI*, conéctate con un cable *Ethernet*.`
         ),1000);
         setTimeout(()=> addBotMessage('Si esto te funciono escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*.',
           ["✅ Si funciono", "❎ No funciono"]
@@ -838,12 +747,9 @@ function SoportChat (){
       }else if(option === "Más del 50%" && stateChat === "NoseAnalisarTest"){
         setStateChat("MasDel50InternetInestable");
         setTimeout(() => addBotMessage(`Vamos a solucionar tu problema. A continuación te vamos a dar una serie de soluciones:
-          \n
-          1️⃣ Revisa si hay muchas personas conectadas ya que esto causa que la red sea inestable.
-          \n
-          2️⃣ Cierra aplicaciones que estén abiertas o descargas que usen mucho internet. 
-          \n
-          3️⃣ Apaga el *Modem*, espera 5 minutos y vuelve a encenderlo.`
+          \n1️⃣ Revisa si hay muchas personas conectadas ya que esto causa que la red sea inestable.
+          \n2️⃣ Cierra aplicaciones que estén abiertas o descargas que usen mucho internet. 
+          \n3️⃣ Apaga el *Modem*, espera 5 minutos y vuelve a encenderlo.`
         ),1000);
         setTimeout(()=> addBotMessage('Si esto te funciono escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*.',
           ["✅ Si funciono", "❎ No funciono"]
@@ -864,10 +770,8 @@ function SoportChat (){
       }else if(option === "🌐 No cargan páginas." && stateChat === "Falla conexión"){
         setStateChat("NoCarganPaginas");
         setTimeout(() => addBotMessage(`¿Qué ocurre exactamente? Escoge las opción *Una pagina*, si solo es una pagina no carga, si son varias escoge *Varias paginas*. 
-          \n
-          Escoge la opción *Ninguna página* si no puedes entrar a ninguna pagina, si en varios dispositivos no puedes acceder a paginas escoge la opción *Varios dispositivos*.
-          \n
-          Las opciones son:`,
+          \nEscoge la opción *Ninguna página* si no puedes entrar a ninguna pagina, si en varios dispositivos no puedes acceder a paginas escoge la opción *Varios dispositivos*.
+          \nLas opciones son:`,
           ["🔹Una página", "🔹Varias páginas", "🔹Ninguna página ", "🔹Varios dispositivos"]
         ), 1000);
         setWaitingForDocument(true);
@@ -876,12 +780,9 @@ function SoportChat (){
       }else if(option === "🔹Una página" && stateChat === "NoCarganPaginas"){
         setStateChat("UnaPaginaNoCarga");
         setTimeout(() => addBotMessage(`Te vamos a dar unas soluciones para que puedas solucionar tu problema:
-          \n
-          1️⃣ Intenta abrir la pagina en otro navegador *(Chrome, Firefox, Edge...)*.
-          \n
-          2️⃣ Borra el historial o cache *(Chrome, Firefox, Edge...)*.
-          \n
-          3️⃣Intenta abrir la pagina en otra *Red* o *Dispositivo*.`
+          \n1️⃣ Intenta abrir la pagina en otro navegador *(Chrome, Firefox, Edge...)*.
+          \n2️⃣ Borra el historial o cache *(Chrome, Firefox, Edge...)*.
+          \n3️⃣Intenta abrir la pagina en otra *Red* o *Dispositivo*.`
         ), 1000);
         setTimeout(() => addBotMessage(`Si esta solución te funciono, podrías escoger la opción *Si funciono*, de lo contrario escoge la opción *No funciono*.`,
           ["✅ Si funciono","❎ No funciono"]
@@ -891,14 +792,10 @@ function SoportChat (){
       }else if(option === "🔹Varias páginas" && stateChat === "NoCarganPaginas"){
         setStateChat("VariasPaginasNoCargan");
         setTimeout(() => addBotMessage(`Vamos a solucionar tu problema. A continuación, te vamos  a dar una serie de soluciones:
-          \n
-          1️⃣ Apaga el *Modem* espera 5 minutos y lo vuelves a encender.
-          \n
-          2️⃣ Verifica si otros dispositivos tienen el mismo problema.
-          \n
-          3️⃣ Prueba cambiar los *DNS* por 8.8.8.8 y 8.8.4.4.
-          \n
-          Si el ultimo punto no sabes como realizarlo, escoge la opción *Ayuda*, de lo contrario escoge la opción *Seguir*`,
+          \n1️⃣ Apaga el *Modem* espera 5 minutos y lo vuelves a encender.
+          \n2️⃣ Verifica si otros dispositivos tienen el mismo problema.
+          \n3️⃣ Prueba cambiar los *DNS* por 8.8.8.8 y 8.8.4.4.
+          \nSi el ultimo punto no sabes como realizarlo, escoge la opción *Ayuda*, de lo contrario escoge la opción *Seguir*`,
           ["🆘 Ayuda", "➡️ Seguir"]
         ), 1000);
         setWaitingForDocument(true);
@@ -906,14 +803,10 @@ function SoportChat (){
       }else if(option === "🔹Ninguna página " && stateChat === "NoCarganPaginas"){
         setStateChat("NingunaPaginaNoCargan");
         setTimeout(() => addBotMessage(`Vamos a solucionar tu problema. A continuación, te vamos a dar una serie de soluciones las cuales utilizaras para que puedas navegar tranquilamente:
-          \n
-          1️⃣ Revisa si otros dispositivos tienen internet.
-          \n
-          2️⃣Prueba apagar el *Modem* y después de 5 minutos volverlo a encender.
-          \n
-          3️⃣Haz ping a *8.8.8.8* para comprobar la conexión del la red.
-          \n
-          Si el ultimo punto no sabes como realizarlo escoge la opción *Ayuda*, de lo contrario escoge *Seguir*.`,
+          \n1️⃣ Revisa si otros dispositivos tienen internet.
+          \n2️⃣Prueba apagar el *Modem* y después de 5 minutos volverlo a encender.
+          \n3️⃣Haz ping a *8.8.8.8* para comprobar la conexión del la red.
+          \nSi el ultimo punto no sabes como realizarlo escoge la opción *Ayuda*, de lo contrario escoge *Seguir*.`,
           ["🆘 Ayuda", "➡️ Seguir"]
         ), 1000);
         setWaitingForDocument(true);
@@ -921,14 +814,10 @@ function SoportChat (){
       }else if(option === "🔹Varios dispositivos" && stateChat === "NoCarganPaginas"){
         setStateChat("NoCargaEnVariosDispositivos");
         setTimeout(() => addBotMessage(`Vamos a solucionar tu problema. A continuación te vamos a dar una serie de soluciones para que puedas navegar tranquilamente:
-          \n
-          1️⃣ Apaga el *Modem* espera 5 minutos y vuélvelo a encender.
-          \n
-          2️⃣ Intenta conectar un cable *Ethernet* para verificar la conexión.
-          \n
-          3️⃣Cambia los *DNS* a *8.8.8.8* y 8.8.4.4.
-          \n
-          Si el ultimo punto no sabes como realizarlo escoge la opción *Ayuda*, de lo contrario escoge *Seguir*.`,
+          \n1️⃣ Apaga el *Modem* espera 5 minutos y vuélvelo a encender.
+          \n2️⃣ Intenta conectar un cable *Ethernet* para verificar la conexión.
+          \n3️⃣Cambia los *DNS* a *8.8.8.8* y 8.8.4.4.
+          \nSi el ultimo punto no sabes como realizarlo escoge la opción *Ayuda*, de lo contrario escoge *Seguir*.`,
           ["🆘 Ayuda", "➡️ Seguir"]
         ), 1000);
         setWaitingForDocument(true);
@@ -990,23 +879,16 @@ function SoportChat (){
       }else if(option === "🔹 Windows" && stateChat === "AyudaVariasPaginas"){
         setStateChat("WindowsVariasPaginas");
         setTimeout(() => addBotMessage(`A continuación, te vamos a mostrar el paso a paso de como cambiar los *DNS*:
-          \n
-            1️⃣ Abre el menú de inicio y escribe *Panel de control*.
-            \n
-            2️⃣Ve a "*Redes y internet*" y luego en "*Centro de redes y recursos compartidos*".
-            \n
-            3️⃣ Haz clic en "*Cambiar configuración del adaptador*".
-            \n
-            4️⃣ Haz clic derecho en tu *conexión WIFI* o *Ethernet* y selecciona "*Propiedades*".}
-            \n
-            5️⃣ Selecciona "*Protocolo de internet versión 4(TCP/IPv4)*" y haz clic en 
+          \n1️⃣ Abre el menú de inicio y escribe *Panel de control*.
+            \n2️⃣Ve a "*Redes y internet*" y luego en "*Centro de redes y recursos compartidos*".
+            \n3️⃣ Haz clic en "*Cambiar configuración del adaptador*".
+            \n4️⃣ Haz clic derecho en tu *conexión WIFI* o *Ethernet* y selecciona "*Propiedades*".}
+            \n5️⃣ Selecciona "*Protocolo de internet versión 4(TCP/IPv4)*" y haz clic en 
             "*Propiedades*".
-            \n
-            6️⃣ Selecciona "*Usar la  siguiente dirección de servidor DNS*" e ingresa:
-                 🔹Servidor DNS preferido: 8.8.8.8
-                 🔹Servidor DNS alternativo: 8.8.4.4
-            \n
-            7️⃣ Guarda y vuelve a cargar la pagina`
+            \n6️⃣ Selecciona "*Usar la  siguiente dirección de servidor DNS*" e ingresa:
+                 \n🔹Servidor DNS preferido: 8.8.8.8
+                 \n🔹Servidor DNS alternativo: 8.8.4.4
+            \n7️⃣ Guarda y vuelve a cargar la pagina`
         ), 1000)
         setTimeout(() => addBotMessage(`Si te funciono alguna de estas, escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*`,
           ["✅ Si funciono", "❎ No funciono"]
@@ -1016,20 +898,13 @@ function SoportChat (){
       }else if(option === "🔹Mac" && stateChat === "AyudaVariasPaginas"){
         setStateChat("MacVariasPaginas");
         setTimeout(() => addBotMessage(`A continuación, te vamos a mostrar el paso a paso  de como cambiar los *DNS*:
-          \n
-            1️⃣ Selecciona el menú *Apple*🍏, luego haz clic en *Configuración del sistema*.
-            \n
-            2️⃣Haz clic en *Red* en la barra lateral.
-            \n
-            3️⃣Selecciona un servicio de red, puede ser *WIFI* o *Ethernet*.
-            \n
-            4️⃣Haz clic en *Detalles* y luego en *DNS*
-            \n
-            5️⃣En la parte inferior de la lista de servidores haz clic en *"+"* para agregar nuevo servidor.
-            \n
-            6️⃣ Escribe *8.8.8.8* y *8.8.4.4* (*DNS de Google*)
-            \n
-            7️⃣Guarda los cambios y prueba la conexión.`
+          \n1️⃣ Selecciona el menú *Apple*🍏, luego haz clic en *Configuración del sistema*.
+          \n2️⃣Haz clic en *Red* en la barra lateral.
+          \n3️⃣Selecciona un servicio de red, puede ser *WIFI* o *Ethernet*.
+          \n4️⃣Haz clic en *Detalles* y luego en *DNS*
+          \n5️⃣En la parte inferior de la lista de servidores haz clic en *"+"* para agregar nuevo servidor.
+          \n6️⃣ Escribe *8.8.8.8* y *8.8.4.4* (*DNS de Google*)
+          \n7️⃣Guarda los cambios y prueba la conexión.`
         ), 1000);
         setTimeout(() => addBotMessage(`Si te funciono alguna de estas, escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*`,
           ["✅ Si funciono", "❎ No funciono"]
@@ -1039,16 +914,11 @@ function SoportChat (){
       }else if(option === "🔹 Android" && stateChat === "AyudaVariasPaginas"){
         setStateChat("AndroidVariasPaginas");
         setTimeout(() => addBotMessage(`A continuación, te vamos a mostrar el paso a paso  de como cambiar los *DNS*:
-          \n
-            1️⃣ Abre *Ajustes* ⚙️ y ve a *Conexiones*.
-            \n
-            2️⃣ Seleccione "*WIFI*" y haz clic en el icono de engranaje ⚙️ junto a la red.
-            \n
-            3️⃣ Ve a *Avanzado* y cambia "*Configuración de IP*" a "*Estática*".
-            \n
-            4️⃣ Edita "*DNS1" y "*DNS2*", ingresa *8.8.8.8* y 8.8.4.4 (*DNS de Google*)
-            \n
-            5️⃣Guarda los cambios y reconecta la red.`
+            \n1️⃣ Abre *Ajustes* ⚙️ y ve a *Conexiones*.
+            \n2️⃣ Seleccione "*WIFI*" y haz clic en el icono de engranaje ⚙️ junto a la red.
+            \n3️⃣ Ve a *Avanzado* y cambia "*Configuración de IP*" a "*Estática*".
+            \n4️⃣ Edita "*DNS1" y "*DNS2*", ingresa *8.8.8.8* y 8.8.4.4 (*DNS de Google*)
+            \n5️⃣Guarda los cambios y reconecta la red.`
         ), 1000);
         setTimeout(() => addBotMessage(`Si te funciono alguna de estas, escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*`,
           ["✅ Si funciono", "❎ No funciono"]
@@ -1058,16 +928,11 @@ function SoportChat (){
       }else if(option === "🔹iPhone" && stateChat === "AyudaVariasPaginas"){
         setStateChat("iPhoneVariasPaginas");
         setTimeout(() => addBotMessage(`A continuación, te vamos a mostrar el paso a paso  de como cambiar los *DNS*:
-          \n
-          1️⃣ Abre *Ajustes* ⚙️y pulsa *WIFI*.
-          \n
-          2️⃣Selecciona tu *red* y pulsa el icono "*i*" azul ℹ️.
-          \n
-          3️⃣Pulsa *Configuración DNS* y elije "*Manual*".
-          \n
-          4️⃣Pulsa *Añadir servidor*➕ e ingresa 8.8.8.8 y 8.8.4.4 (DNS de Google).
-          \n
-          5️⃣Pulsa *Guardar* y revisa si te funciono.`
+          \n1️⃣ Abre *Ajustes* ⚙️y pulsa *WIFI*.
+          \n2️⃣Selecciona tu *red* y pulsa el icono "*i*" azul ℹ️.
+          \n3️⃣Pulsa *Configuración DNS* y elije "*Manual*".
+          \n4️⃣Pulsa *Añadir servidor*➕ e ingresa 8.8.8.8 y 8.8.4.4 (DNS de Google).
+          \n5️⃣Pulsa *Guardar* y revisa si te funciono.`
         ),1000);
         setTimeout(() => addBotMessage(`Si te funciono alguna de estas, escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*`,
           ["✅ Si funciono", "❎ No funciono"]
@@ -1078,12 +943,9 @@ function SoportChat (){
       }else if(option === "🔹 Windows" && stateChat === "AyudaNingunaPagina"){
         setStateChat("WindowsNingunaPagina");
         setTimeout(() => addBotMessage(`A continuación, te vamos a mostrar el paso a paso para hacer el ping a los *8.8.8.8*.
-          \n
-          1️⃣ Presiona las teclas *Windows + R*
-          \n
-          2️⃣En la ventana escribe *cmd* y haz clic en *Aceptar*.
-          \n
-          3️⃣Escribe *ping 8.8.8.8* y después pulsa *Enter* para que se pueda ejecutar.`), 
+          \n1️⃣ Presiona las teclas *Windows + R*
+          \n2️⃣En la ventana escribe *cmd* y haz clic en *Aceptar*.
+          \n3️⃣Escribe *ping 8.8.8.8* y después pulsa *Enter* para que se pueda ejecutar.`), 
         1000);
         setTimeout(() => addBotMessage(`Si te funciono alguna de estas, escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*`,
           ["✅ Si funciono", "❎ No funciono"]
@@ -1093,10 +955,8 @@ function SoportChat (){
       }else if(option === "🔹Mac" && stateChat === "AyudaNingunaPagina"){
         setStateChat("MacNingunaPagina");
         setTimeout(() => addBotMessage(`A continuación, te vamos a mostrar el paso a paso para hacer el ping a los *8.8.8.8*.
-          \n
-          1️⃣Abre la aplicación *Terminal* en (Aplicaciones => Utilidades)
-          \n
-          2️⃣Escribe *ping -c 4 8.8.8.8* y pulsa *Enter* para ejecutar.`), 
+          \n1️⃣Abre la aplicación *Terminal* en (Aplicaciones => Utilidades)
+          \n2️⃣Escribe *ping -c 4 8.8.8.8* y pulsa *Enter* para ejecutar.`), 
         1000);
         setTimeout(() => addBotMessage(`Si te funciono alguna de estas, escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*`,
           ["✅ Si funciono", "❎ No funciono"]
@@ -1107,25 +967,16 @@ function SoportChat (){
       }else if(option === "🔹 Windows" && stateChat === "AyudaVariosDispositivos"){
         setStateChat("WindowsVariosDispositivos");
         setTimeout(() => addBotMessage(`A continuación, te vamos a mostrar el paso a paso de como cambiar los *DNS*:
-          \n
-          1️⃣ Abre el menú de inicio y escribe *Panel de control*.
-          \n
-          2️⃣Ve a "*Redes y internet*" y luego en "*Centro de redes y recursos compartidos*".
-          \n
-          3️⃣ Haz clic en "*Cambiar configuración del adaptador*".
-          \n
-          4️⃣ Haz clic derecho en tu *conexión WIFI* o *Ethernet* y selecciona "*Propiedades*".
-          \n
-          5️⃣ Selecciona "*Protocolo de internet versión 4(TCP/IPv4)*" y haz clic en 
+          \n1️⃣ Abre el menú de inicio y escribe *Panel de control*.
+          \n2️⃣Ve a "*Redes y internet*" y luego en "*Centro de redes y recursos compartidos*".
+          \n3️⃣ Haz clic en "*Cambiar configuración del adaptador*".
+          \n4️⃣ Haz clic derecho en tu *conexión WIFI* o *Ethernet* y selecciona "*Propiedades*".
+          \n5️⃣ Selecciona "*Protocolo de internet versión 4(TCP/IPv4)*" y haz clic en 
           "*Propiedades*".
-          \n
-          6️⃣ Selecciona "*Usar la  siguiente dirección de servidor DNS*" e ingresa:
-          \n
-               🔹Servidor DNS preferido: 8.8.8.8
-               \n
-               🔹Servidor DNS alternativo: 8.8.4.4
-          \n
-          7️⃣ Guarda y vuelve a cargar la pagina`), 
+          \n6️⃣ Selecciona "*Usar la  siguiente dirección de servidor DNS*" e ingresa:
+              \n🔹Servidor DNS preferido: 8.8.8.8
+              \n🔹Servidor DNS alternativo: 8.8.4.4
+          \n7️⃣ Guarda y vuelve a cargar la pagina`), 
         1000);
         setTimeout(() => addBotMessage(`Si te funciono alguna de estas, escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*`,
           ["✅ Si funciono", "❎ No funciono"]
@@ -1135,20 +986,13 @@ function SoportChat (){
       }else if(option === "🔹Mac" && stateChat === "AyudaVariosDispositivos"){
         setStateChat("MacVariosDispositivos");
         setTimeout(() => addBotMessage(`A continuación, te vamos a mostrar el paso a paso  de como cambiar los *DNS*:
-          \n
-          1️⃣ Selecciona el menú *Apple*🍏, luego haz clic en *Configuración del sistema*.
-          \n
-          2️⃣Haz clic en *Red* en la barra lateral.
-          \n
-          3️⃣Selecciona un servicio de red, puede ser *WIFI* o *Ethernet*.
-          \n
-          4️⃣Haz clic en *Detalles* y luego en *DNS*
-          \n
-          5️⃣En la parte inferior de la lista de servidores haz clic en *"+"* para agregar nuevo servidor.
-          \n
-          6️⃣ Escribe *8.8.8.8* y *8.8.4.4* (*DNS de Google*)
-          \n
-          7️⃣Guarda los cambios y prueba la conexión.`), 
+          \n1️⃣ Selecciona el menú *Apple*🍏, luego haz clic en *Configuración del sistema*.
+          \n2️⃣Haz clic en *Red* en la barra lateral.
+          \n3️⃣Selecciona un servicio de red, puede ser *WIFI* o *Ethernet*.
+          \n4️⃣Haz clic en *Detalles* y luego en *DNS*
+          \n5️⃣En la parte inferior de la lista de servidores haz clic en *"+"* para agregar nuevo servidor.
+          \n6️⃣ Escribe *8.8.8.8* y *8.8.4.4* (*DNS de Google*)
+          \n7️⃣Guarda los cambios y prueba la conexión.`), 
         1000);
         setTimeout(() => addBotMessage(`Si te funciono alguna de estas, escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*`,
           ["✅ Si funciono", "❎ No funciono"]
@@ -1158,16 +1002,11 @@ function SoportChat (){
       }else if(option === "🔹 Android" && stateChat === "AyudaVariosDispositivos"){
         setStateChat("AndroidVariosDispositivos");
         setTimeout(() => addBotMessage(`A continuación, te vamos a mostrar el paso a paso  de como cambiar los *DNS*:
-          \n
-          1️⃣ Abre *Ajustes* ⚙️ y ve a *Conexiones*.
-          \n
-          2️⃣ Seleccione "*WIFI*" y haz clic en el icono de engranaje ⚙️ junto a la red.
-          \n
-          3️⃣ Ve a *Avanzado* y cambia "*Configuración de IP*" a "*Estática*".
-          \n
-          4️⃣ Edita "*DNS1" y "*DNS2*", ingresa *8.8.8.8* y 8.8.4.4 (*DNS de Google*)}
-          \n
-          5️⃣Guarda los cambios y reconecta la red.`),
+          \n1️⃣ Abre *Ajustes* ⚙️ y ve a *Conexiones*.
+          \n2️⃣ Seleccione "*WIFI*" y haz clic en el icono de engranaje ⚙️ junto a la red.
+          \n3️⃣ Ve a *Avanzado* y cambia "*Configuración de IP*" a "*Estática*".
+          \n4️⃣ Edita "*DNS1" y "*DNS2*", ingresa *8.8.8.8* y 8.8.4.4 (*DNS de Google*)}
+          \n5️⃣Guarda los cambios y reconecta la red.`),
         1000);
         setTimeout(() => addBotMessage(`Si te funciono alguna de estas, escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*`,
           ["✅ Si funciono", "❎ No funciono"]
@@ -1177,16 +1016,11 @@ function SoportChat (){
       }else if(option === "🔹iPhone" && stateChat === "AyudaVariosDispositivos"){
         setStateChat("iPhoneVariosDispositivos");
         setTimeout(() => addBotMessage(`A continuación, te vamos a mostrar el paso a paso  de como cambiar los *DNS*:
-          \n
-          1️⃣ Abre *Ajustes* ⚙️y pulsa *WIFI*.
-          \n
-          2️⃣Selecciona tu *red* y pulsa el icono "*i*" azul ℹ️.
-          \n
-          3️⃣Pulsa *Configuración DNS* y elije "*Manual*".
-          \n
-          4️⃣Pulsa *Añadir servidor*➕ e ingresa 8.8.8.8 y 8.8.4.4 (DNS de Google).
-          \n
-          5️⃣Pulsa *Guardar* y revisa si te funciono.`), 
+          \n1️⃣ Abre *Ajustes* ⚙️y pulsa *WIFI*.
+          \n2️⃣Selecciona tu *red* y pulsa el icono "*i*" azul ℹ️.
+          \n3️⃣Pulsa *Configuración DNS* y elije "*Manual*".
+          \n4️⃣Pulsa *Añadir servidor*➕ e ingresa 8.8.8.8 y 8.8.4.4 (DNS de Google).
+          \n5️⃣Pulsa *Guardar* y revisa si te funciono.`), 
         1000);
         setTimeout(() => addBotMessage(`Si te funciono alguna de estas, escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*`,
           ["✅ Si funciono", "❎ No funciono"]
@@ -1219,12 +1053,9 @@ function SoportChat (){
       }else if(option === "❌ NO" && stateChat("NoFuncionoSolucionContinua")){
         setStateChat("NoTieneVPN");
         setTimeout(() => addBotMessage(`Vamos a solucionar tu problema. A continuación te vamos a dar una serie de soluciones que puedes utilizar para solucionar tu problema:
-          \n
-          1️⃣ Borra cache o cookies del navegador.
-          \n
-          2️⃣ Prueba en otro navegador o en modo incognito.
-          \n
-          3️⃣ Desactiva las extensiones del navegador.`
+          \n1️⃣ Borra cache o cookies del navegador.
+          \n2️⃣ Prueba en otro navegador o en modo incognito.
+          \n3️⃣ Desactiva las extensiones del navegador.`
         ), 1000);
         setTimeout(() => addBotMessage(`Si esto te funciono escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*.`,
           ["✅ Si funciono", "❎ No funciono"]
@@ -1242,16 +1073,11 @@ function SoportChat (){
       }else if(option === "🎩 Computador" && validStatePaginasNoCarga1.includes(stateChat)){
         setStateChat("ComputadorVpn");
         setTimeout(() => addBotMessage(`Para verificar si tienes una *VPN* en tu computador, vas a seguir los siguientes pasos:
-          \n
-          1. Abrir configuraciones.
-          \n
-          2. Hacer clic en* Red e internet*.
-          \n
-          3. Hacer clic en *VPN*.
-          \n
-          4. Verificar si hay alguna *VPN* conectada.
-          \n
-          Si al momento de consultar la *VPN* hay una activa, por favor desactive y recarga la pagina.`
+          \n1. Abrir configuraciones.
+          \n2. Hacer clic en* Red e internet*.
+          \n3. Hacer clic en *VPN*.
+          \n4. Verificar si hay alguna *VPN* conectada.
+          \nSi al momento de consultar la *VPN* hay una activa, por favor desactive y recarga la pagina.`
         ), 1000);
         setTimeout(() => addBotMessage(`Si te sirvió esto puedes escoger la opción *Si funciono*, de lo contrario si no tenias una *VPN* activa o no te funciono, por favor escoge la opción *No funciono*.`, 
           ["✅ Si funciono", "❎ No funciono"]
@@ -1261,14 +1087,10 @@ function SoportChat (){
       }else if(option === "📱Celular" && validStatePaginasNoCarga1.includes(stateChat)){
         setStateChat("CelularVpn");
         setTimeout(() => addBotMessage(`Para verificar si tu celular tiene un *VPN* activo. Vas a realizar los siguientes pasos: 
-          \n
-          1. Te vas a dirigir a configuraciones.
-          \n
-          2. Busca *VPN*, si no te sale a la vista, te vas a dirigir a la barra de búsqueda  y vas a escribir *VPN*.
-          \n
-          3. Ingresa a esta opción, por lo general esta desactiva, pero dado el caso de que este activa mirar si hay alguna *VPN* activa.
-          \n
-          Si al momento de consultar la *VPN*, esta activa, por favor desactivarla y recargue la pagina a la que quiere consultar.`
+          \n1. Te vas a dirigir a configuraciones.
+          \n2. Busca *VPN*, si no te sale a la vista, te vas a dirigir a la barra de búsqueda  y vas a escribir *VPN*.
+          \n3. Ingresa a esta opción, por lo general esta desactiva, pero dado el caso de que este activa mirar si hay alguna *VPN* activa.
+          \nSi al momento de consultar la *VPN*, esta activa, por favor desactivarla y recargue la pagina a la que quiere consultar.`
         ), 1000);
         setTimeout(() => addBotMessage(`Si esto funciona, por favor escoja la opción *Si funciona* y si no funciono escoge la opción *No funciona *, para poder ayudarte con este problema.`,
           ["✅ Si funciono", "❎ No funciono"]
@@ -1305,12 +1127,9 @@ function SoportChat (){
       }else if(option === "📺Distorsionada"){
         setStateChat("DistorcionadaSeñalTv");
         setTimeout(() => addBotMessage(`Vamos a solucionar tu problema. A continuación te presentaremos una serie de revisiones que puedes hacer para detectar el problema.
-          \n
-          1️⃣Revisa que el cable que esta conectado a el televisor este bien conectado y sin daños visibles.
-          \n
-          2️⃣Si utilizar un divisor de señal, conecta el cable directo al televisor.
-          \n
-          3️⃣Intenta utilizar esto con otro televisor.`
+          \n1️⃣Revisa que el cable que esta conectado a el televisor este bien conectado y sin daños visibles.
+          \n2️⃣Si utilizar un divisor de señal, conecta el cable directo al televisor.
+          \n3️⃣Intenta utilizar esto con otro televisor.`
         ), 1000);
         setTimeout(() => addBotMessage(`Si el problema persiste escoge la opción *No funciono*, de lo contrario escoja la opción *Si funciono*.`,
           ["✅Si funciono", "❎ No funciono"]
@@ -1334,12 +1153,9 @@ function SoportChat (){
       }else if(option === "📺 En varios canales"){
         setStateChat("EnVariosCanalesSinSeñal");
         setTimeout(() => addBotMessage(`Vamos a solucionar tu problema. A continuación te vamos a presentar una serie de soluciones para solucionar tu problema:
-          \n
-          1️⃣Prueba hacer una búsqueda automática de canales en la configuración de tu televisor.
-          \n
-          2️⃣Si utilizas decodificador, revisa que la lista de canales este actualizada.
-          \n
-          3️⃣Si sigues con el problema, puede ser que los canales estén fuera de servicio temporalmente.`),
+          \n1️⃣Prueba hacer una búsqueda automática de canales en la configuración de tu televisor.
+          \n2️⃣Si utilizas decodificador, revisa que la lista de canales este actualizada.
+          \n3️⃣Si sigues con el problema, puede ser que los canales estén fuera de servicio temporalmente.`),
         1000);
         setTimeout(() => addBotMessage(`Si el problema persiste escoge la opción *No funciono*, de lo contrario escoja la opción *Si funciono*.`,
           ["✅ Si funciono", "❎ No funciono"]
@@ -1381,16 +1197,11 @@ function SoportChat (){
       }else if(option === "✅Encendido" && stateChat === "NoFuncionoSeñalTelevision"){
         setStateChat("EncendidoCatv");
         setTimeout(() => addBotMessage(`Vamos a solucionar tu problema. A continuación te vamos a dar una serie de soluciones para que puedas revisar y solucionar tu problema:
-          \n
-          1️⃣Verifica que el cable este conectado en la entrada correcta.
-          \n
-          2️⃣Verifica que el cable este bien conectado y sin daños.
-          \n
-          3️⃣Apaga el *Modem* y después de 30 segundos vuelve a encenderlo.
-          \n
-          4️⃣Prueba con otro televisor o otra toma.
-          \n
-          5️⃣Revisa si el problema es general y a tus vecinos les sucede el mismo problema.`), 
+          \n1️⃣Verifica que el cable este conectado en la entrada correcta.
+          \n2️⃣Verifica que el cable este bien conectado y sin daños.
+          \n3️⃣Apaga el *Modem* y después de 30 segundos vuelve a encenderlo.
+          \n4️⃣Prueba con otro televisor o otra toma.
+          \n5️⃣Revisa si el problema es general y a tus vecinos les sucede el mismo problema.`), 
         1000);
         setTimeout(() => addBotMessage(`Si el problema persiste después de haber hecho lo anterior por favor escoge la opción *No funciono*, de lo contrario escoge la opción *Si funciono*`,
           ["✅ Si funciono", "❎ No funciono"]
@@ -1400,14 +1211,10 @@ function SoportChat (){
       }else if(option === "❎ Apagado" && stateChat === "NoFuncionoSeñalTelevision"){
         setStateChat("ApagadoCatv");
         setTimeout(() => addBotMessage(`Vamos a solucionar tu problema. A continuación te vamos a dar una serie de soluciones para que puedas revisar si te funcionan:
-          \n
-          1️⃣ Verifica que el cable este bien conectado en ambos extremos (ONT y televisor/decodificador).
-          \n
-          2️⃣Apaga la *ONT* y *Decodificador* si tienes uno y espera 30 segundos y vuélvelo a encender.
-          \n
-          3️⃣Prueba con otro cable si tienes uno al alcance.
-          \n
-          4️⃣ Conéctalo a otro televisor o dispositivo por el cual puedas conectarlo.`), 
+          \n1️⃣ Verifica que el cable este bien conectado en ambos extremos (ONT y televisor/decodificador).
+          \n2️⃣Apaga la *ONT* y *Decodificador* si tienes uno y espera 30 segundos y vuélvelo a encender.
+          \n3️⃣Prueba con otro cable si tienes uno al alcance.
+          \n4️⃣ Conéctalo a otro televisor o dispositivo por el cual puedas conectarlo.`), 
         1000);
         setTimeout(() => addBotMessage(`Si el problema persiste después de haber hecho lo anterior por favor escoge la opción *No funciono*, de lo contrario escoge la opción *Si funciono*`,
           ["✅ Si funciono", "❎ No funciono"]
@@ -1456,10 +1263,8 @@ function SoportChat (){
       }else if(option === "🔹Encendidos" && stateChat === "CableLanRedInestable"){
         setStateChat("EncendidoCanleLan");
         setTimeout(() => addBotMessage(`Vamos a solucionar tu problema. A continuación te presentaremos una serie de solucionas para que puedas solucionar tu problema:
-          \n
-          1️⃣Prueba con otro cable para verificar la conexión de este.
-          \n
-          2️⃣Apaga el *Modem* y después de 30 segundos vuelve a encenderlo.`
+          \n1️⃣Prueba con otro cable para verificar la conexión de este.
+          \n2️⃣Apaga el *Modem* y después de 30 segundos vuelve a encenderlo.`
         ), 1000);
         setTimeout(() => addBotMessage(`Nos podrías confirmar si esto te funciono seleccionando la opción *Si funciono*, de lo contrario escoge la opción *No funciono*.`,
           ["✅ Si funciono", "❎ No funciono"]  
@@ -1469,14 +1274,10 @@ function SoportChat (){
       }else if(option === "🔹Apagado" && stateChat === "CableLanRedInestable"){
         setStateChat("ApagadoCanleLan");
         setTimeout(() => addBotMessage(`¡Vamos a solucionar tu problema! 
-          \n
-          A continuación te presentamos una serie de soluciones para solucionar tu problema:
-          \n
-          1️⃣Verifica que el cable este bien conectado a los dispositivos.
-          \n
-          2️⃣Si es posible utiliza otro cable.
-          \n
-          3️⃣Apaga el *Modem* y después de 30 segundos vuelve a encenderlo.`
+          \nA continuación te presentamos una serie de soluciones para solucionar tu problema:
+          \n1️⃣Verifica que el cable este bien conectado a los dispositivos.
+          \n2️⃣Si es posible utiliza otro cable.
+          \n3️⃣Apaga el *Modem* y después de 30 segundos vuelve a encenderlo.`
         ), 1000);
         setTimeout(() => addBotMessage(`Nos podrías confirmar si esto te funciono seleccionando la opción *Si funciono*, de lo contrario escoge la opción *No funciono*.`,
           ["✅ Si funciono", "❎ No funciono"]
@@ -1486,10 +1287,8 @@ function SoportChat (){
       }else if(option === "🔹La señal débil" && stateChat === "wIFIInestable"){
         setStateChat("LaSeñalDebilWifiInestable");
         setTimeout(() => addBotMessage(`Vamos a solucionar tu problema. A continuación te vamos a presentar una serie de soluciones para que revises y puedas solucionar tu problema:
-          \n
-          1️⃣Apaga el *Modem* y después de 30 segundos vuelve a encenderlo.
-          \n
-          2️⃣ Utiliza la red *2.4g* ya que esta tiene más alcance que la *5g*.`
+          \n1️⃣Apaga el *Modem* y después de 30 segundos vuelve a encenderlo.
+          \n2️⃣ Utiliza la red *2.4g* ya que esta tiene más alcance que la *5g*.`
         ), 1000);
         setTimeout(() => addBotMessage(`Podrías confirmarnos con las siguientes opciones si funciono con la opción *Si funciono*, si esto no funciono escoge la opción *No funciono*. `,
           ["✅ Si funciono", "❎ No funciono"]
@@ -1499,12 +1298,9 @@ function SoportChat (){
       }else if(option === "🔹La red no aparece." && stateChat === "wIFIInestable"){
         setStateChat("LaRedNoAparece");
         setTimeout(() => addBotMessage(`Vamos a solucionar tu problema. A continuación te vamos a presentar una serie de soluciones:
-          \n
-          1️⃣ Verifica en otro dispositivo si aparecen la red que quieres utilizar.
-          \n
-          2️⃣Apaga el *Modem* y después de 30 segundos vuelve a encenderlo.
-          \n
-          3️⃣Asegúrate en el *Modem* que las dos redes estén encendidas.`
+          \n1️⃣ Verifica en otro dispositivo si aparecen la red que quieres utilizar.
+          \n2️⃣Apaga el *Modem* y después de 30 segundos vuelve a encenderlo.
+          \n3️⃣Asegúrate en el *Modem* que las dos redes estén encendidas.`
         ), 1000);
         setTimeout(() => addBotMessage(`Para confirmarnos que estén activas puedes escoger la opción correcta. Escoge *Encendido*, si los bombillos de estas redes están encendidos. Si los bombillos están apagados escoge la opción* Apagado*.`,
           ["🔹Encendido", "🔹Apagado"]
@@ -1514,16 +1310,11 @@ function SoportChat (){
       }else if(option === "🔹 Se desconecta" && stateChat === "wIFIInestable"){
         setStateChat("SeDesconectaWifiInestable");
         setTimeout(() => addBotMessage(`Vamos a solucionar tu problema. A continuación te vamos a dar una serie de soluciones para que puedas verificar si esto te funciona:
-          \n
-          1️⃣Acércate al *Modem* ya que la *5g* tiene menos alcance que la *2.4g*.
-          \n
-          2️⃣ Olvida la red y vuelve a conectarte.
-          \n
-          3️⃣Verifica que ocurra en varios dispositivos.
-          \n
-          4️⃣Apaga el *Modem* y después de 30 segundos vuelve a encenderlo.
-          \n
-          5️⃣Aleja el *Modem* de los electrodomésticos o paredes gruesas.`
+          \n1️⃣Acércate al *Modem* ya que la *5g* tiene menos alcance que la *2.4g*.
+          \n2️⃣ Olvida la red y vuelve a conectarte.
+          \n3️⃣Verifica que ocurra en varios dispositivos.
+          \n4️⃣Apaga el *Modem* y después de 30 segundos vuelve a encenderlo.
+          \n5️⃣Aleja el *Modem* de los electrodomésticos o paredes gruesas.`
         ), 1000);
         setTimeout(() => addBotMessage(`Podrías confirmarnos con las siguientes opciones si funciono con la opción *Si funciono*, si esto no funciono escoge la opción *No funciono*. `,
           ["✅ Si funciono", "❎ No funciono"]
@@ -1551,16 +1342,11 @@ function SoportChat (){
       }else if(option === "🔹Encendido" && stateChat === "LaRedNoAparece"){
         setStateChat("EncendidoLaRedNoAparece");
         setTimeout(() => addBotMessage(`Te vamos a dar una serie de soluciones para que puedas verificar y solucionar tu problema:
-          \n
-          1️⃣ Verifica que la red no este oculta.
-          \n
-          2️⃣ Olvida la red y vuelve a conectarlo.
-          \n
-          3️⃣ Prueba con otro dispositivo.
-          \n
-          4️⃣ Si estas lejos del *Modem* conéctate a la red *2.4g* ya que esta tiene mas alcance.
-          \n
-          5️⃣Apaga el *Modem* y después de 30 segundo vuelve a encenderlo.`
+          \n1️⃣ Verifica que la red no este oculta.
+          \n2️⃣ Olvida la red y vuelve a conectarlo.
+          \n3️⃣ Prueba con otro dispositivo.
+          \n4️⃣ Si estas lejos del *Modem* conéctate a la red *2.4g* ya que esta tiene mas alcance.
+          \n5️⃣Apaga el *Modem* y después de 30 segundo vuelve a encenderlo.`
         ), 1000);
         setTimeout(() => addBotMessage(`Si te funciono las soluciones elige la opción *Si funciono*, de lo contrario escoge la opción *No funciono*.`,
           ["✅ Si funciono", "❎ No funciono"]
@@ -1570,12 +1356,9 @@ function SoportChat (){
       }else if(option === "🔹Apagado" && stateChat === "NoSabeDispositivoRedInestable"){
         setStateChat("ApagadoLaRedNoAparece");
         setTimeout(() => addBotMessage(`Te vamos a dar una serie de soluciones para que puedas verificar y solucionar tu problema:
-          \n
-          1️⃣Apaga el *Modem* y después de 30 segundos vuelve a encenderlo.
-          \n
-          2️⃣Prueba mirar en otro dispositivo.
-          \n
-          3️⃣Si es posible conecta un cable *Ethernet* para verificar la conexión a internet.`
+          \n1️⃣Apaga el *Modem* y después de 30 segundos vuelve a encenderlo.
+          \n2️⃣Prueba mirar en otro dispositivo.
+          \n3️⃣Si es posible conecta un cable *Ethernet* para verificar la conexión a internet.`
         ), 1000);
         setTimeout(() => addBotMessage(`Si te funciono las soluciones elige la opción *Si funciono*, de lo contrario escoge la opción *No funciono*.`,
           ["✅ Si funciono", "❎ No funciono"]
@@ -1615,27 +1398,20 @@ function SoportChat (){
         //Otro problema
       }else if(option === "🔘Otro problema" && stateChat === "Falla conexión"){
         setTimeout(() => addBotMessage(`Para poder ayudarte con tu problema, te vamos a solicitar unos datos junto con la descripción del problema para poder ayudarte. Para el envió de estos datos lo que vas a hacer es enviar un mensaje donde estén los datos, estos los puedes enviar en *forma de lista* sin caracteres especiales, *Separado por comas* y tambien puede ser de corrido pero con espacios. 
-          \n
-          Los datos son:
-          \n
-          1️⃣Nombre del titular del servicio.
-          \n
-          2️⃣Número de documento del titular del servicio.
-          \n
-          3️⃣Descripción del problema.`),
+          \nLos datos son:
+          \n1️⃣Nombre del titular del servicio.
+          \n2️⃣Número de documento del titular del servicio.
+          \n3️⃣Descripción del problema.`),
         1000);
         setWaitingForDocument(true);
-
       }
   };
-
     //notificacion
     const playNotificacionSound = () =>{
         audioRef.current.play().catch((error)=>{
             console.error('Error al reproducir el sonido: ', error)
         })
     }
-
     return(
         <div className="Schats">
             <div className="chat-icon-container" onClick={toggleChat}>

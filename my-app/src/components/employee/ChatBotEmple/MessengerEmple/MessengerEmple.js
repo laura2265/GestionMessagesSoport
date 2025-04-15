@@ -68,18 +68,15 @@ function MessengerEmple (){
             );
     
             setMessages(mensajesOrdenados);
-    
-            // Obtener el último mensaje recibido
             const lastMessage = mensajesOrdenados[mensajesOrdenados.length - 1];
     
-            // Marcar como "no leído" solo si el usuario NO está en ese chat
             setUnreadMessages(prev => ({
                 ...prev,
-                [activeContact.id]: activeContact.id !== activeContact.id // Se mantiene en true si no es el chat activo
+                [activeContact.id]: activeContact.id !== activeContact.id 
             }));
     
-            setContacts(prevContacts => 
-                prevContacts.map(contact => 
+            setContacts(prevContacts =>
+                prevContacts.map(contact =>
                     contact.id === activeContact.id 
                     ? { ...contact, lastMessage } 
                     : contact
@@ -316,7 +313,7 @@ function MessengerEmple (){
                                                 c.id === contact.id ? { ...c, unread: false } : c
                                             )
                                         );
-                                    
+
                                         // Actualizar el estado de mensajes no leídos
                                         setUnreadMessages(prev => ({
                                             ...prev,
@@ -338,9 +335,7 @@ function MessengerEmple (){
                             <p className="nullData">No hay contactos disponibles.</p>
                         )}
                         </div>
-
                     </div>
-
                     <div className="contentChat">
                         <div className="contentTitle">
                             {activeContact ? (

@@ -14,7 +14,7 @@ async function MetodoPostManychat(req, res) {
                 Authorization: `Bearer ${manyChatToken}`,
                 'Content-Type': 'application/json',
             };
-    
+
             bodyContent = JSON.stringify({
                 "subscriber_id": suscriberID,
                 "data": {
@@ -30,21 +30,21 @@ async function MetodoPostManychat(req, res) {
                     },
                 },
             });
-    
+
             const response = await fetch('https://api.manychat.com/fb/sending/sendContent', {
                 method: 'POST',
                     headers: myHeaders,
                     body: bodyContent
             });
-    
+
             if (!response.ok) {
                 console.error(`Error en la consulta a ManyChat: ${response.statusText}`);
                 throw new Error('Error al enviar el mensaje a ManyChat');
             }
-    
+
             const data = await response.json();
             console.log('Mensaje enviado correctamente:', data);
-    
+
             res.status(200).json({ message: 'Mensaje enviado correctamente', data: data });
         } catch (error) {
             console.error('Error al enviar el mensaje:', error);
@@ -53,6 +53,7 @@ async function MetodoPostManychat(req, res) {
                 details: error.message,
             });
         }
+
     }else if(chat === 'messenger'){
         console.log('entro al envio de messenger', suscriberID)
         try{
@@ -71,7 +72,7 @@ async function MetodoPostManychat(req, res) {
                 },
                 "message_tag": "ACCOUNT_UPDATE"
               });
-              
+
               const myHeaders = new Headers();
                 myHeaders.append("accept", "application/json");
                 myHeaders.append("Authorization", `Bearer ${manyChatToken}`);
@@ -83,7 +84,7 @@ async function MetodoPostManychat(req, res) {
                 body: raw,
                 redirect: "follow"
               };
-              
+
             const response = await fetch('https://api.manychat.com/fb/sending/sendContent', requestOptions)
 
             const data = await response.json()
