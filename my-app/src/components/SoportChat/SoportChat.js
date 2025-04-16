@@ -307,7 +307,7 @@ function SoportChat (){
         ),1000);
         setWaitingForDocument(true);
       }else if(option === '📱 Un equipo' &&  stateChat === "sininternet"){
-        setStateChat("UnEquipoSinInternet")
+        setStateChat("UnEquipoSinInternet");
         setTimeout(() => addBotMessage(`¿Estas conectado a *WIFI* o cable *Ethernet*?`,
           ["📶 WIFI", "🔌 Cable Ethernet"]
         ),1000);
@@ -318,6 +318,7 @@ function SoportChat (){
           ["📶WIFI", "🔌Cable Ethernet"]
         ),1000);
         setWaitingForDocument(true);
+
         //wifi o cable un solo equipo
       }else if(option === '📶 WIFI' && stateChat === "UnEquipoSinInternet"){
         setStateChat("WifiUnEquipoSinInternet");
@@ -339,6 +340,7 @@ function SoportChat (){
           ["🆘 Ayuda", "➡️ Seguir"]
         ),1000);
         setWaitingForDocument(true);
+
         //wifi o cable multiples equipos
       }else if(option === '📶WIFI' && stateChat === "MultiplesEquiposSinInternet"){
         setStateChat("WifiMultiplesEquipoSinInternet");

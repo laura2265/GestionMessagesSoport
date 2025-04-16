@@ -27,18 +27,42 @@ function MessengerEmple (){
         const file = e.target.files[0];
         if (file) {
             setSelectedImage(file);
-        }
+        } 
     };
+
+    const handleImageUpload = async(file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', 'upload_presets_tu');
+        formData.append('cloud_name', 'tu_cloud_name');
+
+        try{
+            const res = await fetch('https:/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization' : 'Api-Key d8s-3711a00e-cb3f-44c3-9d64-3a90b665e3fa'
+                },
+                body: formData
+            })
+
+            const data = await res.json();
+            console.log('Url de imagen subida es: ', data)
+
+        }catch(error){
+            console.error('Error al momento de subir la imagen: ', error)
+        }
+    }
+
     useEffect(()=>{
-        const userId = localStorage.getItem('UserId')
-        const rolUser = localStorage.getItem('rol-user')
+        const userId = localStorage.getItem('UserId');
+        const rolUser = localStorage.getItem('rol-user');
         if(userId && rolUser){
             setIsLoggedIn(true);
         }else{
             setIsLoggedIn(false);
         }
-    },[])
-
+    },[]);
 
     //mensajes de MongoDB
     const fetchMessenger = async (activeContact) => {
@@ -49,47 +73,43 @@ function MessengerEmple (){
                     'Content-Type': 'application/json'
                 }
             });
-    
+
             if (!response.ok) {
                 throw new Error('Error al obtener los mensajes del contacto');
             }
-    
+
             const result = await response.json();
             const data = result.data.docs;
-    
+
             if (!data || data.length === 0) {
                 setMessages([]);
                 return;
             }
-    
-            // Ordenar mensajes por fecha (más antiguos primero)
+
             const mensajesOrdenados = data.sort((a, b) => 
                 new Date(a.updatedAt) - new Date(b.updatedAt)
             );
-    
+
             setMessages(mensajesOrdenados);
             const lastMessage = mensajesOrdenados[mensajesOrdenados.length - 1];
-    
+
             setUnreadMessages(prev => ({
                 ...prev,
                 [activeContact.id]: activeContact.id !== activeContact.id 
             }));
-    
+
             setContacts(prevContacts =>
                 prevContacts.map(contact =>
-                    contact.id === activeContact.id 
-                    ? { ...contact, lastMessage } 
+                    contact.id === activeContact.id
+                    ? { ...contact, lastMessage }
                     : contact
                 )
             );
-    
         } catch (error) {
             console.error('Error al consultar los datos de la API:', error);
         }
     };
-    
-    
-        
+
     const groupMessagesByDate = (messages) => {
         return messages.reduce((acc, message) => {
             const dateKey = new Date(message.updatedAt).toLocaleDateString('es-ES');
@@ -101,7 +121,7 @@ function MessengerEmple (){
         }, {});
     };
 
-    const fetchManychat = async (chatId) => {
+    const fetchManychat = async (chatId) => { 
         try {
             const responseMany = await fetch(`http://localhost:3001/manychat/${chatId}`, {
                 method: 'GET',
@@ -123,6 +143,7 @@ function MessengerEmple (){
                 perfil: dataMany.profile_pic,
                 estado: dataMany.status,
             }
+
             console.log('id es: ', newContact)
             setContacts(prevContacts => {
                 const exists = prevContacts.find(contact => contact.id === newContact.id )
@@ -131,7 +152,6 @@ function MessengerEmple (){
                 }
                 return prevContacts
             })
-
         } catch (error) {
             console.error('Error al momento de consultar los datos de la API:', error);
         }
@@ -147,23 +167,21 @@ function MessengerEmple (){
                         'Content-Type': 'application/json',
                     }
                 });
-    
                 if (!responseEmple.ok) {
                     throw new Error('Error al momento de consultar los datos del empleado');
                 }
-    
                 const resultEmple = await responseEmple.json();
                 const dataEmple = resultEmple.data.docs;
                 console.log(dataEmple);
-    
+
                 const assignedEmple = dataEmple.filter((emple) => emple.idEmple === EmpleId);
-    
+
                 if (assignedEmple && assignedEmple.length > 0) {
                     for (let i = 0; i < assignedEmple.length; i++) {
                         const user = assignedEmple[i];
                         const chatId = user.cahtId;
                         console.log('El ID del chat es:', chatId);
-    
+
                         if (user.chatName === 'ChatBotMessenger') {
                             await fetchManychat(chatId);
 
@@ -173,7 +191,7 @@ function MessengerEmple (){
                                     'Content-Type': 'application/json'
                                 }
                             });
-            
+
                             if (!response.ok) {
                                 throw new Error('Error al obtener los mensajes del contacto');
                             }
@@ -182,7 +200,7 @@ function MessengerEmple (){
                             const data = result.data.docs;
 
                             const exists = data.some(msg => msg.contactId === user.chatId && msg.message === user.Descripcion);
-    
+
                             if (!exists) {
                                 const newMessage = {
                                     contactId: chatId,
@@ -191,13 +209,13 @@ function MessengerEmple (){
                                     chat: 'messenger',
                                     idMessageClient: `msg_MessageProblem-${user.Descripcion.length}`
                                 };
-    
+
                                 const messageResponse = await fetch('http://localhost:3001/message/', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify(newMessage),
                                 });
-    
+
                                 if (!messageResponse.ok) throw new Error('Error al guardar el mensaje en message');
     
                                 console.log('Mensaje guardado correctamente.');
@@ -211,10 +229,8 @@ function MessengerEmple (){
                 console.error('Error al momento de consultar los datos de la API:', error);
             }
         };
-    
         fetchEmple();
-    }, []); 
-     
+    }, []);
 
     const handleSendMessage = async () => {
         if (currentMessage.trim() !== "" && activeContact) {
@@ -226,7 +242,7 @@ function MessengerEmple (){
                 idMessageClient: `msg_${Date.now()}-${currentMessage.length}`
             };
 
-            const rawMessage ={
+            const rawMessage = {
                 suscriberID:activeContact.id,
                 message: currentMessage,
                 chat: 'messenger',
@@ -278,6 +294,7 @@ function MessengerEmple (){
             handleSendMessage()
         }
     }
+
     return(
         <>
             <div className={theme === 'light'?'app light': 'app dark'}>
@@ -292,7 +309,6 @@ function MessengerEmple (){
                     <h1>Messenger</h1>
                     <a className="ButtonTheme1" onClick={toggleTheme}> <img src={theme === 'light'? ModoClaro : ModoOscuro} /> </a>
                 </div>
-
                 <div className="contentChatW">
                     <div className="contentContact">
                         <div className="barrasuperiorContacts">
@@ -306,7 +322,6 @@ function MessengerEmple (){
                                     className={`contactContent ${activeContact?.id === contact.id ? 'active' : ''}`}
                                     onClick={() => {
                                         setActiveContact(contact);
-                                    
                                         // Marcar como leído al abrir el chat
                                         setContacts(prevContacts =>
                                             prevContacts.map(c =>

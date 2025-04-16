@@ -29,6 +29,7 @@ const getDataFetch = async (req, res) => {
         console.log('Retornando datos desde cache');
         return res.json(cachedData);
     }
+
     console.log('Consultando datos de Google Sheets...');
     try {
         const promises = [];
@@ -39,7 +40,7 @@ const getDataFetch = async (req, res) => {
         const allData = await Promise.all(promises);
 
         let formattedData = [];
-        
+
         allData.forEach((sheetData, index) => {
             if (sheetData.length > 1) {
                 const headers = sheetData[0];
@@ -81,13 +82,13 @@ const getDataFetch = async (req, res) => {
                             })
                         })
                     }
-                    
+
                 }else if(`Sheet${index+1}` === `Sheet2`){
                     const ProblemaConexionIndex = headers.indexOf('problema-conexion');
                     const testVelIndex = headers.indexOf('VelocidadTest');
                     const porcentajeIndex = headers.indexOf('PorcentajeVelocidad');
                     const ResultTestIndex = headers.indexOf('FuncionamientoTestVelocidad');
-                    
+
                     if(idIndex !== -1 && NameIndex !== -1 && chatIndex !== -1 && messageIndex !== -1 && ProblemaConexionIndex !== -1 && testVelIndex !== -1 && porcentajeIndex !== -1 && ResultTestIndex !== -1){
                         rows.forEach(row=>{
                             formattedData.push({
@@ -136,6 +137,7 @@ const getDataFetch = async (req, res) => {
                             })
                         })
                     }
+
                 }else if(`Sheet${index+1}` === `Sheet4`){
                     const ProblemaConexionIndex = headers.indexOf('problema-conexion');
                     const ProblemSeñal = headers.indexOf('ProblemaSeñal');
@@ -236,9 +238,7 @@ const getDataFetch = async (req, res) => {
                                     Servicio: partes[4] || null,
                                     Motivo: partes.slice(5).join(' ') || null
                                 };
-
-                            } else {
-
+                            }else {
                                 let partes = detalles.split(/\s+/);
 
                                 if (partes.length >= 5) {
@@ -268,7 +268,6 @@ const getDataFetch = async (req, res) => {
                             });
                         });
                     }
-
                 }else if(`Sheet${index+1}` === `Sheet8`){
                     if(idIndex !== -1 && NameIndex !== -1 && chatIndex !== -1 && messageIndex !== -1){
                         rows.forEach(row => {
@@ -304,7 +303,7 @@ const getDataFetch = async (req, res) => {
                                     Documento: partes[1] || null,
                                     Servicio: partes[2] || null,
                                     Motivo: partes.slice(3).join(' ') || null
-                                }; 
+                                };
 
                             } else {
                                 let partes = detalles.split(/\s+/);
@@ -376,7 +375,7 @@ const getDataFetch = async (req, res) => {
                                 let partes = detalles.split(/\s+/);
                 
                                 if (partes.length >= 4) {
-                                    let nombreFin = 2; 
+                                    let nombreFin = 2;
                                     while (nombreFin < partes.length && isNaN(partes[nombreFin])) {
                                         nombreFin++;
                                     }

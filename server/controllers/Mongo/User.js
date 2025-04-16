@@ -50,6 +50,8 @@ export const getOneUserId = async(req, res)=>{
     }
 }
 
+
+
 export const insertData = async (req, res) => {
     console.log("Datos recibidos en la solicitud:", req.body);
     try {
