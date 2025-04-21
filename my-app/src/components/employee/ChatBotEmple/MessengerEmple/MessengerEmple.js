@@ -12,11 +12,11 @@ import { CiImageOn } from "react-icons/ci";
 import { AiFillAudio } from "react-icons/ai";
 
 function MessengerEmple (){
-    const {theme, toggleTheme} = useContext(ThemeContext)
-    const [contacts, setContacts] = useState([])
-    const [activeContact, setActiveContact] = useState(null)
-    const [messages, setMessages] = useState([])
-    const [currentMessage, setCurrentMessage] = useState('')
+    const {theme, toggleTheme} = useContext(ThemeContext);
+    const [contacts, setContacts] = useState([]);
+    const [activeContact, setActiveContact] = useState(null);
+    const [messages, setMessages] = useState([]);
+    const [currentMessage, setCurrentMessage] = useState('');
     const [ isLoggedIn, setIsLoggedIn] = useState(false);
     const fileInputRef = useRef(null);
     const [unreadMessages, setUnreadMessages] = useState({});
@@ -27,32 +27,8 @@ function MessengerEmple (){
         const file = e.target.files[0];
         if (file) {
             setSelectedImage(file);
-        } 
-    };
-
-    const handleImageUpload = async(file) => {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('upload_preset', 'upload_presets_tu');
-        formData.append('cloud_name', 'tu_cloud_name');
-
-        try{
-            const res = await fetch('https:/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization' : 'Api-Key d8s-3711a00e-cb3f-44c3-9d64-3a90b665e3fa'
-                },
-                body: formData
-            })
-
-            const data = await res.json();
-            console.log('Url de imagen subida es: ', data)
-
-        }catch(error){
-            console.error('Error al momento de subir la imagen: ', error)
         }
-    }
+    };
 
     useEffect(()=>{
         const userId = localStorage.getItem('UserId');
@@ -63,6 +39,15 @@ function MessengerEmple (){
             setIsLoggedIn(false);
         }
     },[]);
+
+    const imageUploadNube = async() => {
+        console.log('Hola, imagen en proceso de subida ')
+        try{
+            console.log('Entro')
+        }catch(error){
+            console.error('Error al momento de subir la imagen a la nube');
+        }
+    }
 
     //mensajes de MongoDB
     const fetchMessenger = async (activeContact) => {
@@ -116,12 +101,13 @@ function MessengerEmple (){
             if (!acc[dateKey]) {
                 acc[dateKey] = [];
             }
+
             acc[dateKey].push(message);
             return acc;
         }, {});
     };
 
-    const fetchManychat = async (chatId) => { 
+    const fetchManychat = async (chatId) => {
         try {
             const responseMany = await fetch(`http://localhost:3001/manychat/${chatId}`, {
                 method: 'GET',
@@ -151,7 +137,7 @@ function MessengerEmple (){
                     return[...prevContacts, newContact]
                 }
                 return prevContacts
-            })
+            });
         } catch (error) {
             console.error('Error al momento de consultar los datos de la API:', error);
         }
@@ -167,9 +153,11 @@ function MessengerEmple (){
                         'Content-Type': 'application/json',
                     }
                 });
+
                 if (!responseEmple.ok) {
                     throw new Error('Error al momento de consultar los datos del empleado');
                 }
+
                 const resultEmple = await responseEmple.json();
                 const dataEmple = resultEmple.data.docs;
                 console.log(dataEmple);
@@ -322,14 +310,13 @@ function MessengerEmple (){
                                     className={`contactContent ${activeContact?.id === contact.id ? 'active' : ''}`}
                                     onClick={() => {
                                         setActiveContact(contact);
-                                        // Marcar como leído al abrir el chat
+
                                         setContacts(prevContacts =>
                                             prevContacts.map(c =>
                                                 c.id === contact.id ? { ...c, unread: false } : c
                                             )
                                         );
 
-                                        // Actualizar el estado de mensajes no leídos
                                         setUnreadMessages(prev => ({
                                             ...prev,
                                             [contact.id]: false
@@ -398,7 +385,6 @@ function MessengerEmple (){
                                                         ) : (
                                                             <p>{message.message}</p>
                                                         )}
-
                                                         <span className="timestamp">
                                                             {new Date(message.updatedAt).toLocaleString([], { hour: '2-digit', minute: '2-digit' })}
                                                         </span>
@@ -410,11 +396,9 @@ function MessengerEmple (){
                                 ) : (
                                     <p className="nullData">No hay mensajes disponibles.</p>
                                 )}
-
                                 </div>
                                 <div className="contenttextMessage">
                                     <div className="fileContent">
-
                                     <input
                                         type="file"
                                         ref={fileInputRef}
@@ -422,13 +406,13 @@ function MessengerEmple (){
                                         accept="image/png, image/jpeg"
                                         style={{ display: "none" }}
                                     />
+
                                     <button onClick={() => fileInputRef.current.click()} className="upload-btn">
                                         <CiImageOn size={22} color="#333" />
                                     </button>
-
                                     {selectedImage && <p>Imagen seleccionada: <img src={selectedImage} /></p>}
-
                                     </div>
+
                                     <input
                                         type="text"
                                         placeholder="Escribir..."
@@ -436,6 +420,7 @@ function MessengerEmple (){
                                         onChange={(e) => setCurrentMessage(e.target.value)}
                                         onKeyPress={handleKeyPress}
                                     />
+
                                     <input
                                         type="file"
                                         ref={fileInputRef}
@@ -443,9 +428,11 @@ function MessengerEmple (){
                                         accept="audio/*"
                                         style={{ display: "none" }}
                                     />
+
                                     <button onClick={() => fileInputRef.current.click()} className="upload-btn">
                                         <AiFillAudio size={22} color="#333" />
                                     </button>
+
                                     <button onClick={handleSendMessage}>
                                         <img src={Enviar} alt="Enviar" />
                                     </button>

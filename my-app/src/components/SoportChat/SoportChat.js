@@ -16,9 +16,18 @@ function SoportChat (){
           sender: 'bot', text: `Hola, bienvenido a tu chat de confianza 😊\n¿Como te llamas?`
         }
     ]);
-
     const [stateChat, setStateChat] = useState(null);
     const [option, setOption] = useState(null);
+    const [isDisabled, setIsDisabled] = useState(false);
+
+    //variables para el historial de mensajes
+    const [conversacionState, setConversacionState] = useState(false);
+    const [nombre, setNombre] = useState("");
+    const [nombreTemporal, setNombreTemporal] = useState("");
+    const [email, setEmail] = useState("");
+    const [estado, setEstado] = useState("esperando_nombre");
+    const chatIdUser = localStorage.getItem("chatUserId")
+    
 
     //variables de confirmacion 
     const validStatesSinInternet = [
@@ -94,14 +103,6 @@ function SoportChat (){
       "PcWIfiNoSabe",
       "cablePcNoSabe"
     ];
-    
-    //variables para el historial de mensajes
-    const [conversacionState, setConversacionState] = useState(false);
-    const [nombre, setNombre] = useState("");
-    const [nombreTemporal, setNombreTemporal] = useState("");
-    const [email, setEmail] = useState("");
-    const [estado, setEstado] = useState("esperando_nombre");
-    const chatIdUser = localStorage.getItem("chatUserId")
     
     //metodo de actuali zar los mensajes guardadosF
     const enviarMensaje = async (idConversacion, de, mensaje) => {
@@ -217,6 +218,7 @@ function SoportChat (){
               fechaInicio: new Date().toISOString()
             })
           });
+
           setTimeout(() => addBotMessage(
             `¡Perfecto, ${nombreTemporal}! Ya puedes comenzar a chatear con nosotros\n ¿En qué podemos ayudarte?`,
             [
@@ -230,6 +232,7 @@ function SoportChat (){
         }
         setConversacionState(true);
       }
+
       if(estado === "conversacion"){
         handleSendMessage(userInput);
         if (waitingForDocument) {
@@ -255,12 +258,15 @@ function SoportChat (){
         setIsChatVisible(!isChatVisible);
         setHandleNewMessage(false);
     }
+
     const handleUserInput = (e) => {
         setUserInput(e.target.value);
     }
+
     const closeChat = () => {
         setIsChatVisible(false);
     }
+
     const wisphub = async (cedula) => {
       try {
         const response = await fetch(`http://localhost:3001/wisphub-data/${cedula}`, {
@@ -292,7 +298,9 @@ function SoportChat (){
 
     const handleButtonClick = async (option) => {
       setOption(option);
+      setIsDisabled(true)
       handleSendMessage(option);
+      
       setMessages((prevMessage) => [...prevMessage, { sender: 'user', text: option }]);
       if (option === "Falla conexión"){
         setStateChat("Falla conexión");
@@ -625,7 +633,7 @@ function SoportChat (){
         //Otras opciones
       }else if (option === "Cambiar Contraseña") {
         setTimeout(() => addBotMessage(`Para poder solicitar el cambio de contraseña, te vamos a solicitar unos datos, los cuales vas a enviar en un solo mensaje separado por *Comas*, *Tipo lista sin números ni caracteres especiales*, o tambien *De corrido pero con espacios*. \n
-            Los datos son: 
+            Los datos son:
             \n1️⃣Nombre completo del titular del servicio.
             \n2️⃣Número de documento del titular.
             \n3️⃣Número de teléfono o contacto.
@@ -660,7 +668,7 @@ function SoportChat (){
       }else if(option === 'PQR(Peticion, Queja, Reclamo)'){
         setTimeout(() => addBotMessage(`Para realizar la solicitud de un *PQR* te vamos a solicitar unos datos para poder pasarte con un asesor. Los datos que te solicitamos los vas a enviar en un solo mensaje donde pondrás los datos separados por *Comas*, *Tipo lista sin caracteres especiales* o *De corrido con Espacios*. 
           \nSi vas a agregar la fecha que sea de la siguiente manera *dd-mm-aa* o tambien podría ser de la siguiente manera *dd/mm/aa*.
-            \nLos datos son: 
+            \nLos datos son:
             \n📌 Nombre completo
             \n🔢 Número de documento.
             \n📂 Tipo de solicitud *(Petición, Queja, Reclamo).
@@ -682,7 +690,7 @@ function SoportChat (){
           \n2️⃣Copia del documento de la persona a la que se le va a realizar el servicio.`), 1000);
           setWaitingForDocument(true);
 
-          //Otro problema 
+        //Otro problema 
       }else if(option === 'Otro'){
         setTimeout(() => addBotMessage(`Para poder ayudarte con tu problema te vamos a pedir unos datos para poder ayudarte. Los datos los vas a enviar en un solo mensaje donde los vas a enviar *Tipo lista sin caracteres especiales*, Separados por *Comas* o tambien de corrido con *Espacios*.
           \nAl momento colocar los datos, al llegar al punto 3 donde pregunta si es titular. Por favor colocar *Si* o *No*.
@@ -692,7 +700,7 @@ function SoportChat (){
           \n4️⃣ Descripción del problema o duda que desea consultar.`),1000);
         setWaitingForDocument(true);
 
-            //Apartado de no tengo internet
+        //Apartado de no tengo internet
       }else if(option === "🐢 Internet lento." && stateChat === "Falla conexión"){
         setStateChat("TestDeVelocidadInternetLento");
         setTimeout(() => addBotMessage(`Para solucionar este problema lo que harás es realizar un test de velocidad, ya sea para el internet por cable o, para el *WIFI*.`,
@@ -1022,14 +1030,14 @@ function SoportChat (){
           \n2️⃣Selecciona tu *red* y pulsa el icono "*i*" azul ℹ️.
           \n3️⃣Pulsa *Configuración DNS* y elije "*Manual*".
           \n4️⃣Pulsa *Añadir servidor*➕ e ingresa 8.8.8.8 y 8.8.4.4 (DNS de Google).
-          \n5️⃣Pulsa *Guardar* y revisa si te funciono.`), 
+          \n5️⃣Pulsa *Guardar* y revisa si te funciono.`),
         1000);
         setTimeout(() => addBotMessage(`Si te funciono alguna de estas, escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*`,
           ["✅ Si funciono", "❎ No funciono"]
         ), 1000);
         setWaitingForDocument(true);
 
-        //Si funciono la solucion. 
+        //Si funciono la solucion.
       }else if(option === "✅ Si funciono" && validStatePaginasNoCarga1.includes(stateChat)){
         setStateChat("SiFuncionoSolucion");
         setTimeout(() => addBotMessage(`!Genial¡ si necesitas ayuda escribe seguir para volver iniciar 😊.`), 1000);
@@ -1414,6 +1422,7 @@ function SoportChat (){
             console.error('Error al reproducir el sonido: ', error)
         })
     }
+
     return(
         <div className="Schats">
             <div className="chat-icon-container" onClick={toggleChat}>
@@ -1477,7 +1486,7 @@ function SoportChat (){
                                 </button>
                               )
                             }
-                           } )}
+                           })}
                          </div>
                        )}
                      </div>

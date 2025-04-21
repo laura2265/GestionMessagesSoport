@@ -62,6 +62,7 @@ export function TelegramPost(idUser, messege1, buscar, Service, message2){
             },
             body: JSON.stringify(raw)
         })
+        
     }else if(Service === 'message'){
         const raw = ({
             "subscriber_id": idUser,
@@ -132,7 +133,7 @@ export function InstagramPost(idUser, messege1, buscar, Service){
                   }
                 ]
             }
-        } 
+        }
     })
 
     fetch('https://api.manychat.com/fb/sending/sendContent',{
