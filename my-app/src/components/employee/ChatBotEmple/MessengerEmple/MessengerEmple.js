@@ -11,6 +11,7 @@ import '../WhatsappEmple/whatsappEmple.css';
 import { CiImageOn } from "react-icons/ci";
 import { AiFillAudio } from "react-icons/ai";
 
+
 function MessengerEmple (){
     const {theme, toggleTheme} = useContext(ThemeContext);
     const [contacts, setContacts] = useState([]);
@@ -27,6 +28,9 @@ function MessengerEmple (){
         const file = e.target.files[0];
         if (file) {
             setSelectedImage(file);
+            setTimeout(() => {
+                imageUploadNube();
+            })
         }
     };
 
@@ -41,11 +45,52 @@ function MessengerEmple (){
     },[]);
 
     const imageUploadNube = async() => {
-        console.log('Hola, imagen en proceso de subida ')
+        if(!selectedImage || !activeContact){
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', selectedImage);
+        formData.append('contactId', activeContact.id);
+        formData.append('chat','messenger');
+
         try{
-            console.log('Entro')
+            const response = await fetch('http://localhost:3001/upload-image',{
+                method: 'POST',
+                body: formData,
+            })
+
+            if(!response.ok){
+                throw new Error('Error al subir la imagen al servidor'); 
+            }
+
+            const result = await response.json();
+            const newMessage ={
+                contactId: activeContact.id,
+                messages: result.imageUrl,
+                sender: 'Empleado',
+                chat:'messenger',
+                idMessageClient: `img_${Date.now()}`,
+                type: 'image',
+            };
+
+            const saveMessage = await fetch('http://localhost:3001/message/',{
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(newMessage),
+            });
+
+            if(!saveMessage.ok){
+                throw new Error('Error al guardar el mensaje con imagen');
+            }
+
+            setMessages(prev => [...prev, newMessage]);
+            setSelectedImage(null);
+
         }catch(error){
-            console.error('Error al momento de subir la imagen a la nube');
+            console.error('Error subiendo imagen: ', error)
         }
     }
 
@@ -148,7 +193,7 @@ function MessengerEmple (){
             try {
                 const EmpleId = localStorage.getItem('UserId');
                 const responseEmple = await fetch(`http://localhost:3001/asignaciones/`, {
-                    method: 'GET',
+                    method: 'GET',  
                     headers: {
                         'Content-Type': 'application/json',
                     }
@@ -252,7 +297,6 @@ function MessengerEmple (){
                 });
 
                 if (!messageResponse.ok) throw new Error('Error al guardar el mensaje en message');
-
                 setMessages(prevMessages => [...prevMessages, newMessage]);
 
             } catch (error) {
@@ -268,7 +312,7 @@ function MessengerEmple (){
             const updateMessages = async () => {
                 await fetchMessenger(activeContact);
             };
-
+        
             updateMessages();
 
             // Iniciar el intervalo
@@ -276,7 +320,7 @@ function MessengerEmple (){
             return () => clearInterval(intervalId);
     }, [activeContact]);
 
-    //enviar mensaje 
+    //enviar mensaje
     const handleKeyPress = (e) =>{
         if(e.key === 'Enter'){
             handleSendMessage()
@@ -338,6 +382,7 @@ function MessengerEmple (){
                         )}
                         </div>
                     </div>
+
                     <div className="contentChat">
                         <div className="contentTitle">
                             {activeContact ? (
@@ -372,7 +417,7 @@ function MessengerEmple (){
                                                     >
                                                         {imgUrl || message.message[0].includes('https://scontent.xx.fbcdn.net') ? (
                                                             <>
-                                                            <img src={message.message} style={{ maxWidth: '200px', borderRadius: '10px' }} /><br/>
+                                                                <img src={message.message} style={{ maxWidth: '200px', borderRadius: '10px' }} /><br/>
                                                             </>
                                                         ) : audioUrl || message.message[0].includes('https://cdn.fbsbx.com')? (
                                                             <>
@@ -397,20 +442,24 @@ function MessengerEmple (){
                                     <p className="nullData">No hay mensajes disponibles.</p>
                                 )}
                                 </div>
+
                                 <div className="contenttextMessage">
                                     <div className="fileContent">
-                                    <input
-                                        type="file"
-                                        ref={fileInputRef}
-                                        onChange={handleFileUpload}
-                                        accept="image/png, image/jpeg"
-                                        style={{ display: "none" }}
-                                    />
+                                        <input
+                                            type="file"
+                                            ref={fileInputRef}
+                                            onChange={handleFileUpload}
+                                            accept="image/png, image/jpeg"
+                                            style={{ display: "none" }}
+                                        />
 
-                                    <button onClick={() => fileInputRef.current.click()} className="upload-btn">
-                                        <CiImageOn size={22} color="#333" />
-                                    </button>
-                                    {selectedImage && <p>Imagen seleccionada: <img src={selectedImage} /></p>}
+                                        <CiImageOn
+                                            className="icon"
+                                            onClick={() => fileInputRef.current.click()}
+                                        />
+                                        {selectedImage && (
+                                            <button onClick={imageUploadNube} className="send-image-button">Enviar Imagen</button>
+                                        )}
                                     </div>
 
                                     <input
