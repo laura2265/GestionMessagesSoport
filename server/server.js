@@ -172,16 +172,13 @@ async function fetchUserData() {
                 message: problem || null,
                 processedAt: new Date().toISOString()
             });
-
             await saveProcessedUser(processedUsers);
             await delay(1000);
         }
-
         lastProcessedId = result;
     } catch (error) {
         console.error('❌ Error en fetchUserData:', error);
     }
 }
-
 
 setInterval(fetchUserData, 10000)

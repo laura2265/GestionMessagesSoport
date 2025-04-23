@@ -11,50 +11,80 @@ import '../WhatsappEmple/whatsappEmple.css';
 import { CiImageOn } from "react-icons/ci";
 import { AiFillAudio } from "react-icons/ai";
 
-
 function MessengerEmple (){
     const {theme, toggleTheme} = useContext(ThemeContext);
     const [contacts, setContacts] = useState([]);
     const [activeContact, setActiveContact] = useState(null);
     const [messages, setMessages] = useState([]);
-    const [currentMessage, setCurrentMessage] = useState('');
     const [ isLoggedIn, setIsLoggedIn] = useState(false);
-    const fileInputRef = useRef(null);
     const [unreadMessages, setUnreadMessages] = useState({});
-    const [selectedImage, setSelectedImage] = useState(null);
+    const [currentMessage, setCurrentMessage] = useState('');
+    const [ selectedImage, setSelectedImage] = useState(null);
+    const fileInputRef = useRef(null);
 
-    // Manejo del envío de archivos
-    const handleFileUpload = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            setSelectedImage(file);
-            setTimeout(() => {
-                imageUploadNube();
-            })
+    const handleKeyPress = (e) =>{
+        if(e.key === 'Enter'){
+            handleSendMessage()
+        }
+    }
+
+    const handleSendMessage = async () => {
+        if (currentMessage.trim() !== "" && activeContact) {
+
+            const newMessage = {
+                contactId: activeContact.id,
+                message: currentMessage,
+                sender: 'Empleado',
+                chat: 'messenger',
+                idMessageClient: `msg_${Date.now()}-${currentMessage.length}`
+            };
+
+            const rawMessage = {
+                suscriberID:activeContact.id,
+                message: currentMessage,
+                chat: 'messenger',
+            }
+
+            try {
+                const response = await fetch(`http://localhost:3001/post-message`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(rawMessage),
+                });
+
+                if (!response.ok) throw new Error('Error al guardar el mensaje en post-message');
+
+                const messageResponse = await fetch('http://localhost:3001/message/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newMessage),
+                });
+
+                if (!messageResponse.ok) throw new Error('Error al guardar el mensaje en message');
+                setMessages(prevMessages => [...prevMessages, newMessage]);
+
+            } catch (error) {
+                console.error('Error al guardar el mensaje: ', error);
+            }
+            setCurrentMessage("");
         }
     };
 
-    useEffect(()=>{
-        const userId = localStorage.getItem('UserId');
-        const rolUser = localStorage.getItem('rol-user');
-        if(userId && rolUser){
-            setIsLoggedIn(true);
-        }else{
-            setIsLoggedIn(false);
+    // Manejo del envío de archivos
+    const handleFileChage = (e) => {
+        if(e.target.files[0]){
+            setSelectedImage(e.target.files[0]);
         }
-    },[]);
+    };
 
     const imageUploadNube = async() => {
-        if(!selectedImage || !activeContact){
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append('file', selectedImage);
-        formData.append('contactId', activeContact.id);
-        formData.append('chat','messenger');
-
+        if(!selectedImage || !activeContact) return;
         try{
+            const formData = new FormData();
+            formData.append('file', selectedImage);
+            formData.append('contactId', activeContact.id);
+            formData.append('chat', 'messenger');
+
             const response = await fetch('http://localhost:3001/upload-image',{
                 method: 'POST',
                 body: formData,
@@ -65,34 +95,45 @@ function MessengerEmple (){
             }
 
             const result = await response.json();
-            const newMessage ={
+            const newMessage = {
                 contactId: activeContact.id,
                 messages: result.imageUrl,
                 sender: 'Empleado',
                 chat:'messenger',
-                idMessageClient: `img_${Date.now()}`,
-                type: 'image',
+                idMessageClient: `img_${Date.now()}`
             };
 
-            const saveMessage = await fetch('http://localhost:3001/message/',{
+            const MessageImageResponse = await fetch('http://localhost:3001/message/', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
+                headers:{
+                    'Content-Type' : 'application/json'
                 },
-                body: JSON.stringify(newMessage),
-            });
+                body: JSON.stringify(newMessage)
+            })
 
-            if(!saveMessage.ok){
-                throw new Error('Error al guardar el mensaje con imagen');
+            const dataImageResponse = await MessageImageResponse.json();
+            if(!dataImageResponse.ok){
+                throw new Error('Error al guardar la imagen en el mensaje')
             }
 
-            setMessages(prev => [...prev, newMessage]);
+            setMessages((prev) => [...prev, newMessage]);
             setSelectedImage(null);
+            fileInputRef.current.value = '';
 
         }catch(error){
             console.error('Error subiendo imagen: ', error)
         }
     }
+
+    useEffect(()=>{
+        const userId = localStorage.getItem('UserId');
+        const rolUser = localStorage.getItem('rol-user');
+        if(userId && rolUser){
+            setIsLoggedIn(true);
+        }else{
+            setIsLoggedIn(false);
+        }
+    },[]);
 
     //mensajes de MongoDB
     const fetchMessenger = async (activeContact) => {
@@ -248,9 +289,7 @@ function MessengerEmple (){
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify(newMessage),
                                 });
-
                                 if (!messageResponse.ok) throw new Error('Error al guardar el mensaje en message');
-    
                                 console.log('Mensaje guardado correctamente.');
                             } else {
                                 console.log('El mensaje ya existe, no se enviará.');
@@ -264,47 +303,6 @@ function MessengerEmple (){
         };
         fetchEmple();
     }, []);
-
-    const handleSendMessage = async () => {
-        if (currentMessage.trim() !== "" && activeContact) {
-            const newMessage = {
-                contactId: activeContact.id,
-                message: currentMessage,
-                sender: 'Empleado',
-                chat: 'messenger',
-                idMessageClient: `msg_${Date.now()}-${currentMessage.length}`
-            };
-
-            const rawMessage = {
-                suscriberID:activeContact.id,
-                message: currentMessage,
-                chat: 'messenger',
-            }
-
-            try {
-                const response = await fetch(`http://localhost:3001/post-message`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(rawMessage),
-                });
-
-                if (!response.ok) throw new Error('Error al guardar el mensaje en post-message');
-
-                const messageResponse = await fetch('http://localhost:3001/message/', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(newMessage),
-                });
-
-                if (!messageResponse.ok) throw new Error('Error al guardar el mensaje en message');
-                setMessages(prevMessages => [...prevMessages, newMessage]);
-
-            } catch (error) {
-                console.error('Error al guardar el mensaje: ', error);
-            }
-            setCurrentMessage("");
-        }
-    };
 
     useEffect(() => {
         if (!activeContact) return;
@@ -321,12 +319,6 @@ function MessengerEmple (){
     }, [activeContact]);
 
     //enviar mensaje
-    const handleKeyPress = (e) =>{
-        if(e.key === 'Enter'){
-            handleSendMessage()
-        }
-    }
-
     return(
         <>
             <div className={theme === 'light'?'app light': 'app dark'}>
@@ -442,17 +434,15 @@ function MessengerEmple (){
                                     <p className="nullData">No hay mensajes disponibles.</p>
                                 )}
                                 </div>
-
                                 <div className="contenttextMessage">
                                     <div className="fileContent">
                                         <input
                                             type="file"
                                             ref={fileInputRef}
-                                            onChange={handleFileUpload}
+                                            onChange={handleFileChage}
                                             accept="image/png, image/jpeg"
                                             style={{ display: "none" }}
                                         />
-
                                         <CiImageOn
                                             className="icon"
                                             onClick={() => fileInputRef.current.click()}
@@ -461,7 +451,6 @@ function MessengerEmple (){
                                             <button onClick={imageUploadNube} className="send-image-button">Enviar Imagen</button>
                                         )}
                                     </div>
-
                                     <input
                                         type="text"
                                         placeholder="Escribir..."
@@ -473,7 +462,7 @@ function MessengerEmple (){
                                     <input
                                         type="file"
                                         ref={fileInputRef}
-                                        onChange={handleFileUpload}
+                                        onChange={handleFileChage}
                                         accept="audio/*"
                                         style={{ display: "none" }}
                                     />

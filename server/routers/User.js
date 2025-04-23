@@ -8,11 +8,7 @@ import { getDataMessageId, postDataMessage, getDataMesage } from "../controllers
 import { AsignarUserPost, AsignarUserGet } from "../controllers/UserAleatorio/AsignarUser.js";
 import WisphubApi from "../controllers/WisphubApi.js";
 import { crearConversacion, getConversacionBot, updateMessage } from "../controllers/Mongo/MessageBotServer.js";
-import multer  from "multer";
-import { cloudinary, storage } from "../config/cloudinary.js";
-
-
-const upload = multer({storage});
+import {uploadImage, upload} from "../config/cloudinary.js";
 
 const router = express.Router();
 const path = "user";
@@ -67,26 +63,6 @@ router.get(`/${pathConversacion}`, getConversacionBot);
 router.put(`/${pathConversacion}/:id/mensaje`, updateMessage);
 
 //subir imagenes a la nube
-router.post(`/${pathUploadImage}`, upload.single('file'), async(req, res) => {
-    try{
-        const result = cloudinary.uploader.upload_stream({resources_type: "image"},(error, result)=>{
-            if(error){
-                return res.status(500).json({
-                    error: 'Error al subir la imagen a cloudinary',
-                    details: error
-                })
-            }
-            res.status(200).json({
-                imageUrl: result.secure_url,
-            })
-        })
-
-        result.end(req.file.buffer)
-    }catch(error){
-        res.status(500).json({
-            error: 'Error al subir la imagen'
-        })
-    }
-})
+router.post(`/${pathUploadImage}`, upload.single('file'), uploadImage )
 
 export default router;
