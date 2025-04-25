@@ -8,7 +8,8 @@ import { getDataMessageId, postDataMessage, getDataMesage } from "../controllers
 import { AsignarUserPost, AsignarUserGet } from "../controllers/UserAleatorio/AsignarUser.js";
 import WisphubApi from "../controllers/WisphubApi.js";
 import { crearConversacion, getConversacionBot, updateMessage } from "../controllers/Mongo/MessageBotServer.js";
-import {uploadImage, upload} from "../config/cloudinary.js";
+import { MetodoPostCloudinary } from "../controllers/cloudinary/MetodoPostCloudinary.js";
+import multer from "multer";
 
 const router = express.Router();
 const path = "user";
@@ -20,7 +21,16 @@ const pathHistoryMessage = 'message'
 const pathAsignar = 'asignaciones';
 const phatWisphub = 'wisphub-data';
 const pathConversacion = 'conversacion-server'
-const pathUploadImage = 'upload-image';
+const pathImage = 'image-post-message'
+
+const storage = multer.diskStorage({
+    destination: "uploads/",
+    filename: (req, file, cb) => {
+        cb(null, `${Date.now()}-${file.originalname}`)
+    }
+})
+
+const upload = multer({ storage })
 
 // Ruta para obtener datos (GET)
 router.get(`/${path}`, getData);
@@ -62,7 +72,7 @@ router.post(`/${pathConversacion}`, crearConversacion);
 router.get(`/${pathConversacion}`, getConversacionBot);
 router.put(`/${pathConversacion}/:id/mensaje`, updateMessage);
 
-//subir imagenes a la nube
-router.post(`/${pathUploadImage}`, upload.single('file'), uploadImage )
+//metodo post para imagenes en la nube
+router.post(`/${pathImage}`, upload.single("file"), MetodoPostCloudinary);
 
 export default router;

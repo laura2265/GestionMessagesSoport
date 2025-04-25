@@ -5,7 +5,7 @@ import SliderEmploye from "../../../navbar/SliderEmploye";
 import ModoOscuro from '../../../../assets/img/modo-oscuro.png';
 import ModoClaro from '../../../../assets/img/soleado.png';
 import Usuario from '../../../../assets/img/usuario.png';
-import Enviar from '../../../../assets/img/enviar.png';
+import { VscSend } from "react-icons/vsc";
 import MessageChat from "../../../MessageChat";
 import '../WhatsappEmple/whatsappEmple.css';
 import { CiImageOn } from "react-icons/ci";
@@ -24,7 +24,7 @@ function MessengerEmple (){
 
     const handleKeyPress = (e) =>{
         if(e.key === 'Enter'){
-            handleSendMessage()
+            handleSendMessage();
         }
     }
 
@@ -78,50 +78,66 @@ function MessengerEmple (){
     };
 
     const imageUploadNube = async() => {
-        if(!selectedImage || !activeContact) return;
+        if(!selectedImage){
+            return;
+        }
+
         try{
             const formData = new FormData();
             formData.append('file', selectedImage);
-            formData.append('contactId', activeContact.id);
-            formData.append('chat', 'messenger');
 
-            const response = await fetch('http://localhost:3001/upload-image',{
+            const response = await fetch('http://localhost:3001/image-post-message',{
                 method: 'POST',
                 body: formData,
-            })
+                redirect: 'follow'
+            });
 
             if(!response.ok){
-                throw new Error('Error al subir la imagen al servidor'); 
+                throw new Error('Error al subir la imagen a la nube')
             }
 
-            const result = await response.json();
+            const data = await response.json();
+            const image = data[0]?.secure_url || data?.secure_url || '';
+            console.log('La imagen fue subida con exito: ', data);
+
             const newMessage = {
                 contactId: activeContact.id,
-                messages: result.imageUrl,
+                message: image,
                 sender: 'Empleado',
-                chat:'messenger',
-                idMessageClient: `img_${Date.now()}`
+                chat: 'messenger',
+                idMessageClient: `msg_img${Date.now()}`
             };
 
-            const MessageImageResponse = await fetch('http://localhost:3001/message/', {
+            await fetch('http://localhost:3001/message/',{
                 method: 'POST',
-                headers:{
+                headers: {
                     'Content-Type' : 'application/json'
                 },
-                body: JSON.stringify(newMessage)
-            })
+                body: JSON.stringify({
+                    newMessage
+                })
+            });
 
-            const dataImageResponse = await MessageImageResponse.json();
-            if(!dataImageResponse.ok){
-                throw new Error('Error al guardar la imagen en el mensaje')
+            const responseManychat = await fetch('http://localhost:3001/post-message',{
+                method: 'POST',
+                headers: {
+                    'Content-Type' : 'application/json'
+                },
+                body: JSON.stringify({
+                    suscriberID: activeContact.id,
+                    messages: image,
+                    chat: 'messenger'
+                })
+            });
+
+            if(!responseManychat.ok){
+                throw new Error('Erro al enviar la imagen')
             }
 
-            setMessages((prev) => [...prev, newMessage]);
+            setMessages(prevMessages => [...prevMessages, newMessage]);
             setSelectedImage(null);
-            fileInputRef.current.value = '';
-
         }catch(error){
-            console.error('Error subiendo imagen: ', error)
+            console.error('Error al subir la imagen a la nube: ', error)
         }
     }
 
@@ -234,7 +250,7 @@ function MessengerEmple (){
             try {
                 const EmpleId = localStorage.getItem('UserId');
                 const responseEmple = await fetch(`http://localhost:3001/asignaciones/`, {
-                    method: 'GET',  
+                    method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
                     }
@@ -310,7 +326,6 @@ function MessengerEmple (){
             const updateMessages = async () => {
                 await fetchMessenger(activeContact);
             };
-        
             updateMessages();
 
             // Iniciar el intervalo
@@ -401,7 +416,7 @@ function MessengerEmple (){
                                             {messagesOnDate.map((message, index) => {
                                                 const imgUrl = message.message?.includes('scontent.xx.fbcdn.net');
                                                 const audioUrl = message.message?.includes('cdn.fbsbx');
-                                                console.log('url', message.message)
+                                                
                                                 return (
                                                     <div
                                                         key={index}
@@ -437,10 +452,9 @@ function MessengerEmple (){
                                 <div className="contenttextMessage">
                                     <div className="fileContent">
                                         <input
-                                            type="file"
+                                            type="file" 
                                             ref={fileInputRef}
                                             onChange={handleFileChage}
-                                            accept="image/png, image/jpeg"
                                             style={{ display: "none" }}
                                         />
                                         <CiImageOn
@@ -472,7 +486,7 @@ function MessengerEmple (){
                                     </button>
 
                                     <button onClick={handleSendMessage}>
-                                        <img src={Enviar} alt="Enviar" />
+                                        <VscSend />
                                     </button>
                                 </div>
                             </>
