@@ -77,7 +77,7 @@ function MessengerEmple (){
         }
     };
 
-    const imageUploadNube = async() => {
+    const imageUploadNube = async() => {    
         if(!selectedImage){
             return;
         }
@@ -105,7 +105,7 @@ function MessengerEmple (){
                 message: image,
                 sender: 'Empleado',
                 chat: 'messenger',
-                idMessageClient: `msg_img${Date.now()}`
+                idMessageClient: `msg_imageProblem${Date.now()}`
             };
 
             await fetch('http://localhost:3001/message/',{
@@ -279,7 +279,7 @@ function MessengerEmple (){
                                 method: 'GET',
                                 headers: {
                                     'Content-Type': 'application/json'
-                                }
+                                }   
                             });
 
                             if (!response.ok) {

@@ -94,6 +94,7 @@ async function MetodoPostManychat(req, res) {
                 succes: true,
                 message: 'El mensaje fue enviado correctamente'
             })
+            
         }catch(error){
             console.error('Error al momento de enviar un mensaje a messenger')
             res.status(500).json({
