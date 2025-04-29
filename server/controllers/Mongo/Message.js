@@ -46,42 +46,34 @@ export const getDataMesage = async(req, res) => {
 
 export const postDataMessage = async(req, res) => {
     try{
-        const { contactId, message, sender, chat, idMessageClient} = req.body;
-        if (!contactId || !message || !sender || !chat) {
-            console.error('Campos requeridos faltantes: ', req.body);
-            return res.status(400).json({
+        const existingUser = await MessageScheme.findOne({ $or: {_id, contactId} });
+
+        if(existingUser){
+            return res.status(404).json({
                 success: false,
-                message: 'Faltan campos requeridos en el cuerpo de la solicitud'
-            });
+                message: 'El usuario ya existe con el mismo id'
+            })
         }
-        
 
-        if (idMessageClient) {
-            const exists = await MessageScheme.findOne({ idMessageClient });
-        
-            if (exists) {
-                return res.status(409).json({ 
-                    success: false,
-                    message: 'El mensaje ya está registrado.',
-                });
-            }
-        }
-        
-
+        const {
+            contactId,
+            usuario, 
+            conversacion,
+            chat,
+        } = req.body
 
         const newMessage = new MessageScheme({
             contactId,
-            message,
-            sender,
+            usuario,
+            conversacion,
             chat,
-            idMessageClient,
         });
 
-        await newMessage.save();
+        const guardado = await newMessage.save();
         console.log('Mensaje guardadoCorrectamente: ', newMessage);
         res.status(201).json({
             success: true,
-            data: newMessage,
+            data: guardado,
         })
     }catch(error){
         console.error('Error al momento de guardar el mensaje');

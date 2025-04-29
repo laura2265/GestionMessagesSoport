@@ -33,10 +33,13 @@ function MessengerEmple (){
 
             const newMessage = {
                 contactId: activeContact.id,
-                message: currentMessage,
-                sender: 'Empleado',
+                usuario:'',
+                message: {
+                    sender: 'Empleado',
+                    messages: currentMessage,
+                    idMessageClient: `msg_${Date.now()}-${currentMessage.length}`
+                }, 
                 chat: 'messenger',
-                idMessageClient: `msg_${Date.now()}-${currentMessage.length}`
             };
 
             const rawMessage = {
@@ -240,6 +243,7 @@ function MessengerEmple (){
                 }
                 return prevContacts
             });
+
         } catch (error) {
             console.error('Error al momento de consultar los datos de la API:', error);
         }
@@ -279,7 +283,7 @@ function MessengerEmple (){
                                 method: 'GET',
                                 headers: {
                                     'Content-Type': 'application/json'
-                                }   
+                                }
                             });
 
                             if (!response.ok) {
