@@ -9,3 +9,8 @@ export const ApiTokenGoogle2 = 'AIzaSyCikLk9gDuQmdj_IuZkCHLi3K8aK6hy5AQ';
 export const nameCloud = 'dpjkyobnc';
 export const imageApiKey = '827194339952395';
 export const imageApiKeySecret = 'x5bzOUB0FmwTD-AwWMrnE4YfDCg';
+
+const nameUser = "lalavega160"
+const passwordUser = "COminola226511"
+
+export const Url_DB = `mongodb+srv://${nameUser}:${passwordUser}@cluster0.s1pczeu.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`

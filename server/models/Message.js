@@ -3,22 +3,29 @@ import mongoosePaginate from 'mongoose-paginate-v2'
 
 const MessageSoportScheme =  new mongoose.Schema(
     {
-        sender: String,
+        sender: {
+            type: String,
+            require: true,
+        },
         message: String,
         timeStamp: {
             type: Date,
             default: Date.now
         },
-        idMessageClient: { type: String},
-    });
+        idMessageClient: { type: String },
+    }
+);
 
 const MessageScheme = new mongoose.Schema(
     {
-        contactId: { type: String, required: true },
+        contactId: {
+            type: String,
+            required: true
+        },
         usuario:{
             nombre: String,
         },
-        conversacion: [MessageSoportScheme],
+        messages: [MessageSoportScheme],
         chat: { type: String, required: true },
     },
     { timestamps: true }

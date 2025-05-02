@@ -49,7 +49,7 @@ export const AsignarUserPost = async (req, res) => {
 
                     if (yaAsignado) {
                         console.log(`⚠️ El cliente ${cliente.id} ya tiene una asignación en ${categoria}.`);
-                        continue;  // Saltar al siguiente cliente
+                        continue;
                     }
 
                     const empleAsignado = empleados[Math.floor(Math.random() * empleados.length)];

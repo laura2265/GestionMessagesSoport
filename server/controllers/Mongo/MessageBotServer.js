@@ -38,6 +38,7 @@ export const getOneChat = async(req, res) =>{
             success: true,
             data: messageChat
         })
+
     }catch(error){
         res.status(500).json({
             succes: false,
@@ -49,15 +50,6 @@ export const getOneChat = async(req, res) =>{
 
 export const crearConversacion = async (req, res) => {
     try {
-        const existingUser = await conversacionScheme.findOne({ id })
-
-        if(existingUser){
-            return res.status(404).json({
-                seccess: false,
-                message: "El usuario ya existe con el mismo id"
-            });
-        }
-
         const {
           id,
           usuario,
@@ -65,6 +57,17 @@ export const crearConversacion = async (req, res) => {
           conversacion,
           finalizacion,
         } = req.body;
+
+        const existingUser = await conversacionScheme.findOne({id});
+
+        if(existingUser){
+            console.log('El usuario ya existe en la base de datos.')
+            
+            return res.status.json({
+                succes: false,
+                message: 'El usuario ya existe en la base de datos'
+            })
+        }
 
         const nuevaConversacion = new conversacionScheme({
           id,

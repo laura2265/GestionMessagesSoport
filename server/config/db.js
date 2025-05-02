@@ -1,8 +1,7 @@
 import mongoose from "mongoose";
+import { Url_DB } from "./config.js";
 
-
-const DB_URI = 'mongodb://localhost:27017/ControlMessageAndUsers';
-
+const DB_URI = Url_DB;
 
 const connectDB = async () => {
     try {
@@ -10,10 +9,10 @@ const connectDB = async () => {
             useNewUrlParser: true,
             useUnifiedTopology: true,
         });
-        console.log("Conexión exitosa a MongoDB");
+        console.log("Conexión exitosa a Mongo Atlas");
     } catch (err) {
         console.error("Error al conectar a MongoDB:", err.message);
-        process.exit(1); 
+        process.exit(1);
     }
 };
 

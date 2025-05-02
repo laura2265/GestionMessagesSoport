@@ -10,7 +10,6 @@ function MessageChat() {
 
     useEffect(() => {
         const intervalId = setInterval(async () => {
-
             try {
                 const EmpleId = localStorage.getItem('UserId');
                 const responseEmple = await fetch(`http://localhost:3001/asignaciones/`, {
@@ -103,6 +102,7 @@ function MessageChat() {
 
                                 lastMessagesRef.current[chatId] = messageText;
                             }
+
                         }else if(messageUrl1){
 
                             const messageId = `${dataMany.subscribed}-${messageText?.slice(369,380)}`

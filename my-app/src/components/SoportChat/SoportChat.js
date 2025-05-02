@@ -16,6 +16,7 @@ function SoportChat (){
           sender: 'bot', text: `Hola, bienvenido a tu chat de confianza 😊\n¿Como te llamas?`
         }
     ]);
+
     const [stateChat, setStateChat] = useState(null);
     const [option, setOption] = useState(null);
     const [isDisabled, setIsDisabled] = useState(false);
@@ -27,7 +28,15 @@ function SoportChat (){
     const [email, setEmail] = useState("");
     const [estado, setEstado] = useState("esperando_nombre");
     const chatIdUser = localStorage.getItem("chatUserId")
-    
+
+    //Variables para el audio y los mensajes
+    const [handleNewMessage, setHandleNewMessage] = useState(false)
+    const [userInput, setUserInput] = useState("");
+    const audioRef = useRef(new Audio(Notificacion));
+    const toggleChat=()=>{
+        setIsChatVisible(!isChatVisible);
+        setHandleNewMessage(false);
+    }
 
     //variables de confirmacion 
     const validStatesSinInternet = [
@@ -53,13 +62,13 @@ function SoportChat (){
       "BombilloLosApagado",
       "BombilloLosApagadoSeguir"
     ];
-    
+
     const validStatesTestVelocidad = [
       "MasDel50InternetInestable",
       "MenosDel50InternetInestable",
       "InternetLentoOInestable"
     ];
-    
+
     const validStatePaginasNoCarga1 = [
       "UnaPaginaNoCarga",
       "WindowsVariasPaginas", 
@@ -73,25 +82,25 @@ function SoportChat (){
       "AndroidVariosDispositivos",
       "MacVariosDispositivos"
     ];
-    
+
     const validStatePaginasNoCargaVpn = [
       "ConfirmacionVPN",
       "NoTieneVPN",
       "ComputadorVpn",
       "CelularVpn"
     ];
-    
+
     const validStateSinSeñal1 = [
       "DistorcionadaSeñalTv",
       "EnVariosCanalesSinSeñal",
       "CableDesconectadoSinSeñal",
       "CableConectadoSinSeñal"
     ];
-    
+
     const validStateSinSeñalFinal = [
       "ApagadoCatv","EncendidoCatv"
     ];
-    
+
     const validStateRedInestableFinal =[
       "EncendidoCanleLan",
       "ApagadoCanleLan",
@@ -103,7 +112,7 @@ function SoportChat (){
       "PcWIfiNoSabe",
       "cablePcNoSabe"
     ];
-    
+
     //metodo de actuali zar los mensajes guardadosF
     const enviarMensaje = async (idConversacion, de, mensaje) => {
       try{
@@ -125,11 +134,15 @@ function SoportChat (){
     }
 
     const handleSendMessage = (texto) => {
-      setMessages((prev) => [...prev, { sender: "user", text: texto }]);
-      if(texto){
-        console.log('entro al texto del usuario: ', texto)
+
+      if(!texto || typeof texto !== 'string'){
+        console.warn('entro al texto del usuario: ', texto)
+        return;
       }
+
+      setMessages((prev) => [...prev, { sender: "user", text: texto }]);
       enviarMensaje(chatIdUser, "usuario", texto);
+      setUserInput("")
     }
 
     const getPublicIp = async () => {
@@ -238,7 +251,7 @@ function SoportChat (){
         if (waitingForDocument) {
           wisphub(userInput);
           setWaitingForDocument(false);
-       } else if (userInput.toLowerCase().includes('seguir')){
+       }else if (userInput.toLowerCase().includes('seguir')){
           setTimeout(()=> addBotMessage('Hola, bienvenido a tu chat 😊\n¿En que puedo ayudarte?',
             ["Falla conexión", "Cambiar Contraseña", "Cancelar Servicio", "Cambio de plan", "Traslado", "Solicitar servicio", "PQR(Peticion, Queja, Reclamo)", "Pagar Facturas", "Cambio de titular", "Otro"]
           ),1000);
@@ -249,14 +262,6 @@ function SoportChat (){
        }
        setUserInput("");
       }
-    }
-
-    const [handleNewMessage, setHandleNewMessage] = useState(false)
-    const [userInput, setUserInput] = useState("");
-    const audioRef = useRef(new Audio(Notificacion));
-    const toggleChat=()=>{
-        setIsChatVisible(!isChatVisible);
-        setHandleNewMessage(false);
     }
 
     const handleUserInput = (e) => {
@@ -275,6 +280,7 @@ function SoportChat (){
             'Content-Type': 'application/json'
           }
         });
+
         if(!response.ok){
           throw new Error(`Error al momento de consultar los datos da la cedula: ${cedula}`); 
         };
@@ -300,13 +306,13 @@ function SoportChat (){
       setOption(option);
       setIsDisabled(true)
       handleSendMessage(option);
-      
-      setMessages((prevMessage) => [...prevMessage, { sender: 'user', text: option }]);
+
       if (option === "Falla conexión"){
         setStateChat("Falla conexión");
         setTimeout(() => addBotMessage(`Al parecer tienes problemas con tu servicio, vamos a hacer unas pruebas para poder ayudarte. \n¿Qué tipo de problema tiene? escoja el problema que desea solucionar:`,
           ["✅ No tengo internet.", "🐢 Internet lento.", "🌐 No cargan páginas.", "📺 Señal de Televisión.", "⚡ Internet inestable.", "🔘Otro problema"]
         ),1000);
+
         setWaitingForDocument(true);
       }else if(option === "✅ No tengo internet." &&  stateChat === "Falla conexión"){
         setStateChat("sininternet");
@@ -320,6 +326,7 @@ function SoportChat (){
           ["📶 WIFI", "🔌 Cable Ethernet"]
         ),1000);
         setWaitingForDocument(true);
+
       }else if(option === '💻📱 Múlples aquipos'){
         setStateChat("MultiplesEquiposSinInternet")
         setTimeout(() => addBotMessage(`¿Estás conectado por *WIFI* o por cable *Ethernet*?`,

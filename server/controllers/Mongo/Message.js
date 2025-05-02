@@ -1,3 +1,4 @@
+import { timeStamp } from 'console';
 import MessageScheme from '../../models/Message.js'
 
 
@@ -46,7 +47,14 @@ export const getDataMesage = async(req, res) => {
 
 export const postDataMessage = async(req, res) => {
     try{
-        const existingUser = await MessageScheme.findOne({ $or: {_id, contactId} });
+        const {
+            contactId,
+            usuario,
+            messages,
+            chat,
+        } = req.body;
+
+        const existingUser = await MessageScheme.findOne({ $or: [{ contactId }] });
 
         if(existingUser){
             return res.status(404).json({
@@ -55,22 +63,15 @@ export const postDataMessage = async(req, res) => {
             })
         }
 
-        const {
-            contactId,
-            usuario, 
-            conversacion,
-            chat,
-        } = req.body
-
         const newMessage = new MessageScheme({
             contactId,
             usuario,
-            conversacion,
+            messages,
             chat,
         });
 
         const guardado = await newMessage.save();
-        console.log('Mensaje guardadoCorrectamente: ', newMessage);
+        console.log('Mensaje guardadoCorrectamente: ', guardado);
         res.status(201).json({
             success: true,
             data: guardado,
@@ -83,4 +84,63 @@ export const postDataMessage = async(req, res) => {
             error: error.message
         })
     }
-} 
+}
+
+export const addMessageToConversation = async(req, res) => {
+    try{
+        const {contactId} = req.params;
+        const {messages} = req.body;
+
+        if(!messages || !Array.isArray(messages) || messages.length === 0 ){
+            return res.status(400).json({
+                success: false,
+                message: 'No se recibió ningún mensaje'
+            });
+        }
+
+        const {sender, message, idMessageClient} = messages[0];
+
+        if(!sender || !message || !idMessageClient){
+            return res.status(400).json({
+                success: false,
+                message: 'Faltan datos para subir el mensaje'
+            })
+        }
+
+        const newMessage = {
+            sender,
+            messages,
+            idMessageClient,
+            timeStamp: new Date(),
+        }
+
+        console.log('Nuevo mensaje recibido: ', newMessage)
+
+        const UploadNewConversation = await MessageScheme.findOneAndUpdate(
+            {contactId},
+            {
+                $push: { messages: newMessage}
+            },
+            {new: true}
+        );
+
+        if(!UploadNewConversation){
+            return res.status(404).json({
+                success: false,
+                message: 'Conversacion no encontrada'
+            })
+        }
+
+        res.status(200).json({
+            success: true,
+            data: UploadNewConversation
+        })
+
+    }catch(error){
+        console.error('Error al momento de subir la conversacion: ', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al subir los mensajes a la converscion: ', error
+        })
+    }
+}

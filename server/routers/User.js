@@ -4,7 +4,7 @@ import getDataFetch from '../controllers/apiControllers.js';
 import getDataFetchClient from '../controllers/ApiClients.js';
 import apiManychatUsers from "../controllers/apiManychatUsers.js";
 import MetodoPostManychat from "../controllers/MetodoPostManychat.js";
-import { getDataMessageId, postDataMessage, getDataMesage } from "../controllers/Mongo/Message.js";
+import { getDataMessageId, postDataMessage, getDataMesage,  addMessageToConversation} from "../controllers/Mongo/Message.js";
 import { AsignarUserPost, AsignarUserGet } from "../controllers/UserAleatorio/AsignarUser.js";
 import WisphubApi from "../controllers/WisphubApi.js";
 import { crearConversacion, getConversacionBot, updateMessage } from "../controllers/Mongo/MessageBotServer.js";
@@ -59,6 +59,7 @@ router.post(`/${pathMessage}`, MetodoPostManychat)
 router.get(`/${pathHistoryMessage}`, getDataMesage)
 router.get(`/${pathHistoryMessage}/`, getDataMessageId)
 router.post(`/${pathHistoryMessage}`, postDataMessage)
+router.put(`/${pathHistoryMessage}/:contactId`, addMessageToConversation)
 
 //Asignaciones
 router.post(`/${pathAsignar}/:id`, AsignarUserPost);

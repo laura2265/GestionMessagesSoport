@@ -99,6 +99,7 @@ async function fetchUserData() {
                  'Sheet11', 'Sheet12', 'Sheet13', 'Sheet14', 'Sheet15'].includes(sheets)) {
                 console.log(`📄 Página ${sheets}, asignando empleado...`);
                 EmpleAssigned(idUser);
+
             }else if(['Sheet9'].includes(sheets)){
                 const nombreUser = item.Name;
                 const NameChat = item.chatName;
@@ -140,26 +141,27 @@ async function fetchUserData() {
 
                     if(ServicioDuracion === "0 - 6 meses"){
                         console.log('Usted debe tener más de 6 meses, sin embargo te vamos a pasar a soporte')
-                        EmpleAssigned(idUser)
+                        EmpleAssigned(idUser);
                     }else if(ServicioDuracion === "6 meses - 1 año"){
-                        console.log('duracion media')
+                        console.log('duracion media');
                     }else if(ServicioDuracion === "1 año o mas"){
                         console.log('Vamos a confirmar unos datos y te verificamos el proceso')
-                        BuscarCedulaMessenger(userData)
+                        BuscarCedulaMessenger(userData);
                     }else{
                         console.log("no pusiste respuesta")
                     }
+                    
                 }else if(NameChat === "ChatBotTelegram"){
                     console.log(`Cambio de plan id: ${idUser}, nombre ${nombreUser}, Nombre chat ${NameChat}, mensaje: ${messageProblem}, duracion ${ServicioDuracion}, descripcion: nombre titular${NameTitular}, docuemnto titular: ${DocumentoTitular}, servicio ${ServicioTitular}, motivo: ${MotivoCambio} `)
 
                     if(ServicioDuracion === "0 - 6 meses"){
                         console.log('Usted debe tener más de 6 meses, sin embargo te vamos a pasar a soporte')
-                        EmpleAssigned(idUser)
+                        EmpleAssigned(idUser);
                     }else if(ServicioDuracion === "6 meses - 1 año"){
-                        console.log('duracion media')
+                        console.log('duracion media');
                     }else if(ServicioDuracion === "1 año o mas"){
                         console.log('Vamos a confirmar unos datos y te verificamos el proceso')
-                        BuscarCedulaMessenger(userData)
+                        BuscarCedulaMessenger(userData);
                     }else{
                         console.log("no pusiste respuesta")
                     }

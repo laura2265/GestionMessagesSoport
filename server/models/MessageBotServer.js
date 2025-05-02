@@ -3,7 +3,10 @@ import mongoosePaginate from "mongoose-paginate-v2";
 
 const MessageServerSchema = new mongoose.Schema({
   de: String,
-  mensaje: String,
+  mensaje: {
+    text: String,
+    buttons: [String]
+  },
   timeStamp: {
     type: Date,
     default: Date.now,
