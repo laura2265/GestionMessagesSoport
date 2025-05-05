@@ -3,9 +3,8 @@ import Notificacion from '../assets/sounds/Notificacion.mp3';
 
 function MessageChat() {
     const lastMessagesRef = useRef({});
-    const audioRef = useRef(new Audio(Notificacion))
+    const audioRef = useRef(new Audio(Notificacion));
     const [notificacions, setNotificacions] = useState([]);
-
     const [audioEnabled, setAudioEnabled] = useState(false);
 
     useEffect(() => {
@@ -26,12 +25,12 @@ function MessageChat() {
 
                 const assignedEmple = dataEmple.filter((emple) => emple.idEmple === EmpleId);
                 if (assignedEmple && assignedEmple.length > 0) {
-                    let newMessages = {};
                     let newNotifications = [];
 
                     for (let i = 0; i < assignedEmple.length; i++) {
                         const user = assignedEmple[i];
                         const chatId = user.cahtId;
+                        const chatUserName = user.nombreClient;
                         let chatuser = 'desconocido';
 
                         if(user.chatName === 'ChatBotMessenger'){
@@ -55,11 +54,11 @@ function MessageChat() {
                         const dataMany = resultMany.cliente.data;
                         const messageText = dataMany.last_input_text;
 
-                        const messageUrL = messageText.includes('cdn.fbsbx.com')
-                        const messageUrl1 = messageText.includes('scontent.xx.fbcdn.net')
+                        const messageUrL = messageText.includes('cdn.fbsbx.com');
+                        const messageUrl1 = messageText.includes('scontent.xx.fbcdn.net');
 
                         if(messageUrL){
-                            const messageId = `${dataMany.subscribed}-${messageText?.slice(388,396)}`
+                            let messageId = `${dataMany.subscribed}-${messageText?.slice(388,396)}`;
                             const responseGetMessage = await fetch(`http://localhost:3001/message/?contactId=${chatId}&chat=${chatuser}`,{
                                 method: 'GET',
                                 headers: {
@@ -73,7 +72,7 @@ function MessageChat() {
     
                             const resultGetMessage = await responseGetMessage.json();
                             const dataGetMessage = resultGetMessage.data.docs;
-                            const messageExists = dataGetMessage.some(msg => msg.idMessageClient === messageId)
+                            const messageExists = dataGetMessage.some(msg => msg.message.idMessageClient === messageId);
 
                             if(!messageExists){
                                 const responseMessage = await fetch(`http://localhost:3001/message/`, {
@@ -81,10 +80,17 @@ function MessageChat() {
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({
                                         contactId: chatId,
-                                        message: messageText,
-                                        sender: 'Cliente',
+                                        usuario:{
+                                            nombre: chatUserName
+                                        },
+                                        messages:[
+                                            {
+                                                sender: "Cliente",
+                                                message: messageText,
+                                                idMessageClient: messageId
+                                            }
+                                        ],
                                         chat: chatuser,
-                                        idMessageClient: messageId
                                     }),
                                 });
 
@@ -99,7 +105,6 @@ function MessageChat() {
                                     chat: chatuser,
                                     nombre: user.nombreClient
                                 })
-
                                 lastMessagesRef.current[chatId] = messageText;
                             }
 
@@ -127,10 +132,17 @@ function MessageChat() {
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({
                                         contactId: chatId,
-                                        message: messageText,
-                                        sender: 'Cliente',
+                                        usuario: {
+                                            nombre: chatUserName
+                                        },
+                                        messages: [
+                                            {
+                                                sender: 'Cliente',
+                                                message: messageText,
+                                                idMessageClient: messageId
+                                            }
+                                        ],
                                         chat: chatuser,
-                                        idMessageClient: messageId
                                     }),
                                 });
 
@@ -143,11 +155,12 @@ function MessageChat() {
                                     message: messageText,
                                     sender: 'Cliente',
                                     chat: chatuser,
-                                    nombre: user.nombreClient
-                                })
+                                    nombre: user.nombreClient,
+                                });
 
                                 lastMessagesRef.current[chatId] = messageText;
                             }
+
                         }else{
                             const messageId = `${dataMany.subscribed}-${messageText?.slice(0,10)}`
                             const responseGetMessage = await fetch(`http://localhost:3001/message/?contactId=${chatId}&chat=${chatuser}`,{
@@ -163,7 +176,7 @@ function MessageChat() {
     
                             const resultGetMessage = await responseGetMessage.json();
                             const dataGetMessage = resultGetMessage.data.docs;
-                            const messageExists = dataGetMessage.some(msg => msg.idMessageClient === messageId)
+                            const messageExists = dataGetMessage.some(msg => msg.idMessageClient === messageId);
     
                             if(!messageExists){
                                 const responseMessage = await fetch(`http://localhost:3001/message/`, {
@@ -171,10 +184,17 @@ function MessageChat() {
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({
                                         contactId: chatId,
-                                        message: messageText,
-                                        sender: 'Cliente',
-                                        chat: chatuser,
-                                        idMessageClient: messageId
+                                        usuario: {
+                                            nombre: chatUserName
+                                        },
+                                        messages: [
+                                            {
+                                                sender: 'Cliente',
+                                                message: messageText,
+                                                idMessageClient: messageId
+                                            }
+                                        ],
+                                        chat: chatuser
                                     }),
                                 });
     

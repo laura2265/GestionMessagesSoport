@@ -21,6 +21,7 @@ function MessengerEmple (){
     const [currentMessage, setCurrentMessage] = useState('');
     const [ selectedImage, setSelectedImage] = useState(null);
     const fileInputRef = useRef(null);
+    const [nombreEmpleado, setNombreEmpleado]= useState("");
 
     const handleKeyPress = (e) =>{
         if(e.key === 'Enter'){
@@ -33,7 +34,9 @@ function MessengerEmple (){
 
             const newMessage = {
                 contactId: activeContact.id,
-                usuario:'',
+                usuario:{
+                    nombre: nombreEmpleado
+                },
                 message: {
                     sender: 'Empleado',
                     messages: currentMessage,
@@ -58,7 +61,7 @@ function MessengerEmple (){
                 if (!response.ok) throw new Error('Error al guardar el mensaje en post-message');
 
                 const messageResponse = await fetch('http://localhost:3001/message/', {
-                    method: 'POST',
+                    method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(newMessage),
                 });
@@ -80,7 +83,7 @@ function MessengerEmple (){
         }
     };
 
-    const imageUploadNube = async() => {    
+    const imageUploadNube = async() => {
         if(!selectedImage){
             return;
         }
@@ -105,14 +108,21 @@ function MessengerEmple (){
 
             const newMessage = {
                 contactId: activeContact.id,
-                message: image,
-                sender: 'Empleado',
+                usuario: {
+                    nombre: nombreEmpleado
+                },
+                messages: [
+                    {
+                        sender: 'Empleado',
+                        message: image,
+                        idMessageClient: `msg_imageProblem${Date.now()}`
+                    }
+                ],
                 chat: 'messenger',
-                idMessageClient: `msg_imageProblem${Date.now()}`
             };
 
             await fetch('http://localhost:3001/message/',{
-                method: 'POST',
+                method: 'PUT',
                 headers: {
                     'Content-Type' : 'application/json'
                 },
@@ -237,11 +247,12 @@ function MessengerEmple (){
 
             console.log('id es: ', newContact)
             setContacts(prevContacts => {
-                const exists = prevContacts.find(contact => contact.id === newContact.id )
+                const exists = prevContacts.find(contact => contact.id === newContact.id);
                 if(!exists){
-                    return[...prevContacts, newContact]
+                    return[...prevContacts, newContact];
                 }
-                return prevContacts
+
+                return prevContacts;
             });
 
         } catch (error) {
@@ -266,6 +277,7 @@ function MessengerEmple (){
 
                 const resultEmple = await responseEmple.json();
                 const dataEmple = resultEmple.data.docs;
+
                 console.log(dataEmple);
 
                 const assignedEmple = dataEmple.filter((emple) => emple.idEmple === EmpleId);
@@ -274,6 +286,15 @@ function MessengerEmple (){
                     for (let i = 0; i < assignedEmple.length; i++) {
                         const user = assignedEmple[i];
                         const chatId = user.cahtId;
+                        const nameEmple = user.nombreEmple;
+
+                        if(!nameEmple){
+                            console.log('Este campo esta vacio por favor registre el empleado como empleado asignado antes de realizar la consulta')
+                        }
+
+                        console.log('el nombre del empleado asignado es: ', nameEmple);
+
+                        setNombreEmpleado(nameEmple);
                         console.log('El ID del chat es:', chatId);
 
                         if (user.chatName === 'ChatBotMessenger') {
@@ -292,6 +313,7 @@ function MessengerEmple (){
 
                             const result = await response.json();
                             const data = result.data.docs;
+
 
                             const exists = data.some(msg => msg.contactId === user.chatId && msg.message === user.Descripcion);
 
