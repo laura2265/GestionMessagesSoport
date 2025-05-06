@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon server.js"
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "",
@@ -33,6 +33,7 @@
     "node": "^22.9.0",
     "node-fetch": "^2.7.0",
     "querystring-es3": "^0.2.1",
+    "railway": "^2.0.17",
     "ws": "^8.18.0"
   },
   "devDependencies": {

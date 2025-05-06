@@ -41,7 +41,7 @@ function MessengerEmple (){
                     sender: 'Empleado',
                     messages: currentMessage,
                     idMessageClient: `msg_${Date.now()}-${currentMessage.length}`
-                }, 
+                },
                 chat: 'messenger',
             };
 
@@ -314,16 +314,22 @@ function MessengerEmple (){
                             const result = await response.json();
                             const data = result.data.docs;
 
-
                             const exists = data.some(msg => msg.contactId === user.chatId && msg.message === user.Descripcion);
 
                             if (!exists) {
                                 const newMessage = {
                                     contactId: chatId,
-                                    message: user.Descripcion,
-                                    sender: 'Cliente',
+                                    usuario:{
+                                        nombre: user.nombreClient
+                                    },
+                                    messages:[
+                                        {
+                                            sender: 'Cliente',
+                                            message: user.Descripcion,
+                                            idMessageClient: `msg_MessageProblem-${user.Descripcion.length}`,
+                                        }
+                                    ],
                                     chat: 'messenger',
-                                    idMessageClient: `msg_MessageProblem-${user.Descripcion.length}`
                                 };
 
                                 const messageResponse = await fetch('http://localhost:3001/message/', {
