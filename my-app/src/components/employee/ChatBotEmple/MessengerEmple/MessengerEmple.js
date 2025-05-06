@@ -35,7 +35,7 @@ function MessengerEmple (){
             const newMessage = {
                 contactId: activeContact.id,
                 usuario:{
-                    nombre: nombreEmpleado
+                    nombre: nombreEmpleado,
                 },
                 message: {
                     sender: 'Empleado',
@@ -109,7 +109,7 @@ function MessengerEmple (){
             const newMessage = {
                 contactId: activeContact.id,
                 usuario: {
-                    nombre: nombreEmpleado
+                    nombre: nombreEmpleado,
                 },
                 messages: [
                     {
@@ -320,7 +320,7 @@ function MessengerEmple (){
                                 const newMessage = {
                                     contactId: chatId,
                                     usuario:{
-                                        nombre: user.nombreClient
+                                        nombre: user.nombreClient,
                                     },
                                     messages:[
                                         {

@@ -5,7 +5,7 @@ import { nameCloud, imageApiKey, imageApiKeySecret } from "../../config/config.j
 cloudinary.config({
     cloud_name: nameCloud,
     api_key: imageApiKey,
-    api_secret: imageApiKeySecret
+    api_secret: imageApiKeySecret,
 })
 
 export const MetodoPostCloudinary = async(req, res) => {
@@ -13,14 +13,14 @@ export const MetodoPostCloudinary = async(req, res) => {
         const path = req.file.path;
         const result = await cloudinary.uploader.upload(path,{
             folder: 'imagenes'
-        })
+        });
 
         await unlink(path);
 
         res.status(200).json({
             success: true,
             message: "imagen subida correctamente",
-            data: result
+            data: result,
         })
     }catch(error){
         console.error('Error al subir la imagen: ', error);
