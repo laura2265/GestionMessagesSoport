@@ -96,4 +96,3 @@ async function buscarCedula(userData, platform) {
 export const BuscarCedulaMessenger = (userData) => buscarCedula(userData, 'Messenger');
 export const BuscarCedulaTelegram = (userData) => buscarCedula(userData, 'Telegram');
 export const BuscarCedulaInstagram= (userData) => buscarCedula(userData, 'Instagram');
-

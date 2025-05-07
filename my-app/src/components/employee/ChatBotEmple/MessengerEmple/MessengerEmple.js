@@ -81,7 +81,7 @@ function MessengerEmple (){
         if(e.target.files[0]){
             setSelectedImage(e.target.files[0]);
         }
-    };
+    }; 
 
     const imageUploadNube = async() => {
         if(!selectedImage){

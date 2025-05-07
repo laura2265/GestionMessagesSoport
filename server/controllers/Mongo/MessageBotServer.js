@@ -62,7 +62,7 @@ export const crearConversacion = async (req, res) => {
 
         if(existingUser){
             console.log('El usuario ya existe en la base de datos.')
-            
+
             return res.status.json({
                 succes: false,
                 message: 'El usuario ya existe en la base de datos'

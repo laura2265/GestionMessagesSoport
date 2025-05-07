@@ -62,7 +62,7 @@ body .app.light {
 .app.light .toggleButton {
   background: none;
   border: none;
-  color: rgba(168, 164, 164, 0.778);
+  color: rgba(0, 0, 0, 0.778);
 }
 
 .app.light .toggleButton:hover {
@@ -250,11 +250,11 @@ body .app.light {
 
   /*modo oscuro*/
   .app.dark .home-container{
-    background-color: #333;
+    background-color: #000000;
     color: #ffffff;
   }
   .app.dark .navbar{
-    background-color: #333;
+    background-color: #000000;
     color: white;
   }
   .app.dark .slider{
@@ -337,7 +337,8 @@ body .app.light {
   justify-content: space-between;
   align-items: center;
   padding: 20px;
-  background-color: #91919164;
+  background-color: #00000064;
+  border-bottom: 1px solid white;
   color: rgb(255, 255, 255);
   width: 100vw;
 }

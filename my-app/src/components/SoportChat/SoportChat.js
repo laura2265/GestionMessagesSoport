@@ -304,7 +304,7 @@ function SoportChat (){
 
     const handleButtonClick = async (option) => {
       setOption(option);
-      setIsDisabled(true)
+      setIsDisabled(true);
       handleSendMessage(option);
 
       if (option === "Falla conexión"){
@@ -312,14 +312,15 @@ function SoportChat (){
         setTimeout(() => addBotMessage(`Al parecer tienes problemas con tu servicio, vamos a hacer unas pruebas para poder ayudarte. \n¿Qué tipo de problema tiene? escoja el problema que desea solucionar:`,
           ["✅ No tengo internet.", "🐢 Internet lento.", "🌐 No cargan páginas.", "📺 Señal de Televisión.", "⚡ Internet inestable.", "🔘Otro problema"]
         ),1000);
-
         setWaitingForDocument(true);
+
       }else if(option === "✅ No tengo internet." &&  stateChat === "Falla conexión"){
         setStateChat("sininternet");
         setTimeout(() => addBotMessage(`Para poder ayudare con tu problema, Podrías escoger la opción *Un equipo*, de lo contrario escoge la opción *Múltiples equipos*`,
           ["📱 Un equipo", "💻📱 Múlples aquipos"]
         ),1000);
         setWaitingForDocument(true);
+
       }else if(option === '📱 Un equipo' &&  stateChat === "sininternet"){
         setStateChat("UnEquipoSinInternet");
         setTimeout(() => addBotMessage(`¿Estas conectado a *WIFI* o cable *Ethernet*?`,
@@ -345,6 +346,7 @@ function SoportChat (){
           ["🆘 Ayuda", "➡️ Seguir"]
         ),1000);
         setWaitingForDocument(true);
+
       }else if(option === '🔌 Cable Ethernet'&& stateChat === "UnEquipoSinInternet"){
         setStateChat('CableUnEquipoSinInternet');
         setTimeout(() => addBotMessage(`Vamos a solucionar tu problema. A continuación te vamos a presentar una serie de soluciones para ayudarte con tu problema:
@@ -366,6 +368,7 @@ function SoportChat (){
           ["🆘 Ayuda", "➡️ Seguir"]
         ),1000);
         setWaitingForDocument(true);
+
       }else if(option === '🔌Cable Ethernet'&& stateChat === "MultiplesEquiposSinInternet"){
         setStateChat("CableMultiplesEquipoSinInternet");
         setTimeout(() => addBotMessage(`Vamos a solucionar tu problema. A continuación te vamos a dar una serie de soluciones que puedes utilizar:
@@ -377,6 +380,7 @@ function SoportChat (){
               ['✅ Si funciono', '❎ No funciono'],
               1000));
         setWaitingForDocument(true);
+
         //Ayuda o seguir un solo equipo wifi
       }else if(option === '🆘 Ayuda' && stateChat === "WifiUnEquipoSinInternet"){
         setStateChat("AyudaWifiSinInternetUnEquipo");
@@ -422,7 +426,7 @@ function SoportChat (){
           ["✅ Si funciono", "❎ No funciono"]
         ),1000);
         setWaitingForDocument(true);
-       
+
         //dispositivo internet de wifi un dispositivo
       }else if(option === '🔹 Windows' && stateChat === "AyudaWifiSinInternetUnEquipo"){
         setStateChat("WindowsUnEquipoSinInternet");
@@ -906,7 +910,7 @@ function SoportChat (){
                  \n🔹Servidor DNS preferido: 8.8.8.8
                  \n🔹Servidor DNS alternativo: 8.8.4.4
             \n7️⃣ Guarda y vuelve a cargar la pagina`
-        ), 1000)
+        ), 1000);
         setTimeout(() => addBotMessage(`Si te funciono alguna de estas, escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*`,
           ["✅ Si funciono", "❎ No funciono"]
         ), 1000);
@@ -937,6 +941,7 @@ function SoportChat (){
             \n4️⃣ Edita "*DNS1" y "*DNS2*", ingresa *8.8.8.8* y 8.8.4.4 (*DNS de Google*)
             \n5️⃣Guarda los cambios y reconecta la red.`
         ), 1000);
+
         setTimeout(() => addBotMessage(`Si te funciono alguna de estas, escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*`,
           ["✅ Si funciono", "❎ No funciono"]
         ), 1000);
@@ -951,6 +956,7 @@ function SoportChat (){
           \n4️⃣Pulsa *Añadir servidor*➕ e ingresa 8.8.8.8 y 8.8.4.4 (DNS de Google).
           \n5️⃣Pulsa *Guardar* y revisa si te funciono.`
         ),1000);
+
         setTimeout(() => addBotMessage(`Si te funciono alguna de estas, escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*`,
           ["✅ Si funciono", "❎ No funciono"]
         ), 1000);
@@ -964,6 +970,7 @@ function SoportChat (){
           \n2️⃣En la ventana escribe *cmd* y haz clic en *Aceptar*.
           \n3️⃣Escribe *ping 8.8.8.8* y después pulsa *Enter* para que se pueda ejecutar.`), 
         1000);
+
         setTimeout(() => addBotMessage(`Si te funciono alguna de estas, escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*`,
           ["✅ Si funciono", "❎ No funciono"]
         ), 1000);
@@ -1025,6 +1032,7 @@ function SoportChat (){
           \n4️⃣ Edita "*DNS1" y "*DNS2*", ingresa *8.8.8.8* y 8.8.4.4 (*DNS de Google*)}
           \n5️⃣Guarda los cambios y reconecta la red.`),
         1000);
+
         setTimeout(() => addBotMessage(`Si te funciono alguna de estas, escoge la opción *Si funciono*, de lo contrario escoge la opción *No funciono*`,
           ["✅ Si funciono", "❎ No funciono"]
         ), 1000);
