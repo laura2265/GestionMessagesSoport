@@ -81,7 +81,17 @@ function MessengerEmple (){
         if(e.target.files[0]){
             setSelectedImage(e.target.files[0]);
         }
-    }; 
+    };
+
+    useEffect(()=>{
+        const MessageEmple = async() =>{
+            try{
+                const response = await fetch('')
+            }catch(error){
+                console.error('Error al consultar los datos de la api de cloudinary');
+            }
+        }
+    },[])
 
     const imageUploadNube = async() => {
         if(!selectedImage){
@@ -120,6 +130,7 @@ function MessengerEmple (){
                 ],
                 chat: 'messenger',
             };
+            console.log('Los datos del nuevo mensaje: ', newMessage)
 
             await fetch('http://localhost:3001/message/',{
                 method: 'PUT',
@@ -205,6 +216,7 @@ function MessengerEmple (){
                     : contact
                 )
             );
+
         } catch (error) {
             console.error('Error al consultar los datos de la API:', error);
         }
@@ -213,6 +225,7 @@ function MessengerEmple (){
     const groupMessagesByDate = (messages) => {
         return messages.reduce((acc, message) => {
             const dateKey = new Date(message.updatedAt).toLocaleDateString('es-ES');
+            
             if (!acc[dateKey]) {
                 acc[dateKey] = [];
             }
@@ -251,10 +264,8 @@ function MessengerEmple (){
                 if(!exists){
                     return[...prevContacts, newContact];
                 }
-
                 return prevContacts;
             });
-
         } catch (error) {
             console.error('Error al momento de consultar los datos de la API:', error);
         }
@@ -337,6 +348,7 @@ function MessengerEmple (){
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify(newMessage),
                                 });
+
                                 if (!messageResponse.ok) throw new Error('Error al guardar el mensaje en message');
                                 console.log('Mensaje guardado correctamente.');
                             } else {
@@ -345,6 +357,7 @@ function MessengerEmple (){
                         }
                     }
                 }
+
             } catch (error) {
                 console.error('Error al momento de consultar los datos de la API:', error);
             }
@@ -484,7 +497,7 @@ function MessengerEmple (){
                                 <div className="contenttextMessage">
                                     <div className="fileContent">
                                         <input
-                                            type="file" 
+                                            type="file"
                                             ref={fileInputRef}
                                             onChange={handleFileChage}
                                             style={{ display: "none" }}

@@ -22,12 +22,31 @@ export const MetodoPostCloudinary = async(req, res) => {
             message: "imagen subida correctamente",
             data: result,
         })
+
     }catch(error){
         console.error('Error al subir la imagen: ', error);
         res.status(500).json({
             success: false,
             message: 'Error al subir la imagen',
             error: error.message
+        })
+    }
+}
+
+export const MetodoGetCloudinary = (req, res) => {
+    try{
+        const {page = 1, limit = 100 } = req.query;
+        const options = {
+            page:parseInt(page),
+            limit: parseInt(limit),
+            sort: {createdAt: - 1}
+        }
+
+        const message = await 
+    }catch(error){
+        res.status(500).json({
+            success: false,
+            message: `Error al consultar los datos de cloudinary`
         })
     }
 }

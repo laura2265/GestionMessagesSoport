@@ -39,6 +39,7 @@ async function buscarCedula(userData, platform) {
       const data = await response.json();
       const clientes = data.results;
       console.log('data client ', clientes);
+      
       if (clientes.length > 0) {
         idAsociado = idAsociado.concat(clientes.map(cliente => cliente.usuario)); 
         offset += limit;
@@ -47,7 +48,7 @@ async function buscarCedula(userData, platform) {
       if (clientes.length < limit) {
         found = true;
         if (idAsociado.length > 0) {
-          const lista = idAsociado
+          const lista = idAsociado;
           let messege1 = '';
 
           if(lista.length > 1 ){
