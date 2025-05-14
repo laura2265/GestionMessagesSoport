@@ -8,7 +8,7 @@ import { getDataMessageId, postDataMessage, getDataMesage,  addMessageToConversa
 import { AsignarUserPost, AsignarUserGet } from "../controllers/UserAleatorio/AsignarUser.js";
 import WisphubApi from "../controllers/WisphubApi.js";
 import { crearConversacion, getConversacionBot, updateMessage } from "../controllers/Mongo/MessageBotServer.js";
-import { MetodoPostCloudinary } from "../controllers/cloudinary/MetodoPostCloudinary.js";
+import { MetodoPostCloudinary, MetodoGetCloudinary } from "../controllers/cloudinary/MetodoPostCloudinary.js";
 import multer from "multer";
 
 const router = express.Router();
@@ -75,5 +75,6 @@ router.put(`/${pathConversacion}/:id/mensaje`, updateMessage);
 
 //metodo post para imagenes en la nube
 router.post(`/${pathImage}`, upload.single("file"), MetodoPostCloudinary);
+router.get(`/${pathImage}`, MetodoGetCloudinary);
 
 export default router;

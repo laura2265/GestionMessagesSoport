@@ -1,7 +1,6 @@
 import mongoose from "mongoose"
 import conversacionScheme from "../../models/MessageBotServer.js";
 
-
 export const getConversacionBot = async(req, res) => {
     try{
         const {page = 1, limit = 100} = req.query;

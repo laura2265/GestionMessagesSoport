@@ -33,7 +33,7 @@ export const MetodoPostCloudinary = async(req, res) => {
     }
 }
 
-export const MetodoGetCloudinary = (req, res) => {
+export const MetodoGetCloudinary = async(req, res) => {
     try{
         const {page = 1, limit = 100 } = req.query;
         const options = {
@@ -42,7 +42,12 @@ export const MetodoGetCloudinary = (req, res) => {
             sort: {createdAt: - 1}
         }
 
-        const message = await 
+        const image = await cloudinary.paginate({}, options);
+        res.status(200).json({
+            success: true,
+            data: image
+        })
+
     }catch(error){
         res.status(500).json({
             success: false,

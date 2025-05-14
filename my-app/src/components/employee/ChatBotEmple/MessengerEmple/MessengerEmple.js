@@ -83,16 +83,6 @@ function MessengerEmple (){
         }
     };
 
-    useEffect(()=>{
-        const MessageEmple = async() =>{
-            try{
-                const response = await fetch('')
-            }catch(error){
-                console.error('Error al consultar los datos de la api de cloudinary');
-            }
-        }
-    },[])
-
     const imageUploadNube = async() => {
         if(!selectedImage){
             return;
