@@ -86,7 +86,7 @@ function MessengerEmple (){
     const imageUploadNube = async() => {
         if(!selectedImage){
             return;
-        }
+        } 
 
         try{
             const formData = new FormData();
@@ -206,7 +206,6 @@ function MessengerEmple (){
                     : contact
                 )
             );
-
         } catch (error) {
             console.error('Error al consultar los datos de la API:', error);
         }
@@ -481,7 +480,7 @@ function MessengerEmple (){
                                         </div>
                                     ))
                                 ) : (
-                                    <p className="nullData">No hay mensajes disponibles.</p>
+                                    <p className="nullData">No hay mensajes disponibles <time datetime="20:00">20:00 </time>.</p>
                                 )}
                                 </div>
                                 <div className="contenttextMessage">
