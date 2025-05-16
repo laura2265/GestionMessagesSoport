@@ -206,6 +206,7 @@ function MessengerEmple (){
                     : contact
                 )
             );
+
         } catch (error) {
             console.error('Error al consultar los datos de la API:', error);
         }
@@ -228,7 +229,7 @@ function MessengerEmple (){
         try {
             const responseMany = await fetch(`http://localhost:3001/manychat/${chatId}`, {
                 method: 'GET',
-                headers: {
+                headers: {  
                     'Content-Type': 'application/json'
                 }
             });
@@ -260,6 +261,8 @@ function MessengerEmple (){
         }
     };
 
+
+ 
     useEffect(() => {
         const fetchEmple = async () => {
             try {

@@ -17,11 +17,11 @@ const path1 = "api";
 const path2 = "clientes";
 const path3 = "manychat";
 const pathMessage = 'post-message';
-const pathHistoryMessage = 'message'
+const pathHistoryMessage = 'message';
 const pathAsignar = 'asignaciones';
 const phatWisphub = 'wisphub-data';
-const pathConversacion = 'conversacion-server'
-const pathImage = 'image-post-message'
+const pathConversacion = 'conversacion-server';
+const pathImage = 'image-post-message';
 
 const storage = multer.diskStorage({
     destination: "uploads/",
@@ -30,7 +30,7 @@ const storage = multer.diskStorage({
     }
 })
 
-const upload = multer({ storage })
+const upload = multer({ storage });
 
 // Ruta para obtener datos (GET)
 router.get(`/${path}`, getData);
@@ -53,20 +53,20 @@ router.get(`/${path2}`, getDataFetchClient);
 router.get(`/${path3}/:id`, apiManychatUsers);
 
 //mensaje
-router.post(`/${pathMessage}`, MetodoPostManychat)
+router.post(`/${pathMessage}`, MetodoPostManychat);
 
 //historial de mensajes
-router.get(`/${pathHistoryMessage}`, getDataMesage)
-router.get(`/${pathHistoryMessage}/`, getDataMessageId)
-router.post(`/${pathHistoryMessage}`, postDataMessage)
-router.put(`/${pathHistoryMessage}/:contactId`, addMessageToConversation)
+router.get(`/${pathHistoryMessage}`, getDataMesage);
+router.get(`/${pathHistoryMessage}/`, getDataMessageId);
+router.post(`/${pathHistoryMessage}`, postDataMessage);
+router.put(`/${pathHistoryMessage}/:contactId`, addMessageToConversation);
 
 //Asignaciones
 router.post(`/${pathAsignar}/:id`, AsignarUserPost);
 router.get(`/${pathAsignar}`, AsignarUserGet);
 
 //Api wisphub
-router.get(`/${phatWisphub}/:cedula`, WisphubApi)
+router.get(`/${phatWisphub}/:cedula`, WisphubApi);
 
 //conversacion chatbot del servidor
 router.post(`/${pathConversacion}`, crearConversacion);

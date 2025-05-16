@@ -1,4 +1,4 @@
-import {v2 as cloudinary} from 'cloudinary'
+import {v2 as cloudinary} from 'cloudinary';
 import { unlink } from "fs/promises";
 import { nameCloud, imageApiKey, imageApiKeySecret } from "../../config/config.js";
 
@@ -6,7 +6,9 @@ cloudinary.config({
     cloud_name: nameCloud,
     api_key: imageApiKey,
     api_secret: imageApiKeySecret,
-})
+});
+
+
 
 export const MetodoPostCloudinary = async(req, res) => {
     try{
