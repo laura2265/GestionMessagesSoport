@@ -101,7 +101,7 @@ function SoportChat (){
       "ApagadoCatv","EncendidoCatv"
     ];
 
-    const validStateRedInestableFinal =[
+    const validStateRedInestableFinal = [
       "EncendidoCanleLan",
       "ApagadoCanleLan",
       "LaSeñalDebilWifiInestable",

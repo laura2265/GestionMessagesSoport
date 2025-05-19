@@ -8,8 +8,6 @@ cloudinary.config({
     api_secret: imageApiKeySecret,
 });
 
-
-
 export const MetodoPostCloudinary = async(req, res) => {
     try{
         const path = req.file.path;

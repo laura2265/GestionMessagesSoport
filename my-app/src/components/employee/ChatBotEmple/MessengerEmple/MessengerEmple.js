@@ -86,7 +86,7 @@ function MessengerEmple (){
     const imageUploadNube = async() => {
         if(!selectedImage){
             return;
-        } 
+        }
 
         try{
             const formData = new FormData();
@@ -120,6 +120,7 @@ function MessengerEmple (){
                 ],
                 chat: 'messenger',
             };
+
             console.log('Los datos del nuevo mensaje: ', newMessage)
 
             await fetch('http://localhost:3001/message/',{
