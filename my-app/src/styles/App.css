@@ -79,6 +79,7 @@ body .app.light {
 .app.light .InputButton {
   border: 1px solid rgb(132, 132, 132);
 }
+
 .app.light .InputButton:hover {
   background: rgb(211, 210, 210);
   color: #2f2f2f;
@@ -152,7 +153,6 @@ body .app.light {
   }
 }
 
-
 @media (max-width: 480px) {
   .app.light .container1,
   .app.light .formContainer {
@@ -175,28 +175,29 @@ body .app.light {
   }
 }
 
-
-
   /* Modo oscuro */
   * .app.dark{
     box-sizing: border-box;
     margin: 0;
     padding: 0;
   }
+
   .app.dark .inputContainerLabel {
     background-color: #555; 
     color: white;
   }
+
   body .app.dark{
     background: #333;
     width: 100vw;
     height: 100vh;
   }
+
   .app.dark .container1{
     background-color: #333;
     color: white;
-
   }
+
   .app.dark .toggleButton{
     background: none;
     border: none;
@@ -236,13 +237,10 @@ body .app.light {
 .app.dark .cerrarSesion:hover{
   transition: 1s;
   transform: scale(1.1);
-
 }
 
-
-  /*estilos de home*/
+/*estilos de home*/
 /*modo claro*/
-
   .app.light .home-container{
     background-color: white;
     color: #333;
@@ -273,10 +271,12 @@ body .app.light {
   height: 250px;
   width: 1150px;
 }
+
 .app.dark .tableContainer1 table{
   height: 250px;
   width: 1150px;
 }
+
 .app.dark .tableContainer th{
   padding: 4px;
   color: #ffffff;
@@ -293,6 +293,7 @@ body .app.light {
 .app.dark .BarraSuperior{
   color: white;
 }
+
 .app.dark .BarraSupeiorL{
   color: white;
   border-bottom: 1px solid white;
@@ -302,15 +303,17 @@ body .app.light {
   color: white;
   border-bottom: 1px solid white;
 }
+
 .app.dark .BarraSuperiorH{
   color: white;
   border-bottom: 1px solid white;
+}
 
-  }
 .app.dark .BarraSuperior{
   color: white;
   border-bottom: 1px solid white;
 }
+
 .app.dark td{
   color: #fff;
   border-radius: 7px;
@@ -322,7 +325,7 @@ body .app.light {
   background-color: rgba(208, 208, 208, 0.656);
   transition: 1s;
   color: #000;
-} 
+}
 
 .navbar{
   background-color: rgb(232, 232, 232);

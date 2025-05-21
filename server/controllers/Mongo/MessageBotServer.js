@@ -1,4 +1,3 @@
-import mongoose from "mongoose"
 import conversacionScheme from "../../models/MessageBotServer.js";
 
 export const getConversacionBot = async(req, res) => {

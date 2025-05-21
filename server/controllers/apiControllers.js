@@ -5,12 +5,12 @@ import { idGoogleSheets, ApiKeyGoogleSheets } from '../config/config.js';
 const fetchSheetData = async (sheetNumber) => {
     const rango = `Sheet${sheetNumber}!A:Z`;
     const urlSheet = `https://sheets.googleapis.com/v4/spreadsheets/${idGoogleSheets}/values/${rango}?key=${ApiKeyGoogleSheets}`;
-
     try {
         const response = await fetch(urlSheet);
         if (!response.ok) {
             throw new Error(`Error al consultar la hoja ${sheetNumber}`);
         }
+
         const data = await response.json();
         return data.values || [];
     } catch (error) {
@@ -21,7 +21,7 @@ const fetchSheetData = async (sheetNumber) => {
 
 let cachedData = null;
 let lastFetchTime = 0;
-const CACHE_DURATION = 5 * 60 * 1000; 
+const CACHE_DURATION = 5 * 60 * 1000;
 
 const getDataFetch = async (req, res) => {
     const now = Date.now();
@@ -104,6 +104,7 @@ const getDataFetch = async (req, res) => {
                             })
                         })
                     }
+
                 }else if(`Sheet${index+1}` === `Sheet3`){
                     const ProblemaConexionIndex = headers.indexOf('problema-conexion');
                     const ProblemaPage = headers.indexOf('ProblemaPaginas');
@@ -213,7 +214,7 @@ const getDataFetch = async (req, res) => {
 
                 }else if(`Sheet${index+1}` === `Sheet7`){
                     const DescriptionUser = headers.indexOf('DescripcionUser');
-                
+
                     if(idIndex !== -1 && NameIndex !== -1 && chatIndex !== -1 && messageIndex !== -1 && DescriptionUser !== -1){
                         rows.forEach(row => {
                             let detalles = row[DescriptionUser] ? row[DescriptionUser].trim() : '';
@@ -246,7 +247,6 @@ const getDataFetch = async (req, res) => {
                                     while (nombreFin < partes.length && isNaN(partes[nombreFin])) {
                                         nombreFin++;
                                     }
-
                                     descripcionData.Nombre = partes.slice(0, nombreFin).join(' ').trim();
                                     descripcionData.Documento = partes[nombreFin] || null;
                                     descripcionData.Teléfono = partes[nombreFin + 1] || null;
@@ -268,6 +268,7 @@ const getDataFetch = async (req, res) => {
                             });
                         });
                     }
+
                 }else if(`Sheet${index+1}` === `Sheet8`){
                     if(idIndex !== -1 && NameIndex !== -1 && chatIndex !== -1 && messageIndex !== -1){
                         rows.forEach(row => {
@@ -293,7 +294,7 @@ const getDataFetch = async (req, res) => {
                                 Documento: null,
                                 Servicio: null,
                                 Motivo: null
-                            };
+                            }
 
                             if (detalles.includes(',')) {
                                 let partes = detalles.split(',').map(d => d.trim());
@@ -303,8 +304,7 @@ const getDataFetch = async (req, res) => {
                                     Documento: partes[1] || null,
                                     Servicio: partes[2] || null,
                                     Motivo: partes.slice(3).join(' ') || null
-                                };
-
+                                }
                             } else {
                                 let partes = detalles.split(/\s+/);
 
@@ -346,7 +346,6 @@ const getDataFetch = async (req, res) => {
                             })
                         })
                     }
-
                 }else if(`Sheet${index+1}` === `Sheet12`){
                     const DescriptionPQR = headers.indexOf('DescripcionPQR');
                     if(idIndex !== -1 && NameIndex !== -1 && chatIndex !== -1 && messageIndex !== -1 && DescriptionPQR !== -1){
@@ -371,6 +370,7 @@ const getDataFetch = async (req, res) => {
                                     Fecha: partes[3] || null,
                                     DescripcionProblema: partes.slice(4).join(' ') || null,
                                 };
+
                             } else {
                                 let partes = detalles.split(/\s+/);
                 
@@ -459,7 +459,7 @@ const getDataFetch = async (req, res) => {
                                     Nombre: partes[0] || null,
                                     Documento: partes[1] || null,
                                     ConfirmTitular: partes[2] || null,
-                                    DescripcionProblema: partes.slice(3).join(' ') || null,
+                                    DescripcionProblema: partes.slice(3).join('') || null,
                                 };
                             } else {
                                 let partes = detalles.split(/\s+/);
