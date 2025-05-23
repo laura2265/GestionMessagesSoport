@@ -96,7 +96,12 @@ export const updateMessage = async(req, res) => {
         const { id } = req.params;
         const { de, mensaje } = req.body;
 
-        if(!de || !mensaje){
+        console.log('Datos recibidos del frontend: ');
+        console.log('id: ', id);
+        console.log('de: ', de);
+        console.log('mensaje: ', mensaje);
+
+        if(!de || mensaje === undefined || mensaje === null || mensaje === ""){
             return res.status(400).json({
                 success: false,
                 message: "Faltan datos necesarios para guardar el mensaje"

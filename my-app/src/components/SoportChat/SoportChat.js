@@ -116,9 +116,10 @@ function SoportChat (){
     //metodo de actuali zar los mensajes guardadosF
     const enviarMensaje = async (idConversacion, de, mensaje) => {
       try{
+        console.log('Enviando mensaje al backEnd: ', {idConversacion, de, mensaje})
         const response = await  fetch(`http://localhost:3001/conversacion-server/${idConversacion}/mensaje`,{
           method: 'PUT',
-          headers: {
+          headers:{
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
@@ -126,23 +127,36 @@ function SoportChat (){
             mensaje
           })
         });
+
         const data = await response.json();
         console.log("Mensaje guardado: ", data);
+
       }catch(error){
         console.error(`Error al guardar el mensaje: ${error}`);
       }
     }
 
-    const handleSendMessage = (texto) => {
-
-      if(!texto || typeof texto !== 'string'){
-        console.warn('entro al texto del usuario: ', texto)
+    const handleSendMessage = async(texto) => {
+      console.log('handleSendMessage() ejecutado con exito: ', texto);
+      if (!texto || typeof texto !== 'string') {
+        console.warn('Texto del usuario inválido: ', texto);
         return;
       }
 
       setMessages((prev) => [...prev, { sender: "user", text: texto }]);
-      enviarMensaje(chatIdUser, "usuario", texto);
-      setUserInput("")
+      
+      if(!chatIdUser){
+        console.error('No hay chat id definido para guardar el mensaje');
+        return;
+      }
+
+      try{
+        await enviarMensaje(chatIdUser, "usuario", texto)
+
+      }catch(error){
+        console.error('Error al guardar el mensaje del usuario: ', error);
+      }
+      setUserInput("");
     }
 
     const getPublicIp = async () => {
@@ -169,21 +183,24 @@ function SoportChat (){
           setUserid(existingUserId);
         }
       }
+
       iniciarConversacion();
     },[]);
 
     const addBotMessage = (text, buttons) => {
       setMessages((prev) => [...prev, { sender: 'bot', text, buttons }]);
-      if(buttons){
-        enviarMensaje(chatIdUser, "bot", {text, buttons});
+      if (buttons){
+        enviarMensaje(chatIdUser, "bot", { text, buttons });
       }else{
-        enviarMensaje(chatIdUser, 'bot', text);
+        enviarMensaje(chatIdUser, "bot", text);
       }
+
       if (isChatVisible) {
           setHandleNewMessage(true);
           playNotificacionSound();
       }
   };
+
 
     const sendMessage = async() => {
       if(userInput.trim() === "" ) return;
@@ -213,7 +230,7 @@ function SoportChat (){
               ip,
             },
             fechaInicio: new Date().toISOString(),
-          });
+          }); 
 
           await fetch('http://localhost:3001/conversacion-server', {
             method: 'POST',
@@ -228,10 +245,10 @@ function SoportChat (){
                 navegador,
                 ip,
               },
-              fechaInicio: new Date().toISOString()
+              fechaInicio: new Date().toISOString() 
             })
           });
-
+          
           setTimeout(() => addBotMessage(
             `¡Perfecto, ${nombreTemporal}! Ya puedes comenzar a chatear con nosotros\n ¿En qué podemos ayudarte?`,
             [
@@ -271,7 +288,7 @@ function SoportChat (){
     const closeChat = () => {
         setIsChatVisible(false);
     }
-
+    
     const wisphub = async (cedula) => {
       try {
         const response = await fetch(`http://localhost:3001/wisphub-data/${cedula}`, {
@@ -305,7 +322,9 @@ function SoportChat (){
     const handleButtonClick = async (option) => {
       setOption(option);
       setIsDisabled(true);
-      handleSendMessage(option);
+
+      setMessages(prev => [...prev, {sender:"user", text: option}])
+      await enviarMensaje(chatIdUser, "usuario", option);
 
       if (option === "Falla conexión"){
         setStateChat("Falla conexión");
@@ -652,7 +671,7 @@ function SoportChat (){
             \n5️⃣Servicio por el cual solicita el cambio de contraseña.
             \n6️⃣Motivo de cambio de contraseña.
             \nsi no tiene correo registrado escriba *null*.`), 1000);
-        setWaitingForDocument(true);
+        setWaitingForDocument(true); 
 
       } else if (option === "Cancelar Servicio") {
         setTimeout(() => addBotMessage(`Señor/a, para realizar esta acción puedes acercarte a la oficina más cercana con la fotocopia de la cedula y la carta con el motivo de porque va a cancelación el servicio.`), 1000);
@@ -1228,6 +1247,7 @@ function SoportChat (){
           \n4️⃣Prueba con otro televisor o otra toma.
           \n5️⃣Revisa si el problema es general y a tus vecinos les sucede el mismo problema.`), 
         1000);
+
         setTimeout(() => addBotMessage(`Si el problema persiste después de haber hecho lo anterior por favor escoge la opción *No funciono*, de lo contrario escoge la opción *Si funciono*`,
           ["✅ Si funciono", "❎ No funciono"]
         ),1000);
@@ -1292,7 +1312,7 @@ function SoportChat (){
           \n2️⃣Apaga el *Modem* y después de 30 segundos vuelve a encenderlo.`
         ), 1000);
         setTimeout(() => addBotMessage(`Nos podrías confirmar si esto te funciono seleccionando la opción *Si funciono*, de lo contrario escoge la opción *No funciono*.`,
-          ["✅ Si funciono", "❎ No funciono"]  
+          ["✅ Si funciono", "❎ No funciono"]
         ), 1000);
         setWaitingForDocument(true);
 
