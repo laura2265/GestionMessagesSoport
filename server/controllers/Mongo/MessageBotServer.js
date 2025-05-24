@@ -32,6 +32,7 @@ export const getOneChat = async(req, res) =>{
                 message: `Chat con ID ${id} no encontrado`
             })
         }
+
         res.status(200).json({
             success: true,
             data: messageChat
@@ -85,7 +86,7 @@ export const crearConversacion = async (req, res) => {
       console.error("Error al guardar conversación:", error.message);
       res.status(500).json({
         success: false,
-        message: "Error al guardar la conversación",
+        message: "Error al guardar la conversación",    
         error: error.message,
       });
     }

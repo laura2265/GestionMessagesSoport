@@ -125,7 +125,7 @@ function SoportChat (){
           body: JSON.stringify({
             de,
             mensaje
-          })
+          })  
         });
 
         const data = await response.json();
@@ -144,14 +144,14 @@ function SoportChat (){
       }
 
       setMessages((prev) => [...prev, { sender: "user", text: texto }]);
-      
+
       if(!chatIdUser){
         console.error('No hay chat id definido para guardar el mensaje');
         return;
       }
 
       try{
-        await enviarMensaje(chatIdUser, "usuario", texto)
+        await enviarMensaje(chatIdUser, "usuario", {text: texto})
 
       }catch(error){
         console.error('Error al guardar el mensaje del usuario: ', error);
@@ -201,7 +201,6 @@ function SoportChat (){
       }
   };
 
-
     const sendMessage = async() => {
       if(userInput.trim() === "" ) return;
       setMessages((prevMessage) => [...prevMessage, {sender: "user", text: userInput}]);
@@ -248,7 +247,7 @@ function SoportChat (){
               fechaInicio: new Date().toISOString() 
             })
           });
-          
+
           setTimeout(() => addBotMessage(
             `¡Perfecto, ${nombreTemporal}! Ya puedes comenzar a chatear con nosotros\n ¿En qué podemos ayudarte?`,
             [
@@ -288,7 +287,7 @@ function SoportChat (){
     const closeChat = () => {
         setIsChatVisible(false);
     }
-    
+
     const wisphub = async (cedula) => {
       try {
         const response = await fetch(`http://localhost:3001/wisphub-data/${cedula}`, {
@@ -324,7 +323,7 @@ function SoportChat (){
       setIsDisabled(true);
 
       setMessages(prev => [...prev, {sender:"user", text: option}])
-      await enviarMensaje(chatIdUser, "usuario", option);
+      await enviarMensaje(chatIdUser, "usuario", {text:option});
 
       if (option === "Falla conexión"){
         setStateChat("Falla conexión");
