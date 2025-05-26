@@ -99,7 +99,8 @@ function SoportChat (){
 
     const validStateSinSeñalFinal = [
       "ApagadoCatv","EncendidoCatv"
-    ];
+    ];  
+
 
     const validStateRedInestableFinal = [
       "EncendidoCanleLan",
@@ -125,7 +126,7 @@ function SoportChat (){
           body: JSON.stringify({
             de,
             mensaje
-          })  
+          })
         });
 
         const data = await response.json();
@@ -166,24 +167,55 @@ function SoportChat (){
         console.log('la ip: ', data.ip);
         return data.ip;
       }catch(error){
-        console.error(`Error al obtener la IP: `, error)
-        return "Desconocida";
+        console.error(`Error al obtener la IP: `, error);
+        return "Desconocida"; 
       }
     }
 
     useEffect(() =>{
       const iniciarConversacion = async () => {
-        let existingUserId = localStorage.getItem('chatUserId');
+      let existingUserId = localStorage.getItem('chatUserId');
+
         if(!existingUserId){
           const newId = crypto.randomUUID();
           localStorage.setItem("chatUserId", newId);
           setUserid(newId);
           setEstado('esperando_nombre');
-        }else{
-          setUserid(existingUserId);
+          return;
+        }
+
+        setUserid(existingUserId);
+        try{
+          const res = await fetch(`http://localhost:3001/conversacion-server/${existingUserId}`,{
+            method:'GET',
+            headers:{
+              'Content-Type': 'application/json',
+            }
+          })
+
+          const data = await res.json();
+
+          if(data.success && data.data){
+            const mensajeGuardados = data.data.conversacion.map(m=>({
+              sender: m.de === 'bot' || 'usuario',
+              text: typeof m.mensaje === 'String' ? m.mensaje : m.mensaje.text || JSON.stringify(m.mensaje),
+              buttons: m.mensaje.buttons || null,
+            }));
+
+            setMessages(mensajeGuardados);
+            setNombre(data.data.usuario.nombre);
+            setEmail(data.data.usuario.email);
+            setConversacionState(true);
+            setEstado('conversacion');
+
+          }else{
+            setEstado("esperando_nombre")
+          }
+
+        }catch(error){
+          console.error('No se pudo consultar los datos de la api: ', error);
         }
       }
-
       iniciarConversacion();
     },[]);
 

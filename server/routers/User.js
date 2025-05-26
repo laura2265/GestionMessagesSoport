@@ -7,7 +7,7 @@ import MetodoPostManychat from "../controllers/MetodoPostManychat.js";
 import { getDataMessageId, postDataMessage, getDataMesage,  addMessageToConversation} from "../controllers/Mongo/Message.js";
 import { AsignarUserPost, AsignarUserGet } from "../controllers/UserAleatorio/AsignarUser.js";
 import WisphubApi from "../controllers/WisphubApi.js";
-import { crearConversacion, getConversacionBot, updateMessage } from "../controllers/Mongo/MessageBotServer.js";
+import { crearConversacion, getConversacionBot, updateMessage, getOneChat } from "../controllers/Mongo/MessageBotServer.js";
 import { MetodoPostCloudinary, MetodoGetCloudinary } from "../controllers/cloudinary/MetodoPostCloudinary.js";
 import multer from "multer";
 
@@ -71,6 +71,7 @@ router.get(`/${phatWisphub}/:cedula`, WisphubApi);
 //conversacion chatbot del servidor
 router.post(`/${pathConversacion}`, crearConversacion);
 router.get(`/${pathConversacion}`, getConversacionBot);
+router.get(`/${pathConversacion}/:id`, getOneChat);
 router.put(`/${pathConversacion}/:id/mensaje`, updateMessage);
 
 //metodo post para imagenes en la nube

@@ -25,8 +25,10 @@ export const getConversacionBot = async(req, res) => {
 export const getOneChat = async(req, res) =>{
     try{
         const{id} = req.params;
-        const messageChat = await conversacionScheme.findById(id);
-        if(!message){
+
+        const messageChat = await conversacionScheme.findOne({id});
+        
+        if(!messageChat){
             return res.status(404).json({
                 success: false,
                 message: `Chat con ID ${id} no encontrado`
