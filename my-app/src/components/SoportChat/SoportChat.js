@@ -99,8 +99,7 @@ function SoportChat (){
 
     const validStateSinSeñalFinal = [
       "ApagadoCatv","EncendidoCatv"
-    ];  
-
+    ];
 
     const validStateRedInestableFinal = [
       "EncendidoCanleLan",
@@ -157,6 +156,7 @@ function SoportChat (){
       }catch(error){
         console.error('Error al guardar el mensaje del usuario: ', error);
       }
+
       setUserInput("");
     }
 
@@ -166,13 +166,14 @@ function SoportChat (){
         const data = await response.json();
         console.log('la ip: ', data.ip);
         return data.ip;
+
       }catch(error){
         console.error(`Error al obtener la IP: `, error);
-        return "Desconocida"; 
+        return "Desconocida";
       }
     }
 
-    useEffect(() =>{
+    useEffect(() => {
       const iniciarConversacion = async () => {
       let existingUserId = localStorage.getItem('chatUserId');
 
@@ -180,7 +181,7 @@ function SoportChat (){
           const newId = crypto.randomUUID();
           localStorage.setItem("chatUserId", newId);
           setUserid(newId);
-          setEstado('esperando_nombre');
+          setEstado('esperando_nombre');  
           return;
         }
 
@@ -196,9 +197,9 @@ function SoportChat (){
           const data = await res.json();
 
           if(data.success && data.data){
-            const mensajeGuardados = data.data.conversacion.map(m=>({
-              sender: m.de === 'bot' || 'usuario',
-              text: typeof m.mensaje === 'String' ? m.mensaje : m.mensaje.text || JSON.stringify(m.mensaje),
+            const mensajeGuardados = data.data.conversacion.map(m => ({
+              sender: m.de === 'bot' ? 'bot' : 'user',
+              text: typeof m.mensaje === 'string' ? m.mensaje : m.mensaje.text || JSON.stringify(m.mensaje),
               buttons: m.mensaje.buttons || null,
             }));
 
@@ -233,6 +234,14 @@ function SoportChat (){
       }
   };
 
+  useEffect(()=>{
+    if(botomRef.current){
+        botomRef.current.scrollIntoView({
+          behavior:'smooth'
+        });
+      }
+  },[message])
+
     const sendMessage = async() => {
       if(userInput.trim() === "" ) return;
       setMessages((prevMessage) => [...prevMessage, {sender: "user", text: userInput}]);
@@ -261,7 +270,7 @@ function SoportChat (){
               ip,
             },
             fechaInicio: new Date().toISOString(),
-          }); 
+          });
 
           await fetch('http://localhost:3001/conversacion-server', {
             method: 'POST',
@@ -349,6 +358,8 @@ function SoportChat (){
         console.error('Error al momento de consutlar los datos de la api: ', error)
       }
     }
+
+    const botomRef = useRef(null);
 
     const handleButtonClick = async (option) => {
       setOption(option);
@@ -1482,6 +1493,7 @@ function SoportChat (){
         setWaitingForDocument(true);
       }
   };
+
     //notificacion
     const playNotificacionSound = () =>{
         audioRef.current.play().catch((error)=>{
@@ -1557,6 +1569,7 @@ function SoportChat (){
                        )}
                      </div>
                    ))}
+                   <div ref={botomRef}></div>
                  </div>
 
                 <div className='content-input'>
