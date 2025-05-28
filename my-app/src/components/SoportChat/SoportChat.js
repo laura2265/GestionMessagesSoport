@@ -166,7 +166,6 @@ function SoportChat (){
         const data = await response.json();
         console.log('la ip: ', data.ip);
         return data.ip;
-
       }catch(error){
         console.error(`Error al obtener la IP: `, error);
         return "Desconocida";
@@ -181,7 +180,7 @@ function SoportChat (){
           const newId = crypto.randomUUID();
           localStorage.setItem("chatUserId", newId);
           setUserid(newId);
-          setEstado('esperando_nombre');  
+          setEstado('esperando_nombre');
           return;
         }
 
@@ -208,11 +207,9 @@ function SoportChat (){
             setEmail(data.data.usuario.email);
             setConversacionState(true);
             setEstado('conversacion');
-
           }else{
             setEstado("esperando_nombre")
           }
-
         }catch(error){
           console.error('No se pudo consultar los datos de la api: ', error);
         }
@@ -240,7 +237,7 @@ function SoportChat (){
           behavior:'smooth'
         });
       }
-  },[message])
+  },[message]);
 
     const sendMessage = async() => {
       if(userInput.trim() === "" ) return;
@@ -477,7 +474,7 @@ function SoportChat (){
         setStateChat("AyudaWifiSinInternetMultiplesEquipo");
         setTimeout(() => addBotMessage(`Para poder ayudarte con esto, nos podrías indicar que tipo de dispositivo estas utilizando.`,
           ["🔹 Windows", "🔹Mac", "🔹 Android", "🔹iPhone"]
-        ),1000);
+        ),1000); 
         setWaitingForDocument(true);
 
         //dispositivo internet
@@ -1326,7 +1323,7 @@ function SoportChat (){
         setWaitingForDocument(true);
 
       }else if(option === "🔹Cable de red *LAN*" && stateChat === "InternetInestable"){
-        setStateChat("CableLanRedInestable")
+        setStateChat("CableLanRedInestable");
         setTimeout(() => addBotMessage(`Por favor verifica si estos están conectados al* Modem*, esto lo puedes ver en el modem si los bombillos de *Lan1* y *Lan2* están encendidos, escoja la opción *Encendidos*. Si no escoge *Apagados*.`,
           ["🔹Encendidos", "🔹Apagado"]
         ), 1000);
@@ -1412,7 +1409,7 @@ function SoportChat (){
         setStateChat("CelularOTabletNoseDispositivo");
         setTimeout(() => addBotMessage(`Para verificar que red *WIFI* tienes, ve a configuraciones, has clic en *WIFI*, mira la red a la que estas conectado. Si estas conectado a la 5G intenta conectarte a la 2.4G ya que la 5G es mas rápida pero tiene menos alcance.`), 1000);
         setTimeout(() => addBotMessage(`Podrías confirmarnos con las siguientes opciones si funciono con la opción *Si funciono*, si esto no funciono escoge la opción *No funciono*. `,
-          ["✅ Si funciono", "❎ No funciono"]
+          ["✅ Si funciono", "❎ No funciono"]  
         ), 1000);
         setWaitingForDocument(true);
 
@@ -1448,7 +1445,7 @@ function SoportChat (){
           \n3️⃣Si es posible conecta un cable *Ethernet* para verificar la conexión a internet.`
         ), 1000);
         setTimeout(() => addBotMessage(`Si te funciono las soluciones elige la opción *Si funciono*, de lo contrario escoge la opción *No funciono*.`,
-          ["✅ Si funciono", "❎ No funciono"]
+          ["✅ Si funciono", "❎ No funciono"]    
         ),1000);
         setWaitingForDocument(true);
 
@@ -1472,7 +1469,7 @@ function SoportChat (){
         setWaitingForDocument(true);
 
       }else if(option === "✅ Si funciono" && validStateRedInestableFinal.includes(stateChat)){
-        setStateChat("cablePcNoSabe")
+        setStateChat("cablePcNoSabe");
         setTimeout(() => addBotMessage(`!Genial¡ si necesitas ayuda escribe seguir para volver iniciar 😊.`
         ), 1000);
         setWaitingForDocument(true);

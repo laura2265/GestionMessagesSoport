@@ -13,6 +13,7 @@ const fetchSheetData = async (sheetNumber) => {
 
         const data = await response.json();
         return data.values || [];
+        
     } catch (error) {
         console.error(`Error en la hoja ${sheetNumber}:`, error);
         return [];
@@ -82,7 +83,6 @@ const getDataFetch = async (req, res) => {
                             })
                         })
                     }
-
                 }else if(`Sheet${index+1}` === `Sheet2`){
                     const ProblemaConexionIndex = headers.indexOf('problema-conexion');
                     const testVelIndex = headers.indexOf('VelocidadTest');
