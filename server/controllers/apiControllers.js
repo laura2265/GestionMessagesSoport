@@ -5,6 +5,7 @@ import { idGoogleSheets, ApiKeyGoogleSheets } from '../config/config.js';
 const fetchSheetData = async (sheetNumber) => {
     const rango = `Sheet${sheetNumber}!A:Z`;
     const urlSheet = `https://sheets.googleapis.com/v4/spreadsheets/${idGoogleSheets}/values/${rango}?key=${ApiKeyGoogleSheets}`;
+
     try {
         const response = await fetch(urlSheet);
         if (!response.ok) {
@@ -13,7 +14,7 @@ const fetchSheetData = async (sheetNumber) => {
 
         const data = await response.json();
         return data.values || [];
-        
+
     } catch (error) {
         console.error(`Error en la hoja ${sheetNumber}:`, error);
         return [];
@@ -83,6 +84,7 @@ const getDataFetch = async (req, res) => {
                             })
                         })
                     }
+
                 }else if(`Sheet${index+1}` === `Sheet2`){
                     const ProblemaConexionIndex = headers.indexOf('problema-conexion');
                     const testVelIndex = headers.indexOf('VelocidadTest');
@@ -239,6 +241,7 @@ const getDataFetch = async (req, res) => {
                                     Servicio: partes[4] || null,
                                     Motivo: partes.slice(5).join(' ') || null
                                 };
+
                             }else {
                                 let partes = detalles.split(/\s+/);
 
@@ -247,6 +250,7 @@ const getDataFetch = async (req, res) => {
                                     while (nombreFin < partes.length && isNaN(partes[nombreFin])) {
                                         nombreFin++;
                                     }
+
                                     descripcionData.Nombre = partes.slice(0, nombreFin).join(' ').trim();
                                     descripcionData.Documento = partes[nombreFin] || null;
                                     descripcionData.Teléfono = partes[nombreFin + 1] || null;
@@ -305,6 +309,7 @@ const getDataFetch = async (req, res) => {
                                     Servicio: partes[2] || null,
                                     Motivo: partes.slice(3).join(' ') || null
                                 }
+
                             } else {
                                 let partes = detalles.split(/\s+/);
 
@@ -334,6 +339,7 @@ const getDataFetch = async (req, res) => {
                             });
                         });
                     }
+
                 }else if(`Sheet${index+1}` === `Sheet10`){
                     if(idIndex !== -1 && NameIndex !== -1 && chatIndex !== -1 && messageIndex !== -1){
                         rows.forEach(row => {
@@ -413,6 +419,7 @@ const getDataFetch = async (req, res) => {
                             })
                         })
                     }
+
                 }else if(`Sheet${index+1}` === `Sheet13`){
                     if(idIndex !== -1 && NameIndex !== -1 && chatIndex !== -1 && messageIndex !== -1){
                         rows.forEach(row => {

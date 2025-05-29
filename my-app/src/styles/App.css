@@ -55,7 +55,7 @@ body .app.light {
 }
 
 .app.light .inputContainerLabel {
-  background-color: #f8f7f7;
+  background-color: hsl(0, 7%, 97%);
   color: rgb(27, 27, 27);
 }
 

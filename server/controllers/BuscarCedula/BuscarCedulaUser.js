@@ -63,7 +63,7 @@ async function buscarCedula(userData, platform) {
                 TelegramPost(idUser, messege1, 'message1');
               } else if (NameChat === 'ChatBotInstagram') {
                 InstagramPost(idUser, messege1, 'message1');
-              } 
+              }
             }else if(clientes[0].estado_facturas === "Pendiente de Pago"){
               console.log('Tines facturas pendientes.')
               messege1 = `Señor/a ${clientes[0].nombre}, al verificar unos datos, podemos confirmar que hay pagos pendientes y para realizar esta accion te pasaremos con un asesor😊.`

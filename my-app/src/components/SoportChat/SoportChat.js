@@ -264,7 +264,7 @@ function SoportChat (){
               nombre: nombreTemporal,
               email: userInput,
               navegador,
-              ip,
+              ip, 
             },
             fechaInicio: new Date().toISOString(),
           });
@@ -314,6 +314,7 @@ function SoportChat (){
             setTimeout(() => addBotMessage('Lo siento, no entiendo esa solicitud 😢'),1000);
             setWaitingForDocument(true);
        }
+
        setUserInput("");
       }
     }
