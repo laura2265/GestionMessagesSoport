@@ -208,7 +208,7 @@ function SoportChat (){
             setConversacionState(true);
             setEstado('conversacion');
           }else{
-            setEstado("esperando_nombre")
+            setEstado("esperando_nombre");
           }
         }catch(error){
           console.error('No se pudo consultar los datos de la api: ', error);

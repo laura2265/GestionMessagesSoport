@@ -9,7 +9,7 @@ import { BuscarCedulaInstagram, BuscarCedulaMessenger, BuscarCedulaTelegram } fr
 const app = express();
 const port = 3001;
 
-app.use(cors())
+app.use(cors());
 app.use(express.json());
 
 app.use(routerUser);
@@ -36,27 +36,6 @@ const requestOptions = {
     headers: myHeaders,
     redirect: "follow"
 };
-
-/*
-fetch("https://api.wisphub.net/api/tickets/", {
-    method: 'GET',
-    headers: {
-      'Authorization': `Api-Key ${ApiKeyWisphub}`
-    }
-}).then((response) => response.json())
-.then((result) => console.log(result))
-.catch((error) => console.error(error));
-
-
-fetch(`http://localhost:3001/api`,{
-    method:'GET',
-    headers:{
-        'Content-Type': 'application/json'
-    }
-}).then((response)=> response.json())
-.then((result)=> console.log(result))
-.catch((error)=> console.error(error))
-*/
 
 function EmpleAssigned(idUser){
     fetch(`http://localhost:3001/asignaciones/${idUser}`,{
@@ -85,7 +64,7 @@ async function fetchUserData() {
             const problemExists = consultProcessed.some(user => user.message === problem  || user.Motivo === ConsultChat);
 
             if (problemExists) {
-                console.log(`⚠️ El usuario ${idUser} ya tiene el problema  o motivo que es"${problem || ConsultChat}" registrado.`);
+                console.log(`⚠️ El usuario ${idUser} ya tiene el problema  o motivo que es"${problem ||ConsultChat}" registrado.`);
                 continue;
             }
 
@@ -123,47 +102,47 @@ async function fetchUserData() {
                 }
 
                 if(NameChat === 'ChatBotMessenger'){
-                    console.log(`Cambio de plan id: ${idUser}, nombre ${nombreUser}, Nombre chat ${NameChat}, mensaje: ${messageProblem}, duracion ${ServicioDuracion}, descripcion: nombre titular${NameTitular}, docuemnto titular: ${DocumentoTitular}, servicio ${ServicioTitular}, motivo: ${MotivoCambio} `)
+                    console.log(`Cambio de plan id: ${idUser}, nombre ${nombreUser}, Nombre chat ${NameChat}, mensaje: ${messageProblem}, duracion ${ServicioDuracion}, descripcion: nombre titular${NameTitular}, docuemnto titular: ${DocumentoTitular}, servicio ${ServicioTitular}, motivo: ${MotivoCambio} `);
 
                     if(ServicioDuracion === "0 - 6 meses"){
-                        console.log('Usted debe tener más de 6 meses, sin embargo te vamos a pasar a soporte')
-                        EmpleAssigned(idUser)
+                        console.log('Usted debe tener más de 6 meses, sin embargo te vamos a pasar a soporte');
+                        EmpleAssigned(idUser);
                     }else if(ServicioDuracion === "6 meses - 1 año"){
-                        console.log('duracion media')
+                        console.log('duracion media');
                     }else if(ServicioDuracion === "1 año o mas"){
-                        console.log('Vamos a confirmar unos datos y te verificamos el proceso')
-                        BuscarCedulaMessenger(userData)
+                        console.log('Vamos a confirmar unos datos y te verificamos el proceso');
+                        BuscarCedulaMessenger(userData);
                     }else{
-                        console.log("no pusiste respuesta")
+                        console.log("no pusiste respuesta");
                     }
                 }else if(NameChat === "ChatBotInstagram"){
                     console.log(`Cambio de plan id: ${idUser}, nombre ${nombreUser}, Nombre chat ${NameChat}, mensaje: ${messageProblem}, duracion ${ServicioDuracion}, descripcion: nombre titular${NameTitular}, docuemnto titular: ${DocumentoTitular}, servicio ${ServicioTitular}, motivo: ${MotivoCambio} `)
 
                     if(ServicioDuracion === "0 - 6 meses"){
-                        console.log('Usted debe tener más de 6 meses, sin embargo te vamos a pasar a soporte')
+                        console.log('Usted debe tener más de 6 meses, sin embargo te vamos a pasar a soporte');
                         EmpleAssigned(idUser);
                     }else if(ServicioDuracion === "6 meses - 1 año"){
                         console.log('duracion media');
                     }else if(ServicioDuracion === "1 año o mas"){
-                        console.log('Vamos a confirmar unos datos y te verificamos el proceso')
+                        console.log('Vamos a confirmar unos datos y te verificamos el proceso');
                         BuscarCedulaMessenger(userData);
                     }else{
-                        console.log("no pusiste respuesta")
+                        console.log("no pusiste respuesta");
                     }
-                    
+
                 }else if(NameChat === "ChatBotTelegram"){
                     console.log(`Cambio de plan id: ${idUser}, nombre ${nombreUser}, Nombre chat ${NameChat}, mensaje: ${messageProblem}, duracion ${ServicioDuracion}, descripcion: nombre titular${NameTitular}, docuemnto titular: ${DocumentoTitular}, servicio ${ServicioTitular}, motivo: ${MotivoCambio} `)
 
                     if(ServicioDuracion === "0 - 6 meses"){
-                        console.log('Usted debe tener más de 6 meses, sin embargo te vamos a pasar a soporte')
+                        console.log('Usted debe tener más de 6 meses, sin embargo te vamos a pasar a soporte');
                         EmpleAssigned(idUser);
                     }else if(ServicioDuracion === "6 meses - 1 año"){
                         console.log('duracion media');
                     }else if(ServicioDuracion === "1 año o mas"){
-                        console.log('Vamos a confirmar unos datos y te verificamos el proceso')
+                        console.log('Vamos a confirmar unos datos y te verificamos el proceso');
                         BuscarCedulaMessenger(userData);
                     }else{
-                        console.log("no pusiste respuesta")
+                        console.log("no pusiste respuesta");
                     }
                 }
             }
@@ -176,6 +155,7 @@ async function fetchUserData() {
             });
             await saveProcessedUser(processedUsers);
             await delay(1000);
+
         }
         lastProcessedId = result;
     } catch (error) {

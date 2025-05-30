@@ -8,11 +8,13 @@ export const getConversacionBot = async(req, res) => {
             limit: parseInt(limit),
             sort: {createdAt: -1}
         }
+
         const message = await conversacionScheme.paginate({}, options);
         res.status(200).json({
             succes: true,
             data: message
         })
+
     }catch(error){
         res.status(500).json({
             succes: false,
@@ -94,6 +96,35 @@ export const crearConversacion = async (req, res) => {
     }
   };
 
+  
+  export const ultimaConversacion = async()=>{
+    try{
+        const {idUser} = req.params;
+        
+        const conversacion = await conversacionScheme.findOne({id: idUser, }).sort({fechaUltimoMensaje: -1})
+        if(!conversacion){
+            return res.status(404).json({
+                succes: false,
+                message: 'No se encontro la conversacion'
+            })
+        }
+
+        const message = conversacion.conversacion || [];
+        const ultimo = message.reverse().find(m => m.de === "usuario");
+
+        res.status(200).json({
+            success: true,
+            data: ultimo,
+        })
+
+    }catch(error){
+        res.status(500).json({
+          success: false,
+          message: 'Error al consultar ultima conversacion'
+        })
+    }
+  }
+
 export const updateMessage = async(req, res) => {
     try{
         const { id } = req.params;
@@ -110,11 +141,10 @@ export const updateMessage = async(req, res) => {
                 message: "Faltan datos necesarios para guardar el mensaje"
             });
         }
-
         const nuevoMensaje = {
             de,
             mensaje,
-            timeStamp: new Date()
+            timeStamp: new Date(),
         };
 
         console.log("Nuevo mensaje recibido: ", nuevoMensaje);
