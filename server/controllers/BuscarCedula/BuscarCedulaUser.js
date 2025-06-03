@@ -19,7 +19,7 @@ async function buscarCedula(userData, platform) {
   console.log("datos", nombreUser, "nombre chat", NameChat, "mensaje", messageProblem, "servicio duracion", ServicioDuracion, "Nombre Titular", NameTitular, "Servicio titular", ServicioTitular, "motivo del cambio", MotivoCambio)
 
   let limit = 300;
-  let offset = 0;
+  let offset = 0;3
   let found = false;
   let idAsociado = [];
 

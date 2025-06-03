@@ -13,7 +13,7 @@ export const getConversacionBot = async(req, res) => {
         res.status(200).json({
             succes: true,
             data: message
-        })
+        });
 
     }catch(error){
         res.status(500).json({
@@ -29,7 +29,7 @@ export const getOneChat = async(req, res) =>{
         const{id} = req.params;
 
         const messageChat = await conversacionScheme.findOne({id});
-        
+
         if(!messageChat){
             return res.status(404).json({
                 success: false,
@@ -86,44 +86,41 @@ export const crearConversacion = async (req, res) => {
           message: "Conversación guardada correctamente",
           data: guardado,
         });
+
     } catch (error) {
-      console.error("Error al guardar conversación:", error.message);
-      res.status(500).json({
-        success: false,
-        message: "Error al guardar la conversación",    
-        error: error.message,
-      });
-    }
-  };
-
-  
-  export const ultimaConversacion = async()=>{
-    try{
-        const {idUser} = req.params;
-        
-        const conversacion = await conversacionScheme.findOne({id: idUser, }).sort({fechaUltimoMensaje: -1})
-        if(!conversacion){
-            return res.status(404).json({
-                succes: false,
-                message: 'No se encontro la conversacion'
-            })
-        }
-
-        const message = conversacion.conversacion || [];
-        const ultimo = message.reverse().find(m => m.de === "usuario");
-
-        res.status(200).json({
-            success: true,
-            data: ultimo,
-        })
-
-    }catch(error){
+        console.error("Error al guardar conversación:", error.message);
         res.status(500).json({
           success: false,
-          message: 'Error al consultar ultima conversacion'
-        })
+          message: "Error al guardar la conversación",    
+          error: error.message,
+        });
     }
+};
+
+export const ultimaConversacion = async()=>{
+  try{
+      const {idUser} = req.params;
+      
+      const conversacion = await conversacionScheme.findOne({id: idUser, }).sort({fechaUltimoMensaje: -1})
+      if(!conversacion){
+          return res.status(404).json({
+              succes: false,
+              message: 'No se encontro la conversacion'
+          })
+      }
+      const message = conversacion.conversacion || [];
+      const ultimo = message.reverse().find(m => m.de === "usuario");
+      res.status(200).json({
+          success: true,
+          data: ultimo,
+      })
+  }catch(error){
+      res.status(500).json({
+        success: false,
+        message: 'Error al consultar ultima conversacion'
+      })
   }
+}
 
 export const updateMessage = async(req, res) => {
     try{
@@ -141,6 +138,7 @@ export const updateMessage = async(req, res) => {
                 message: "Faltan datos necesarios para guardar el mensaje"
             });
         }
+
         const nuevoMensaje = {
             de,
             mensaje,

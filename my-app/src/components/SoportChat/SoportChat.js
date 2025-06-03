@@ -230,7 +230,7 @@ function SoportChat (){
           playNotificacionSound();
       }
   };
-
+  
   useEffect(()=>{
     if(botomRef.current){
         botomRef.current.scrollIntoView({
@@ -437,7 +437,7 @@ function SoportChat (){
           \n4️⃣ Prueba conectado en otro puerto el cable.`),1000);
             setTimeout(() => addBotMessage(`Si esto te funciono, podrías escoger la opción *Si funciono*, de lo contrario *No funciono*.`,
               ['✅ Si funciono', '❎ No funciono'],
-              1000));
+              1000)); 
         setWaitingForDocument(true);
 
         //Ayuda o seguir un solo equipo wifi
