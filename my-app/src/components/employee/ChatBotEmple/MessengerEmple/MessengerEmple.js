@@ -188,7 +188,18 @@ function MessengerEmple (){
                 return;
             }
 
-            const mensajesOrdenados = data.sort((a, b) => 
+            const flattenedMessages = data.flatMap(doc => {
+                return doc.messages.map(msg => ({
+                    ...msg,
+                    contactId: doc.contactId,
+                    chat: doc.chat,
+                    usuario: doc.usuario,
+                    updatedAt: msg.timeStamp || doc.updatedAt,
+                }));
+            });
+
+
+            const mensajesOrdenados = flattenedMessages.sort((a, b) => 
                 new Date(a.updatedAt) - new Date(b.updatedAt)
             );
 

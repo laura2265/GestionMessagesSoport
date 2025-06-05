@@ -15,7 +15,7 @@ const MessageServerSchema = new mongoose.Schema({
 
 const ConversacionSchema = new mongoose.Schema({
   id: String,
-  usuario: {
+  usuario: { 
     nombre: String,
     email: String,
     navegador: String,

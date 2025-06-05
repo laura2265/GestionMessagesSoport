@@ -2,7 +2,9 @@ import conversacionScheme from "../../models/MessageBotServer.js";
 
 export const getConversacionBot = async(req, res) => {
     try{
+
         const {page = 1, limit = 100} = req.query;
+
         const options = {
             page: parseInt(page),
             limit: parseInt(limit),
@@ -87,7 +89,7 @@ export const crearConversacion = async (req, res) => {
           data: guardado,
         });
 
-    } catch (error) {
+    } catch  (error) {
         console.error("Error al guardar conversación:", error.message);
         res.status(500).json({
           success: false,
@@ -108,12 +110,14 @@ export const ultimaConversacion = async()=>{
               message: 'No se encontro la conversacion'
           })
       }
+
       const message = conversacion.conversacion || [];
       const ultimo = message.reverse().find(m => m.de === "usuario");
       res.status(200).json({
           success: true,
           data: ultimo,
-      })
+      });
+
   }catch(error){
       res.status(500).json({
         success: false,

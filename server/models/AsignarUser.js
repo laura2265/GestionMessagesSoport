@@ -24,7 +24,7 @@ const AsignarUser = new mongoose.Schema({
     },
     categoriaTicket: {
         type: String,
-        require: true
+        require: true 
     },
     Descripcion: {
         type: [String],
