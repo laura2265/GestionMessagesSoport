@@ -42,7 +42,6 @@ function Register(){
       address: '',
       estado: '',
       cargo: '',
-      categoria: '',
       area: '',
     });
   
@@ -63,8 +62,8 @@ function Register(){
     const handleAdditionalChange = (e) => {
       const { name, value } = e.target;
       setAdditionalData((prevState) => ({
-        ...prevState, 
-        [name]: value 
+        ...prevState,
+        [name]: value
       }));
     };
 
@@ -79,28 +78,24 @@ function Register(){
       if (!text.test(formData.name)) {
         errors.name = 'Nombre no válido';
       }
-
       if (!text.test(formData.lastname)) {
         errors.lastname = 'Apellido no válido';
       }
-
       if (!emailPattern.test(formData.email)) {
         errors.email = 'Correo no válido';
       }
-
       if (!passwordV.test(formData.password)) {
         errors.password = 'Contraseña no válida';
       }
-
       if (formData.password !== formData.confirmPassword) {
         errors.confirmPassword = 'Las contraseñas no coinciden';
       }
-
       return errors;
     };
 
     const validateAdditional= () =>{
-      let errors1= {}
+      let errors1 = {};
+
       //datos adicionales
       if(!number.test(additionalData.phone)){
         errors1.phone = 'Numero no valido'
@@ -123,24 +118,22 @@ function Register(){
             ...Object.values(errors),
             ...Object.values(errors1),
         ].join('\n');
-        
+
         alert(`Campos inválidos:\n${errorMessages}`);
         return;
     }
-    
-    
+
     const dataToSend = {
       tipoDocument: formData.typeDocument,
       numberDocument: formData.numberDocument,
       name: formData.name,
       lasName: formData.lastname,
       email: formData.email,
-      password: formData.password,
+      password: formData.password, 
       rol: role === 'empleado' ? 2 : 3, 
       telefono: additionalData.phone,
       direccion: additionalData.address,
       estado: 'Activo',
-      categoria: role === 'empleado'? additionalData.categoria || '':'',
       cargo: role === 'empleado' ? additionalData.cargo || '' : '',
       area: role === 'empleado' ? additionalData.area || '' : ''  
     };
@@ -149,8 +142,6 @@ function Register(){
       myHeaders.append('Content-Type', 'application/json');
     
       const raw = JSON.stringify(dataToSend);
-   
-
       try{
         const response = await fetch(`http://localhost:3001/user`, {
           method: 'POST',
@@ -173,7 +164,7 @@ function Register(){
       }catch(error){
         console.error(`Error al momento de consultar los datos dela api: ${error}`)
       }
-      
+
     };
     
     const handleRedirect = () => {
@@ -337,22 +328,6 @@ function Register(){
                                   required
                                 />
                                 <label className="inputContainerLabel">Cargo</label>
-                              </div><p></p>
-                              <div className="inputContainer">
-
-                                <select 
-                                    className='inputContainerInput'
-                                    name='categoria'
-                                    value={formData.categoria}
-                                    onChange={handleAdditionalChange}>
-                                      <option value=''>-seleccione una opcion-</option>
-                                      <option value='No hay conexión'>No hay conexión</option>
-                                      <option value='Internet lento'>Internet lento</option>
-                                      <option value='No cargan las páginas'>No cargan las páginas</option>
-                                      <option value='Señal de Televisión'>Señal de Televisión</option>
-                                      <option value='Internet se desconecta a ratos'>Internet se desconecta a ratos</option>
-                                </select>
-                                <label className="inputContainerLabel">Categoria Ticket</label>
                               </div><p></p>
 
                               <div className="inputContainer">

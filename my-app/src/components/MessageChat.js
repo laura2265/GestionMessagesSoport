@@ -69,43 +69,54 @@ function MessageChat() {
                             if(!responseGetMessage.ok){
                                 throw new Error('Error al momento de consultar los datos de la base de datos')
                             }
-    
+
                             const resultGetMessage = await responseGetMessage.json();
                             const dataGetMessage = resultGetMessage.data.docs;
-                            const messageExists = dataGetMessage.some(msg => msg.message.idMessageClient === messageId);
+                            for (let i = 0; i < dataGetMessage.length; i++) {
+                              const doc = dataGetMessage[i];
 
-                            if(!messageExists){
-                                const responseMessage = await fetch(`http://localhost:3001/message/`, {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({
-                                        contactId: chatId,
-                                        usuario:{
-                                            nombre: chatUserName
-                                        },
-                                        messages:[
-                                            {
-                                                sender: "Cliente",
-                                                message: messageText,
-                                                idMessageClient: messageId
+                              if (doc.messages && Array.isArray(doc.messages)) {
+                                    for (let j = 0; j < doc.messages.length; j++) {
+                                        const mensaje = doc.messages[j];
+
+                                        console.log("Mensaje ID:", mensaje.idMessageClient);
+                                        const messageExists = doc.messages.some(msg => msg.idMessageClient === messageId);
+
+                                        if(!messageExists){
+                                            const responseMessage = await fetch(`http://localhost:3001/message/`, {
+                                                method: 'POST',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({
+                                                    contactId: chatId,
+                                                    usuario:{
+                                                        nombre: chatUserName
+                                                    },
+                                                    messages:[
+                                                        {
+                                                            sender: "Cliente",
+                                                            message: messageText,
+                                                            idMessageClient: messageId
+                                                        }
+                                                    ],
+                                                    chat: chatuser,
+                                                }),
+                                            });
+
+                                            if(!responseMessage.ok){
+                                                throw new Error('Error al momento de guardar el mensaje')
                                             }
-                                        ],
-                                        chat: chatuser,
-                                    }),
-                                });
 
-                                if(!responseMessage.ok){
-                                    throw new Error('Error al momento de guardar el mensaje')
+                                            newNotifications.push({
+                                                contactId: chatId,
+                                                message: messageText,
+                                                sender: 'Cliente',
+                                                chat: chatuser,
+                                                nombre: user.nombreClient
+                                            })
+                                            lastMessagesRef.current[chatId] = messageText;
+                                        }
+                                    }
                                 }
-
-                                newNotifications.push({
-                                    contactId: chatId,
-                                    message: messageText,
-                                    sender: 'Cliente',
-                                    chat: chatuser,
-                                    nombre: user.nombreClient
-                                })
-                                lastMessagesRef.current[chatId] = messageText;
                             }
 
                         }else if(messageUrl1){
@@ -124,41 +135,54 @@ function MessageChat() {
 
                             const resultGetMessage = await responseGetMessage.json();
                             const dataGetMessage = resultGetMessage.data.docs;
-                            const messageExists = dataGetMessage.some(msg => msg.idMessageClient === messageId)
+                            for (let i = 0; i < dataGetMessage.length; i++) {
+                              const doc = dataGetMessage[i];
 
-                            if(!messageExists){
-                                const responseMessage = await fetch(`http://localhost:3001/message/`, {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({
-                                        contactId: chatId,
-                                        usuario: {
-                                            nombre: chatUserName
-                                        },
-                                        messages: [
-                                            {
-                                                sender: 'Cliente',
-                                                message: messageText,
-                                                idMessageClient: messageId
-                                            }
-                                        ],
-                                        chat: chatuser,
-                                    }),
-                                });
+                              if (doc.messages && Array.isArray(doc.messages)) {
+                                for (let j = 0; j < doc.messages.length; j++) {
+                                  const mensaje = doc.messages[j];
 
-                                if(!responseMessage.ok){
-                                    throw new Error('Error al momento de guardar el mensaje')
+                                    console.log("Mensaje ID:", mensaje.idMessageClient);
+
+                                    const messageExists = doc.messages.some(msg => msg.idMessageClient === messageId);
+
+                                    if(!messageExists){
+                                        const responseMessage = await fetch(`http://localhost:3001/message/`, {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({
+                                                contactId: chatId,
+                                                usuario: {
+                                                    nombre: chatUserName
+                                                },
+
+                                                messages: [
+                                                    {
+                                                        sender: 'Cliente',
+                                                        message: messageText,
+                                                        idMessageClient: messageId
+                                                    }
+                                                ],
+                                                chat: chatuser,
+                                            }),
+                                        });
+
+                                        if(!responseMessage.ok){
+                                            throw new Error('Error al momento de guardar el mensaje')
+                                        }
+
+                                        newNotifications.push({
+                                            contactId: chatId,
+                                            message: messageText,
+                                            sender: 'Cliente',
+                                            chat: chatuser,
+                                            nombre: user.nombreClient,
+                                        });
+
+                                        lastMessagesRef.current[chatId] = messageText;
+                                    }
                                 }
-
-                                newNotifications.push({
-                                    contactId: chatId,
-                                    message: messageText,
-                                    sender: 'Cliente',
-                                    chat: chatuser,
-                                    nombre: user.nombreClient,
-                                });
-
-                                lastMessagesRef.current[chatId] = messageText;
+                              }
                             }
 
                         }else{
@@ -175,41 +199,56 @@ function MessageChat() {
                             }
     
                             const resultGetMessage = await responseGetMessage.json();
+                            
                             const dataGetMessage = resultGetMessage.data.docs;
-                            const messageExists = dataGetMessage.some(msg => msg.idMessageClient === messageId);
-    
-                            if(!messageExists){
-                                const responseMessage = await fetch(`http://localhost:3001/message/`, {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({
-                                        contactId: chatId,
-                                        usuario: {
-                                            nombre: chatUserName
-                                        },
-                                        messages: [
-                                            {
-                                                sender: 'Cliente',
-                                                message: messageText,
-                                                idMessageClient: messageId
-                                            }
-                                        ],
-                                        chat: chatuser
-                                    }),
-                                });
-    
-                                if(!responseMessage.ok){
-                                    throw new Error('Error al momento de guardar el mensaje')
+                            
+                            for (let i = 0; i < dataGetMessage.length; i++) {
+                              const doc = dataGetMessage[i];
+
+                              if (doc.messages && Array.isArray(doc.messages)) {
+                                for (let j = 0; j < doc.messages.length; j++) {
+                                  const mensaje = doc.messages[j];
+
+                                    console.log("Mensaje ID:", mensaje.idMessageClient);
+                                    const messageExists = doc.messages.some(msg => msg.idMessageClient === messageId);
+
+
+                                    if(!messageExists){
+                                        const responseMessage = await fetch(`http://localhost:3001/message/`, {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({
+                                                contactId: chatId,
+                                                usuario: {
+                                                    nombre: chatUserName
+                                                },
+
+                                                messages: [
+                                                    {
+                                                        sender: 'Cliente',
+                                                        message: messageText,
+                                                        idMessageClient: messageId
+                                                    }
+                                                ],
+                                                chat: chatuser
+                                            }),
+                                        });
+                                    
+                                        if(!responseMessage.ok){
+                                            throw new Error('Error al momento de guardar el mensaje')
+                                        }
+                                    
+                                        newNotifications.push({
+                                            contactId: chatId,
+                                            message: messageText,
+                                            sender: 'Cliente',
+                                            chat: chatuser,
+                                            nombre: user.nombreClient
+                                        })
+                                        lastMessagesRef.current[chatId] = messageText;
+                                    }
                                 }
-    
-                                newNotifications.push({
-                                    contactId: chatId,
-                                    message: messageText,
-                                    sender: 'Cliente',
-                                    chat: chatuser,
-                                    nombre: user.nombreClient
-                                })
-                                lastMessagesRef.current[chatId] = messageText;
+                              }
                             }
                         }
                     }

@@ -13,7 +13,6 @@ const UserScheme = new mongoose.Schema({
     direccion: String,
     estado: String,
     cargo: String,
-    categoria: String,
     area: String,
 }, {timestamps: true});
 

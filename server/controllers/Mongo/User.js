@@ -55,7 +55,7 @@ export const getOneUserId = async(req, res)=>{
 export const insertData = async (req, res) => {
     console.log("Datos recibidos en la solicitud:", req.body);
     try {
-        const { tipoDocument, numberDocument, name, lasName, email, password, rol, telefono, direccion, estado,cargo, categoria, area } = req.body;
+        const { tipoDocument, numberDocument, name, lasName, email, password, rol, telefono, direccion, estado,cargo, area } = req.body;
         const existingUser = await User.findOne({ $or: [{ email }, { numberDocument }] });
         if (existingUser) {
             return res.status(400).json({
@@ -76,7 +76,6 @@ export const insertData = async (req, res) => {
           direccion,
           estado,
           cargo,
-          categoria,
           area
         });
 

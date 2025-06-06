@@ -17,13 +17,7 @@ export const AsignarUserPost = async (req, res) => {
         const EmpleadoData = await EmpleResponse.json();
         const EmpleResults = EmpleadoData.data.docs;
 
-        const empleadosPorCategoria = {
-            'No hay conexión': EmpleResults.filter(e => e.rol === 2 && e.categoria === 'No hay conexión'),
-            'Internet lento': EmpleResults.filter(e => e.rol === 2 && e.categoria === 'Internet lento'),
-            'No cargan las páginas': EmpleResults.filter(e => e.rol === 2 && e.categoria === 'No cargan las páginas'),
-            'Señal de Televisión': EmpleResults.filter(e => e.rol === 2 && e.categoria === 'Señal de Televisión'),
-            'Internet se desconecta a ratos': EmpleResults.filter(e => e.rol === 2 && e.categoria === 'Internet se desconecta a ratos'),
-        };
+        const empleadosPorCategoria = EmpleadoData.data.docs.filter(e => e.rol);
 
         const clientesPorCategoria = {
             'No hay conexión': ClientData.filter(client => client.id === id && client.sheet === 'Sheet1' && (client.funciono1 === 'No funciona' || client.cable === 'Cable Dañado')),
