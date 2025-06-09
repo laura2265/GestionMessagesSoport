@@ -80,7 +80,7 @@ async function buscarCedula(userData, platform) {
             }
           }
         } else {
-          console.log('No se encontraron servicios asociados a la cédula:', cedula);
+          console.log('No se encontraron servicios asociados a la cédula:');
         }
       }
     } catch (error) {

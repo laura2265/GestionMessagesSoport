@@ -129,7 +129,7 @@ function Register(){
       name: formData.name,
       lasName: formData.lastname,
       email: formData.email,
-      password: formData.password, 
+      password: formData.password,
       rol: role === 'empleado' ? 2 : 3, 
       telefono: additionalData.phone,
       direccion: additionalData.address,
@@ -164,7 +164,6 @@ function Register(){
       }catch(error){
         console.error(`Error al momento de consultar los datos dela api: ${error}`)
       }
-
     };
     
     const handleRedirect = () => {

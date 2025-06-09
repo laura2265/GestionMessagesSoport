@@ -140,7 +140,6 @@ const getDataFetch = async (req, res) => {
                             })
                         })
                     }
-
                 }else if(`Sheet${index+1}` === `Sheet4`){
                     const ProblemaConexionIndex = headers.indexOf('problema-conexion');
                     const ProblemSeñal = headers.indexOf('ProblemaSeñal');

@@ -8,59 +8,65 @@ export const AsignarUserPost = async (req, res) => {
         const ClientResponse = await fetch(`http://localhost:3001/api`);
         const ClientData = await ClientResponse.json();
 
-        // Consultar empleados disponibles
         const EmpleResponse = await fetch('http://localhost:3001/user', {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' }
         });
 
         const EmpleadoData = await EmpleResponse.json();
-        const EmpleResults = EmpleadoData.data.docs;
 
-        const empleadosPorCategoria = EmpleadoData.data.docs.filter(e => e.rol);
+        // Verifica que tenga el formato esperado
+        if (!EmpleadoData.data || !Array.isArray(EmpleadoData.data.docs)) {
+            throw new Error("La respuesta de empleados no contiene el array esperado.");
+        }
 
-        const clientesPorCategoria = {
-            'No hay conexión': ClientData.filter(client => client.id === id && client.sheet === 'Sheet1' && (client.funciono1 === 'No funciona' || client.cable === 'Cable Dañado')),
-            'Internet lento': ClientData.filter(client => client.id === id && client.sheet === 'Sheet2' && client.result === 'No funciono'),
-            'No cargan las páginas': ClientData.filter(client => client.id === id && client.sheet === 'Sheet3' && client.funcionoVpn === 'No funciono'),
-            'Señal de Televisión': ClientData.filter(client => client.id === id && client.sheet === 'Sheet4' && client.FuncionoFinal === 'No funciono'),
-            'Internet se desconecta a ratos': ClientData.filter(client => client.id === id && client.sheet === 'Sheet5' && client.resultadoFinal === 'No funciono')
-        };
+        const empleados = EmpleadoData?.data?.docs || [];
+
+        if (empleados.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "No hay empleados disponibles para asignar."
+            });
+        }   
+
+        const clientes = ClientData.filter(client => client.id === id);
 
         const asignaciones = [];
 
-        for (const categoria of Object.keys(clientesPorCategoria)) {
-            const clientes = clientesPorCategoria[categoria];
-            const empleados = empleadosPorCategoria[categoria];
+        for (const cliente of clientes) {
+            console.log('chatId: ', cliente.id);
 
-            if (clientes.length > 0 && empleados.length > 0) {
-                for (const cliente of clientes) {
-
-                    console.log('chat id: ', cliente.id);
-
-                    // Verificar si el cliente ya tiene una asignación en la base de datos
-                    const yaAsignado = await AsignarUser.findOne({ cahtId: cliente.id, categoriaTicket: categoria });
-
-                    if (yaAsignado) {
-                        console.log(`⚠️ El cliente ${cliente.id} ya tiene una asignación en ${categoria}.`);
-                        continue;
-                    }
-
-                    const empleAsignado = empleados[Math.floor(Math.random() * empleados.length)];
-
-                    const newAsignacion = await AsignarUser.create({
-                        cahtId: cliente.id,
-                        nombreClient: cliente.Name,
-                        chatName: cliente.chatName,
-                        Descripcion: cliente.Message,
-                        idEmple: empleAsignado._id,
-                        nombreEmple: empleAsignado.name,
-                        categoriaTicket: categoria,
-                    });
-
-                    asignaciones.push(newAsignacion);
-                }
+            const yaAsignado = await AsignarUser.findOne({cahtId: cliente.id})
+            
+            if (yaAsignado) {
+                console.log(`⚠️ El cliente ${cliente.id} ya tiene una asignación en ${categoria}.`);
+                continue;
             }
+
+            let categoria = "Sin categoria";
+            if(cliente.sheet === 'Sheet1' && (cliente.funciono1 === "No funciona" || cliente.cable === "Cable dañado")){
+                categoria= "No hay conexión";
+            }else if(cliente.sheet === 'Sheet2' &&  cliente.result === "No funciono"){
+                categoria = "Internet lento";
+            }else if(cliente.sheet === 'Sheet3' && cliente.funcionoVpn === "No funciono"){
+                categoria = "No cargan las paginas";
+            }else if(cliente.sheet === 'Sheet4' && cliente.FuncionoFinal === "No funciono"){
+                categoria = "Señal de Televisión";
+            }else if(cliente.sheet === 'Sheet5' && cliente.resultadoFinal === "No funciono"){
+                categoria = "Internet se desconecta a ratos";
+            }
+
+            const empleAsignado = empleados[Math.floor(Math.random() * empleados.length)];
+            const newAsignacion = await AsignarUser.create({
+                cahtId: cliente.id,
+                nombreClient: cliente.Name,
+                chatName: cliente.chatName,
+                Descripcion: cliente.Message,
+                idEmple: empleAsignado._id,
+                nombreEmple: empleAsignado.name,
+                categoriaTicket: categoria,
+            });
+            asignaciones.push(newAsignacion);
         }
 
         res.status(200).json({
@@ -93,6 +99,7 @@ export const AsignarUserGet = async(req, res) => {
             success: true,
             data: asignar_user
         })
+
     }catch(error){
         res.status(500).json({
             success: false,
