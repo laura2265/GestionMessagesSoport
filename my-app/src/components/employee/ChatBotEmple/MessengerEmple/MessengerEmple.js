@@ -170,7 +170,8 @@ function MessengerEmple (){
     const fetchMessenger = async (activeContact) => {
         try {
             const response = await fetch(`http://localhost:3001/message/?contactId=${activeContact.id}&chat=messenger`, {
-                method: 'GET',
+                method: 'GET'
+                ,
                 headers: {
                     'Content-Type': 'application/json'
                 }
@@ -181,14 +182,18 @@ function MessengerEmple (){
             }
 
             const result = await response.json();
-            const data = result.data.docs;
+            console.log('Respuesta obtenida de la API de mensajes:', result);
 
-            if (!data || data.length === 0) {
+            const data = result?.data?.docs || [];
+
+            if (!Array.isArray(data) || data.length === 0) {
                 setMessages([]);
                 return;
             }
 
             const flattenedMessages = data.flatMap(doc => {
+                if (!Array.isArray(doc.messages)) return [];
+            
                 return doc.messages.map(msg => ({
                     ...msg,
                     contactId: doc.contactId,
@@ -199,7 +204,7 @@ function MessengerEmple (){
             });
 
 
-            const mensajesOrdenados = flattenedMessages.sort((a, b) => 
+            const mensajesOrdenados = flattenedMessages.sort((a, b) =>
                 new Date(a.updatedAt) - new Date(b.updatedAt)
             );
 
@@ -268,13 +273,12 @@ function MessengerEmple (){
                 }
                 return prevContacts;
             });
+
         } catch (error) {
             console.error('Error al momento de consultar los datos de la API:', error);
         }
     };
 
-
- 
     useEffect(() => {
         const fetchEmple = async () => {
             try {
@@ -397,11 +401,13 @@ function MessengerEmple (){
                     <h1>Messenger</h1>
                     <a className="ButtonTheme1" onClick={toggleTheme}> <img src={theme === 'light'? ModoClaro : ModoOscuro} /> </a>
                 </div>
+
                 <div className="contentChatW">
                     <div className="contentContact">
                         <div className="barrasuperiorContacts">
                             <p>Contactos</p>
                         </div>
+
                         <div className="listContactContent">
                         {contacts.length > 0 ? (
                             contacts.map(contact => (
@@ -463,28 +469,26 @@ function MessengerEmple (){
                                         <div key={date}>
                                             <p className="date-label">{date}</p>
                                             {messagesOnDate.map((message, index) => {
-                                                const imgUrl = message.message?.includes('scontent.xx.fbcdn.net');
-                                                const audioUrl = message.message?.includes('cdn.fbsbx');
-                                                
+                                                const mensaje = Array.isArray(message.message) ? message.message[0] : message.message ?? '';
+                                                const imgUrl = typeof mensaje === 'string' && mensaje.includes('scontent.xx.fbcdn.net');
+                                                const audioUrl = typeof mensaje === 'string' && mensaje.includes('cdn.fbsbx');
+                                                                                        
                                                 return (
-                                                    <div
-                                                        key={index}
-                                                        className={`message ${message.sender === 'Empleado' ? 'sent' : 'received'}`}
-                                                    >
-                                                        {imgUrl || message.message[0].includes('https://scontent.xx.fbcdn.net') ? (
+                                                    <div key={index} className={`message ${message.sender === 'Empleado' ? 'sent' : 'received'}`}>
+                                                        {imgUrl || mensaje.startsWith('https://scontent.xx.fbcdn.net') ? (
                                                             <>
-                                                                <img src={message.message} style={{ maxWidth: '200px', borderRadius: '10px' }} /><br/>
+                                                                <img src={mensaje} style={{ maxWidth: '200px', borderRadius: '10px' }} /><br/>
                                                             </>
-                                                        ) : audioUrl || message.message[0].includes('https://cdn.fbsbx.com')? (
+                                                        ) : audioUrl || mensaje.startsWith('https://cdn.fbsbx.com') ? (
                                                             <>
                                                                 <audio controls>
-                                                                    <source src={message.message[0]} type="audio/mpeg" />
+                                                                    <source src={mensaje} type="audio/mpeg" />
                                                                     Tu navegador no soporta el formato de audio.
                                                                 </audio>
                                                                 <br/>
                                                             </>
                                                         ) : (
-                                                            <p>{message.message}</p>
+                                                            <p>{mensaje}</p>
                                                         )}
                                                         <span className="timestamp">
                                                             {new Date(message.updatedAt).toLocaleString([], { hour: '2-digit', minute: '2-digit' })}
@@ -492,6 +496,8 @@ function MessengerEmple (){
                                                     </div>
                                                 );
                                             })}
+
+
                                         </div>
                                     ))
                                 ) : (
