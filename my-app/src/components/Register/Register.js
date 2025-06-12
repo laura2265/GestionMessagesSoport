@@ -105,7 +105,7 @@ function Register(){
       }
       return errors1
     }
-  
+
     const handleSubmit = async (e) => {
       e.preventDefault();
       const errors = validateForm();
@@ -130,12 +130,12 @@ function Register(){
       lasName: formData.lastname,
       email: formData.email,
       password: formData.password,
-      rol: role === 'empleado' ? 2 : 3, 
+      rol: role === 'empleado' ? 2 : 3,
       telefono: additionalData.phone,
       direccion: additionalData.address,
       estado: 'Activo',
       cargo: role === 'empleado' ? additionalData.cargo || '' : '',
-      area: role === 'empleado' ? additionalData.area || '' : ''  
+      area: role === 'empleado' ? additionalData.area || '' : '' 
     };
 
       const myHeaders = new Headers();
@@ -156,8 +156,8 @@ function Register(){
           console.log(`Error al momento de consultar los datos de la api`)
         }
 
-        const result = await response.json()
-        console.log(result)
+        const result = await response.json();
+        console.log(result);
         alert(`Usuario registrado como ${role}`);
         navigate('/login');
 

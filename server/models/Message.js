@@ -7,7 +7,10 @@ const MessageSoportScheme =  new mongoose.Schema(
             type: String,
             require: true,
         },
-        message: String,
+        message: {
+            type: String,
+            required: true,
+        },
         timeStamp: {
             type: Date,
             default: Date.now

@@ -44,6 +44,50 @@ function EmpleAssigned(idUser){
     .then((error) => console.error(error))
 }
 
+async function fetchMessagesMongo() {
+    try{
+        const response = await fetch('http://localhost:3001/message');
+        if(!response.ok){
+            throw new Error('Error al consultar mensajes de MongoDB')
+        }
+
+        const mensajes = await response.json();
+        processedUsers = await loadProcessedUser();
+
+        const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+
+        for(const mensaje of mensajes){
+            const{id, chat, message} = mensaje;
+            
+            const ProccesedUser = processedUsers.some(user =>
+                user.id === id &&
+                user.message === message &&
+                user.contactado === true
+            );
+
+            if(ProccesedUser){
+                console.log(`Usted ${id} ya fue procesado por el mensaje "${message}"`)
+                continue; 
+            }
+
+            console.log(`Nuevo mensaje de MongoDB -Usuario: ${id}, Chat: ${chat}, Mensaje: ${message}`)
+
+            processedUsers.push({
+                id, 
+                Motivo: null,
+                message,
+                contactado: true,
+                processedAt: new Date().toISOString()
+            });
+
+            await saveProcessedUser(processedUsers);
+            await delay(1000);
+        }
+    }catch(error){
+        console.error('Error al consultar los datos de la api:', error);
+    }
+}
+
 async function fetchUserData() {
     try {
         const response = await fetch('http://localhost:3001/api');
@@ -78,7 +122,7 @@ async function fetchUserData() {
                  'Sheet11', 'Sheet12', 'Sheet13', 'Sheet14', 'Sheet15'].includes(sheets)) {
                 console.log(`📄 Página ${sheets}, asignando empleado...`);
                 EmpleAssigned(idUser);
-
+ 
             }else if(['Sheet9'].includes(sheets)){
                 const nombreUser = item.Name;
                 const NameChat = item.chatName;
@@ -161,8 +205,9 @@ async function fetchUserData() {
 
         lastProcessedId = result;
     } catch (error) {
-        console.error('❌ Error en fetchUserData:', error);
+        console.error('❌ Error en fetchUserData:', error); 
     }
 }
 
-setInterval(fetchUserData, 10000)
+setInterval(fetchUserData, 10000);
+setInterval(fetchMessagesMongo, 10000);

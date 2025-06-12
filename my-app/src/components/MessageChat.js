@@ -80,52 +80,54 @@ function MessageChat() {
 
                     if (!messageExists && !notifiedMessagesRef.current.has(messageId)) {
                         const isNew = dataGetMessage.length === 0;
-                        const endpoint = dataGetMessage.length === 0
-                            ? 'http://localhost:3001/message/'
-                            : `http://localhost:3001/message/${chatId}`;
-                        const method = dataGetMessage.length === 0 ? 'POST' : 'PUT';
+                        const cleanMessage = typeof messageText === 'string' ? messageText.trim() : '';
+                                        
+                        if (!cleanMessage) {
+                            console.warn("⚠️ El mensaje está vacío, no se enviará al backend.");
+                            return;
+                        }
+
+                        const messageToSave = {
+                            sender: "Cliente",
+                            message: cleanMessage,
+                            idMessageClient: messageId
+                        };
+
                         const body = isNew
                             ? {
                                 contactId: chatId,
                                 usuario: { nombre: chatUserName },
-                                messages: [
-                                    {
-                                        sender: "Cliente",
-                                        message: messageText,
-                                        idMessageClient: messageId
-                                    }
-                                ],
+                                messages: [messageToSave],
                                 chat: chatuser
-                            }:{
-                                messages: [
-                                    {
-                                        sender: "Cliente",
-                                        message: messageText,
-                                        idMessageClient: messageId
-                                    }
-                                ]
+                            }
+                            : {
+                                messages: [messageToSave]
                             };
-
-                        const responseSave = await fetch(endpoint, {
-                            method,
+                        
+                        console.log("📤 Body que se va a enviar:", JSON.stringify(body, null, 2));
+                        
+                        const responseSave = await fetch(isNew
+                            ? 'http://localhost:3001/message/'
+                            : `http://localhost:3001/message/${chatId}`, {
+                            method: isNew ? 'POST' : 'PUT',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify(body),
                         });
-
+                    
                         const resultSave = await responseSave.json();
-                        console.log("🟢 Resultado del guardado:", method, resultSave);
-
-                        // Agregar a lista de mensajes notificados
+                        console.log("🟢 Resultado del guardado:", isNew ? 'POST' : 'PUT', resultSave);
+                    
                         notifiedMessagesRef.current.add(messageId);
-
+                    
                         newNotifications.push({
                             contactId: chatId,
-                            message: messageText,
+                            message: cleanMessage,
                             sender: 'Cliente',
                             chat: chatuser,
                             nombre: chatUserName,
                         });
                     }
+
                 }
 
                 if (newNotifications.length > 0) {
@@ -145,6 +147,7 @@ function MessageChat() {
             } catch (error) {
                 console.error(`❌ Error en interval: ${error.message}`);
             }
+            
         }, 3000);
 
         return () => clearInterval(intervalId);
