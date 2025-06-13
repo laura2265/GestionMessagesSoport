@@ -9,6 +9,7 @@ function MessageChat() {
 
     useEffect(() => {
         const intervalId = setInterval(async () => {
+
             try {
                 const EmpleId = localStorage.getItem('UserId');
                 const responseEmple = await fetch(`http://localhost:3001/asignaciones/`);
@@ -23,7 +24,7 @@ function MessageChat() {
                 for (let user of assignedEmple) {
                     const chatId = user.cahtId;
                     const chatUserName = user.nombreClient;
-                    const motivo = user.categoria;
+                    const motivo = user.categoriaTicket;
 
                     let chatuser = 'desconocido';
                     if (user.chatName === 'ChatBotMessenger') chatuser = 'messenger';
@@ -68,7 +69,7 @@ function MessageChat() {
                                 messages: [
                                     {
                                         sender: 'Sistema',
-                                        message: `📝 Motivo del contacto: ${motivo}`,
+                                        message: motivo === "No hay conexión" ? `📝 Motivo del contacto: ${motivo}, con la descripcion: ${user.Descripcion[0]}`:'',
                                         idMessageClient: `${dataMany.subscribed}-motivo`
                                     }
                                 ],

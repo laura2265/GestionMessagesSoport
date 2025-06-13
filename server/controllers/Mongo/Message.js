@@ -75,6 +75,7 @@ export const postDataMessage = async(req, res) => {
             success: true,
             data: guardado,
         })
+
     }catch(error){
         console.error('Error al momento de guardar el mensaje');
         res.status(500).json({

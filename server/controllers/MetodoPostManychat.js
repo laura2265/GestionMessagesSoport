@@ -13,7 +13,7 @@ async function MetodoPostManychat(req, res) {
                 accept: 'application/json',
                 Authorization: `Bearer ${manyChatToken}`,
                 'Content-Type': 'application/json',
-            };  
+            };
 
             bodyContent = JSON.stringify({
                 "subscriber_id": suscriberID,

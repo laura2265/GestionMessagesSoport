@@ -56,6 +56,8 @@ export const AsignarUserPost = async (req, res) => {
                 categoria = "Internet se desconecta a ratos";
             }
 
+            console.log('Nombre del cliente: ', cliente.Name);
+            
             const empleAsignado = empleados[Math.floor(Math.random() * empleados.length)];
             const newAsignacion = await AsignarUser.create({
                 cahtId: cliente.id,
