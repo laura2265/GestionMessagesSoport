@@ -82,7 +82,7 @@
         };
 
         const imageUploadNube = async() => {
-            if(!selectedImage || activeContact){
+            if(!selectedImage || !activeContact){
                 return;
             }
 
@@ -114,7 +114,7 @@
                     ]
                 };
 
-                console.log('Los datos del nuevo mensaje: ', newMessage)
+                console.log('Los datos del nuevo mensaje: ', newMessage);
 
                 await fetch('http://localhost:3001/message/',{
                     method: 'PUT',
@@ -195,7 +195,6 @@
                         updatedAt: msg.timeStamp || doc.updatedAt,
                     }));
                 });
-
 
                 const mensajesOrdenados = flattenedMessages.sort((a, b) =>
                     new Date(a.updatedAt) - new Date(b.updatedAt)

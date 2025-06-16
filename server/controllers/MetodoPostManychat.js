@@ -1,12 +1,20 @@
 import { manyChatToken } from '../config/config.js';
 
 async function MetodoPostManychat(req, res) {
-    const { suscriberID, message, chat, tipeMessage } = req.body;
+    const { suscriberID, message, chat } = req.body;
 
-    let bodyContent
+    let bodyContent;
+
     if (!suscriberID || !message ||! chat) {
         return res.status(400).json({ error: 'Faltan parametros requeridos (suscriberID, message)' });
     }
+
+    const isImageUrl = (url) => {
+        return /^https?:\/\/.*\.(jpg|jpeg|png|gif|webp|bmp|svg)(\?.*)?$/.text(url)
+    }
+
+    const typeMessage = isImageUrl(message? 'image' : 'text');
+
     if(chat === 'telegram' || chat === 'instagram'){
         try {
             const myHeaders = {
@@ -22,10 +30,14 @@ async function MetodoPostManychat(req, res) {
                     "content": {
                         "type": chat,
                         "messages": [
+                            typeMessage === 'image'?
                             {
-                                "type": 'text',
-                                "text": message,
-                            },
+                                "type": 'image',
+                                "url": message
+                            }:{
+                                "type": "text",
+                                "text": message
+                            }
                         ],
                     },
                 },
@@ -77,7 +89,7 @@ async function MetodoPostManychat(req, res) {
                 myHeaders.append("accept", "application/json");
                 myHeaders.append("Authorization", `Bearer ${manyChatToken}`);
                 myHeaders.append("Content-Type", "application/json");
-              
+
                 const requestOptions = {
                 method: "POST",
                 headers: myHeaders,
@@ -94,7 +106,7 @@ async function MetodoPostManychat(req, res) {
                 succes: true,
                 message: 'El mensaje fue enviado correctamente'
             })
-            
+
         }catch(error){
             console.error('Error al momento de enviar un mensaje a messenger')
             res.status(500).json({
