@@ -75,10 +75,14 @@ async function MetodoPostManychat(req, res) {
                   "version": "v2",
                   "content": {
                     "messages": [
-                      {
-                        "type": "text",
-                        "text": message
-                      }
+                        typeMessage === 'image'?
+                        {
+                            "type": 'image',
+                            "url": message
+                        }:{
+                            "type": "text",
+                            "text": message
+                        }
                     ]
                   }
                 },

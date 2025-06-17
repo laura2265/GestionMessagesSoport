@@ -46,12 +46,16 @@ function EmpleAssigned(idUser){
 
 async function fetchMessagesMongo() {
     try{
-        const response = await fetch('http://localhost:3001/message');
+        const response = await fetch('http://localhost:3001/conversacion-server');
         if(!response.ok){
             throw new Error('Error al consultar mensajes de MongoDB')
         }
 
-        const mensajes = await response.json();
+        const mensajesJson = await response.json();
+        const mensajes = mensajesJson.data.docs;
+        console.log('la conversacion es: ', mensajes)
+        console.log('✅ Mensajes recibidos:', mensajes);
+
         processedUsers = await loadProcessedUser();
 
         const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
@@ -67,13 +71,13 @@ async function fetchMessagesMongo() {
 
             if(ProccesedUser){
                 console.log(`Usted ${id} ya fue procesado por el mensaje "${message}"`)
-                continue; 
+                continue;
             }
 
             console.log(`Nuevo mensaje de MongoDB -Usuario: ${id}, Chat: ${chat}, Mensaje: ${message}`)
 
             processedUsers.push({
-                id, 
+                id,
                 Motivo: null,
                 message,
                 contactado: true,
@@ -83,6 +87,7 @@ async function fetchMessagesMongo() {
             await saveProcessedUser(processedUsers);
             await delay(1000);
         }
+
     }catch(error){
         console.error('Error al consultar los datos de la api:', error);
     }

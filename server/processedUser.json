@@ -76,5 +76,10 @@
     "Motivo": "OTRO",
     "message": null,
     "processedAt": "2025-06-13T14:25:03.408Z"
+  },
+  {
+    "Motivo": null,
+    "contactado": true,
+    "processedAt": "2025-06-17T14:59:54.389Z"
   }
 ]

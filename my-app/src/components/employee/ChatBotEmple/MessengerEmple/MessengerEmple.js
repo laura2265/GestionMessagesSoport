@@ -30,7 +30,6 @@
         }
         const handleSendMessage = async () => {
             if (currentMessage.trim() !== "" && activeContact) {
-            
                 const newMessage = {
                     messages: [
                         {
@@ -40,7 +39,6 @@
                         }
                     ]
                 };
-            
                 const rawMessage = {
                     suscriberID: activeContact.id,
                     message: currentMessage,
@@ -53,7 +51,7 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(rawMessage),
                     });
-                
+
                     if (!response.ok) throw new Error('Error al guardar el mensaje en post-message');
                 
                     const messageResponse = await fetch(`http://localhost:3001/message/${activeContact.id}`, {
@@ -61,18 +59,16 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(newMessage),
                     });
-                
+
                     if (!messageResponse.ok) throw new Error('Error al guardar el mensaje en message');
-                
+
                     setMessages(prevMessages => [...prevMessages, newMessage]);
                 } catch (error) {
                     console.error('Error al guardar el mensaje: ', error);
                 }
-            
                 setCurrentMessage("");
             }
         };
-
 
         // Manejo del envío de archivos
         const handleFileChage = (e) => {
@@ -163,8 +159,7 @@
         const fetchMessenger = async (activeContact) => {
             try {
                 const response = await fetch(`http://localhost:3001/message/?contactId=${activeContact.id}&chat=messenger`, {
-                    method: 'GET'
-                    ,
+                    method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'
                     }
