@@ -78,65 +78,75 @@
             }
         };
 
-        const imageUploadNube = async()=>{
-            if(!selectedImage || !activeContact){
-                return;
-            }
+        const imageUploadNube = async () => {
+            if (!selectedImage || !activeContact) return;
 
-            try{
+            try {
                 const formData = new FormData();
                 formData.append('file', selectedImage);
-
-                const response = await fetch('http://localhost:3001/image-post-message',{
+            
+                const response = await fetch('http://localhost:3001/image-post-message', {
                     method: 'POST',
-                    body: formData,
-                })
-                if(!response.ok){
-                    throw new Error('Error al subir la imagen a la nube')
-                }
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error('Error al subir la imagen a la nube');
 
                 const data = await response.json();
-                console.log('Respuesta de cloudinary: ', data);
+                console.log('Respuesta de Cloudinary:', data);
 
-                const image = data[0]?.secure_url ||data?.secure_url|| '';
-                if(!image){
-                    throw new Error('No se encontro la URL de la imagen')
-                }
+                const image = data[0]?.secure_url || data?.secure_url || '';
+                console.log('url de la imagen es: ', image);
+                if (!image) throw new Error('No se encontró la URL de la imagen');
 
                 const newMessage = {
-                    messages:[
+                    messages: [
                         {
                             sender: 'Empleado',
                             message: image,
                             idMessageClient: `msg_imageProblem${Date.now()}`
                         }
                     ]
-                }
+                };
 
-                const saveResponse = await fetch(`http://localhost:3001/message/${activeContact.id}`,{
+                // GUARDA EL MENSAJE EN MONGO
+                const saveResponse = await fetch(`http://localhost:3001/message/${activeContact.id}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json'
                     },
+                    body: JSON.stringify({ newMessage })
+                });
+
+                console.log('Respuesta al guardar mensaje:', saveResponse.status);
+                if (!saveResponse.ok) throw new Error('Error al guardar el mensaje');
+
+                // ENVÍA A MANYCHAT
+                const responseManychat = await fetch('http://localhost:3001/post-message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify({
-                        newMessage
+                        suscriberID: activeContact.id,
+                        messages: {
+                            type: 'image',
+                            url: image
+                        },
+                        chat: 'messenger'
                     })
-                })
+                });
 
-                console.log('Respuesta al guardar mensaje: ', saveResponse.status);
-
-                if(!saveResponse.ok){
-                    throw new Error('Error al guardar el mensaje ')
-                }
-
-                const responseManychat = await fetch('http://localhost:3001/post-message',{
-
-                })
-             }catch(error){
-                console.error('Error al ejecutar las apis utilizadas en esta funcion')
+                console.log('Respuesta al enviar a ManyChat:', responseManychat.status);
+                if (!responseManychat.ok) throw new Error('Erro al enviar la imagen');
+            
+                setMessages(prev => [...prev, newMessage]);
+                setSelectedImage(null);
+            
+            } catch (error) {
+                console.error('Error al subir la imagen a la nube: ', error);
             }
-        }
-
+        };
 
         useEffect(()=>{
             const userId = localStorage.getItem('UserId');
@@ -196,7 +206,7 @@
                     [activeContact.id]: activeContact.id !== activeContact.id 
                 }));
 
-                setContacts(prevContacts =>
+                setContacts(prevContacts => 
                     prevContacts.map(contact =>
                         contact.id === activeContact.id
                         ? { ...contact, lastMessage }
@@ -245,12 +255,14 @@
                     estado: dataMany.status,
                 }
 
-                console.log('id es: ', newContact)
+                console.log('id es: ', newContact);
                 setContacts(prevContacts => {
                     const exists = prevContacts.find(contact => contact.id === newContact.id);
+                    
                     if(!exists){
                         return[...prevContacts, newContact];
                     }
+
                     return prevContacts;
                 });
 
