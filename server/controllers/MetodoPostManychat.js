@@ -10,10 +10,18 @@ async function MetodoPostManychat(req, res) {
     }
 
     const isImageUrl = (url) => {
-        return /^https?:\/\/.*\.(jpg|jpeg|png|gif|webp|bmp|svg)(\?.*)?$/.text(url)
-    }
+      if (typeof url !== 'string') return false;
+        
+      return (
+        url.includes('res.cloudinary.com') ||
+        url.includes('scontent.') ||
+        /^https?:\/\/.*\.(jpg|jpeg|png|gif|webp|bmp|svg)(\?.*)?$/.test(url)
+      );
+    };
 
-    const typeMessage = isImageUrl(message? 'image' : 'text');
+
+
+    const typeMessage = isImageUrl(message) ? 'image' : 'text';
 
     if(chat === 'telegram' || chat === 'instagram'){
         try {

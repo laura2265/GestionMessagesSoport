@@ -93,29 +93,36 @@
                 if (!response.ok) throw new Error('Error al subir la imagen a la nube');
 
                 const data = await response.json();
-                console.log('Respuesta de Cloudinary:', data);
+                console.log('Respuesta completa del backend (Cloudinary):', data);
+                
+                if (!data?.data?.secure_url) {
+                    console.error('❌ Formato inesperado de la respuesta:', data);
+                    throw new Error('No se encontró la URL de la imagen');
+                }
 
-                const image = data[0]?.secure_url || data?.secure_url || '';
+                const image = data?.data?.secure_url || '';
                 console.log('url de la imagen es: ', image);
+
                 if (!image) throw new Error('No se encontró la URL de la imagen');
 
+                
                 const newMessage = {
-                    messages: [
-                        {
-                            sender: 'Empleado',
-                            message: image,
-                            idMessageClient: `msg_imageProblem${Date.now()}`
-                        }
-                    ]
+                  messages: [
+                    {
+                      sender: 'Empleado',
+                      message: image,
+                      idMessageClient: `msg_imageProblem${Date.now()}`
+                    }
+                  ]
                 };
 
                 // GUARDA EL MENSAJE EN MONGO
                 const saveResponse = await fetch(`http://localhost:3001/message/${activeContact.id}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ newMessage })
+                  method: 'PUT',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify(newMessage) 
                 });
 
                 console.log('Respuesta al guardar mensaje:', saveResponse.status);
@@ -139,7 +146,7 @@
 
                 console.log('Respuesta al enviar a ManyChat:', responseManychat.status);
                 if (!responseManychat.ok) throw new Error('Erro al enviar la imagen');
-            
+             
                 setMessages(prev => [...prev, newMessage]);
                 setSelectedImage(null);
             
@@ -271,99 +278,99 @@
             }
         };
 
-        useEffect(() => {
-            const fetchEmple = async () => {
-                try {
-                    const EmpleId = localStorage.getItem('UserId');
-                    const responseEmple = await fetch(`http://localhost:3001/asignaciones/`, {
-                        method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        }
-                    });
-
-                    if (!responseEmple.ok) {
-                        throw new Error('Error al momento de consultar los datos del empleado');
-                    }
-
-                    const resultEmple = await responseEmple.json();
-                    const dataEmple = resultEmple.data.docs;
-
-                    console.log(dataEmple);
-
-                    const assignedEmple = dataEmple.filter((emple) => emple.idEmple === EmpleId);
-
-                    if (assignedEmple && assignedEmple.length > 0) {
-                        for (let i = 0; i < assignedEmple.length; i++) {
-                            const user = assignedEmple[i];
-                            const chatId = user.cahtId;
-                            const nameEmple = user.nombreEmple;
-
-                            if(!nameEmple){
-                                console.log('Este campo esta vacio por favor registre el empleado como empleado asignado antes de realizar la consulta')
+            useEffect(() => {
+                const fetchEmple = async () => {
+                    try {
+                        const EmpleId = localStorage.getItem('UserId');
+                        const responseEmple = await fetch(`http://localhost:3001/asignaciones/`, {
+                            method: 'GET',
+                            headers: {
+                                'Content-Type': 'application/json',
                             }
+                        });
 
-                            console.log('el nombre del empleado asignado es: ', nameEmple);
+                        if (!responseEmple.ok) {
+                            throw new Error('Error al momento de consultar los datos del empleado');
+                        }
 
-                            setNombreEmpleado(nameEmple);
-                            console.log('El ID del chat es:', chatId);
+                        const resultEmple = await responseEmple.json();
+                        const dataEmple = resultEmple.data.docs;
 
-                            if (user.chatName === 'ChatBotMessenger') {
-                                await fetchManychat(chatId);
+                        console.log(dataEmple);
 
-                                const response = await fetch(`http://localhost:3001/message/?contactId=${activeContact.id}&chat=messenger`, {
-                                    method: 'GET',
-                                    headers: {
-                                        'Content-Type': 'application/json'
-                                    }
-                                });
+                        const assignedEmple = dataEmple.filter((emple) => emple.idEmple === EmpleId);
 
-                                if (!response.ok) {
-                                    throw new Error('Error al obtener los mensajes del contacto');
+                        if (assignedEmple && assignedEmple.length > 0) {
+                            for (let i = 0; i < assignedEmple.length; i++) {
+                                const user = assignedEmple[i];
+                                const chatId = user.cahtId;
+                                const nameEmple = user.nombreEmple;
+
+                                if(!nameEmple){
+                                    console.log('Este campo esta vacio por favor registre el empleado como empleado asignado antes de realizar la consulta')
                                 }
 
-                                const result = await response.json();
-                                const data = result.data.docs;
+                                console.log('el nombre del empleado asignado es: ', nameEmple);
 
-                                const exists = data.some(msg => msg.contactId === user.chatId && msg.message === user.Descripcion);
+                                setNombreEmpleado(nameEmple);
+                                console.log('El ID del chat es:', chatId);
 
-                                if (!exists) {
-                                    const newMessage = {
-                                        contactId: chatId,
-                                        usuario:{
-                                            nombre: user.nombreClient,
-                                        },
-                                        messages:[
-                                            {
-                                                sender: 'Cliente',
-                                                message: user.Descripcion,
-                                                idMessageClient: `msg_MessageProblem-${user.Descripcion.length}`,
-                                            }
-                                        ],
-                                        chat: 'messenger',
-                                    };
+                                if (user.chatName === 'ChatBotMessenger') {
+                                    await fetchManychat(chatId);
 
-                                    const messageResponse = await fetch('http://localhost:3001/message/', {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify(newMessage),
+                                    const response = await fetch(`http://localhost:3001/message/?contactId=${activeContact.id}&chat=messenger`, {
+                                        method: 'GET',
+                                        headers: {
+                                            'Content-Type': 'application/json'
+                                        }
                                     });
 
-                                    if (!messageResponse.ok) throw new Error('Error al guardar el mensaje en message');
-                                    console.log('Mensaje guardado correctamente.');
-                                } else {
-                                    console.log('El mensaje ya existe, no se enviará.');
+                                    if (!response.ok) {
+                                        throw new Error('Error al obtener los mensajes del contacto');
+                                    }
+
+                                    const result = await response.json();
+                                    const data = result.data.docs;
+
+                                    const exists = data.some(msg => msg.contactId === user.chatId && msg.message === user.Descripcion);
+
+                                    if (!exists) {
+                                        const newMessage = {
+                                            contactId: chatId,
+                                            usuario:{
+                                                nombre: user.nombreClient,
+                                            },
+                                            messages:[
+                                                {
+                                                    sender: 'Cliente',
+                                                    message: user.Descripcion,
+                                                    idMessageClient: `msg_MessageProblem-${user.Descripcion.length}`,
+                                                }
+                                            ],
+                                            chat: 'messenger',
+                                        }; 
+
+                                        const messageResponse = await fetch('http://localhost:3001/message/', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify(newMessage),
+                                        });
+
+                                        if (!messageResponse.ok) throw new Error('Error al guardar el mensaje en message');
+                                        console.log('Mensaje guardado correctamente.');
+                                    } else {
+                                        console.log('El mensaje ya existe, no se enviará.');
+                                    }
                                 }
                             }
                         }
-                    }
 
-                } catch (error) {
-                    console.error('Error al momento de consultar los datos de la API:', error);
-                }
-            };
-            fetchEmple();
-        }, []);
+                    } catch (error) {
+                        console.error('Error al momento de consultar los datos de la API:', error);
+                    }
+                };
+                fetchEmple();
+            }, []);
 
         useEffect(() => {
             if (!activeContact) return;
@@ -464,10 +471,10 @@
                                                 const mensaje = Array.isArray(message.message) ? message.message[0] : message.message ?? '';
                                                 const imgUrl = typeof mensaje === 'string' && mensaje.includes('scontent.xx.fbcdn.net');
                                                 const audioUrl = typeof mensaje === 'string' && mensaje.includes('cdn.fbsbx');
-                                                                                        
+                        
                                                 return (
                                                     <div key={index} className={`message ${message.sender === 'Empleado' ? 'sent' : 'received'}`}>
-                                                        {imgUrl || mensaje.startsWith('https://scontent.xx.fbcdn.net') ? (
+                                                        {imgUrl || mensaje.startsWith('https://scontent.xx.fbcdn.net') || mensaje.startsWith('https://res.cloudinary.com') ? (
                                                             <>
                                                                 <img src={mensaje} style={{ maxWidth: '200px', borderRadius: '10px' }} /><br/>
                                                             </>
