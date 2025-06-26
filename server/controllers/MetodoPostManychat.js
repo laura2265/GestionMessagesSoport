@@ -2,27 +2,47 @@ import { manyChatToken } from '../config/config.js';
 
 async function MetodoPostManychat(req, res) {
     const { suscriberID, message, chat } = req.body;
-
+ 
     let bodyContent;
 
     if (!suscriberID || !message ||! chat) {
         return res.status(400).json({ error: 'Faltan parametros requeridos (suscriberID, message)' });
     }
 
-    const isImageUrl = (url) => {
-      if (typeof url !== 'string') return false;
-        
-      return (
-        url.includes('res.cloudinary.com') ||
-        url.includes('scontent.') ||
-        /^https?:\/\/.*\.(jpg|jpeg|png|gif|webp|bmp|svg)(\?.*)?$/.test(url)
-      );
-    };
+    
+    if (typeof message !== 'string') return null;
 
+    if(message.includes('https://res.cloudinary.com/')){
+        if(chat === 'telegram' || chat === 'instagram'){
+            try{
+                const myHeaders = {
+                    accept: 'application/json',
+                    Authorization: `Bearer ${manyChatToken}`,
+                    'Content-Type': 'application/json',
+                };
 
-
-    const typeMessage = isImageUrl(message) ? 'image' : 'text';
-
+                bodyContent = JSON.stringify({
+                    "subscriber_id": suscriberID,
+                    "data": {
+                      "version": "v2",
+                      "content": {
+                        "type": chat,
+                        "messages": [
+                          {
+                            "type": "image",
+                            "url": message,
+                          }
+                        ]
+                      }
+                    },
+                    "message_tag": "ACCOUNT_UPDATE"
+                });
+                const responseImageMany = await fetch('https://api.manychat.com/fb/sending/sendContent')
+            }catch(error){
+                console.error('Error al enviar la imagen correctamente: ', error)
+            }
+        }
+    }
     if(chat === 'telegram' || chat === 'instagram'){
         try {
             const myHeaders = {
@@ -34,21 +54,17 @@ async function MetodoPostManychat(req, res) {
             bodyContent = JSON.stringify({
                 "subscriber_id": suscriberID,
                 "data": {
-                    "version": 'v2',
-                    "content": {
-                        "type": chat,
-                        "messages": [
-                            typeMessage === 'image'?
-                            {
-                                "type": 'image',
-                                "url": message
-                            }:{
-                                "type": "text",
-                                "text": message
-                            }
-                        ],
-                    },
+                  "version": "v2",
+                  "content": {
+                    "type": chat,
+                    "messages": [
+                      {
+                        isImage
+                      }
+                    ]
+                  }
                 },
+                  "message_tag": "ACCOUNT_UPDATE"
             });
 
             const response = await fetch('https://api.manychat.com/fb/sending/sendContent', {
@@ -83,18 +99,14 @@ async function MetodoPostManychat(req, res) {
                   "version": "v2",
                   "content": {
                     "messages": [
-                        typeMessage === 'image'?
-                        {
-                            "type": 'image',
-                            "url": message
-                        }:{
-                            "type": "text",
-                            "text": message
-                        }
+                      {
+                        isImage
+                      }
                     ]
                   }
                 },
-                "message_tag": "ACCOUNT_UPDATE"
+                  "message_tag": "ACCOUNT_UPDATE"
+            
               });
 
               const myHeaders = new Headers();

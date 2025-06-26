@@ -79,81 +79,68 @@
         };
 
         const imageUploadNube = async () => {
-            if (!selectedImage || !activeContact) return;
+  if (!selectedImage || !activeContact) return;
 
-            try {
-                const formData = new FormData();
-                formData.append('file', selectedImage);
-            
-                const response = await fetch('http://localhost:3001/image-post-message', {
-                    method: 'POST',
-                    body: formData
-                });
+  try {
+    const formData = new FormData();
+    formData.append('file', selectedImage);
 
-                if (!response.ok) throw new Error('Error al subir la imagen a la nube');
+    const response = await fetch('http://localhost:3001/image-post-message', {
+      method: 'POST',
+      body: formData
+    });
 
-                const data = await response.json();
-                console.log('Respuesta completa del backend (Cloudinary):', data);
-                
-                if (!data?.data?.secure_url) {
-                    console.error('❌ Formato inesperado de la respuesta:', data);
-                    throw new Error('No se encontró la URL de la imagen');
-                }
+    if (!response.ok) throw new Error('Error al subir la imagen a la nube');
 
-                const image = data?.data?.secure_url || '';
-                console.log('url de la imagen es: ', image);
+    const data = await response.json();
+    const image = data?.data?.secure_url || '';
 
-                if (!image) throw new Error('No se encontró la URL de la imagen');
+    if (!image) throw new Error('No se encontró la URL de la imagen');
 
-                
-                const newMessage = {
-                  messages: [
-                    {
-                      sender: 'Empleado',
-                      message: image,
-                      idMessageClient: `msg_imageProblem${Date.now()}`
-                    }
-                  ]
-                };
+    // Armar mensaje para Mongo
+    const newMessage = {
+      messages: [
+        {
+          sender: 'Empleado',
+          message: image,
+          contexto: currentMessage, 
+          idMessageClient: `msg_imageWithText_${Date.now()}`
+        }
+      ]
+    };
 
-                // GUARDA EL MENSAJE EN MONGO
-                const saveResponse = await fetch(`http://localhost:3001/message/${activeContact.id}`, {
-                  method: 'PUT',
-                  headers: {
-                    'Content-Type': 'application/json'
-                  },
-                  body: JSON.stringify(newMessage) 
-                });
+    // Guardar en Mongo
+    const saveResponse = await fetch(`http://localhost:3001/message/${activeContact.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newMessage)
+    });
 
-                console.log('Respuesta al guardar mensaje:', saveResponse.status);
-                if (!saveResponse.ok) throw new Error('Error al guardar el mensaje');
+    if (!saveResponse.ok) throw new Error('Error al guardar el mensaje');
 
-                // ENVÍA A MANYCHAT
-                const responseManychat = await fetch('http://localhost:3001/post-message', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        suscriberID: activeContact.id,
-                        messages: {
-                            type: 'image',
-                            url: image
-                        },
-                        chat: 'messenger'
-                    })
-                });
+    // Enviar a ManyChat (imagen + texto)
+    const responseManychat = await fetch('http://localhost:3001/post-message', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        suscriberID: activeContact.id,
+        message: image,
+        contexto: currentMessage,
+        chat: 'messenger'
+      })
+    });
 
-                console.log('Respuesta al enviar a ManyChat:', responseManychat.status);
-                if (!responseManychat.ok) throw new Error('Erro al enviar la imagen');
-             
-                setMessages(prev => [...prev, newMessage]);
-                setSelectedImage(null);
-            
-            } catch (error) {
-                console.error('Error al subir la imagen a la nube: ', error);
-            }
-        };
+    if (!responseManychat.ok) throw new Error('Error al enviar a ManyChat');
+
+    setMessages(prev => [...prev, newMessage]);
+    setSelectedImage(null);
+    setCurrentMessage(""); // limpia el texto
+
+  } catch (error) {
+    console.error('Error al subir la imagen a la nube: ', error);
+  }
+};
+
 
         useEffect(()=>{
             const userId = localStorage.getItem('UserId');
@@ -207,6 +194,7 @@
 
                 setMessages(mensajesOrdenados);
                 const lastMessage = mensajesOrdenados[mensajesOrdenados.length - 1];
+                const lastSender = lastMessage?.sender === 'Cliente'? "Cliente" : "Empleado"
 
                 setUnreadMessages(prev => ({
                     ...prev,
@@ -216,7 +204,7 @@
                 setContacts(prevContacts => 
                     prevContacts.map(contact =>
                         contact.id === activeContact.id
-                        ? { ...contact, lastMessage }
+                        ? { ...contact, lastMessage,  lastSender   }
                         : contact
                     )
                 );
@@ -229,7 +217,7 @@
         const groupMessagesByDate = (messages) => {
             return messages.reduce((acc, message) => {
                 const dateKey = new Date(message.updatedAt).toLocaleDateString('es-ES');
-                
+
                 if (!acc[dateKey]) {
                     acc[dateKey] = [];
                 }
@@ -278,99 +266,85 @@
             }
         };
 
-            useEffect(() => {
-                const fetchEmple = async () => {
-                    try {
-                        const EmpleId = localStorage.getItem('UserId');
-                        const responseEmple = await fetch(`http://localhost:3001/asignaciones/`, {
-                            method: 'GET',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            }
-                        });
-
-                        if (!responseEmple.ok) {
-                            throw new Error('Error al momento de consultar los datos del empleado');
+        useEffect(() => {
+            const fetchEmple = async () => {
+                try {
+                    const EmpleId = localStorage.getItem('UserId');
+                    const responseEmple = await fetch(`http://localhost:3001/asignaciones/`, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
                         }
-
-                        const resultEmple = await responseEmple.json();
-                        const dataEmple = resultEmple.data.docs;
-
-                        console.log(dataEmple);
-
-                        const assignedEmple = dataEmple.filter((emple) => emple.idEmple === EmpleId);
-
-                        if (assignedEmple && assignedEmple.length > 0) {
-                            for (let i = 0; i < assignedEmple.length; i++) {
-                                const user = assignedEmple[i];
-                                const chatId = user.cahtId;
-                                const nameEmple = user.nombreEmple;
-
-                                if(!nameEmple){
-                                    console.log('Este campo esta vacio por favor registre el empleado como empleado asignado antes de realizar la consulta')
-                                }
-
-                                console.log('el nombre del empleado asignado es: ', nameEmple);
-
-                                setNombreEmpleado(nameEmple);
-                                console.log('El ID del chat es:', chatId);
-
-                                if (user.chatName === 'ChatBotMessenger') {
-                                    await fetchManychat(chatId);
-
-                                    const response = await fetch(`http://localhost:3001/message/?contactId=${activeContact.id}&chat=messenger`, {
-                                        method: 'GET',
-                                        headers: {
-                                            'Content-Type': 'application/json'
-                                        }
-                                    });
-
-                                    if (!response.ok) {
-                                        throw new Error('Error al obtener los mensajes del contacto');
-                                    }
-
-                                    const result = await response.json();
-                                    const data = result.data.docs;
-
-                                    const exists = data.some(msg => msg.contactId === user.chatId && msg.message === user.Descripcion);
-
-                                    if (!exists) {
-                                        const newMessage = {
-                                            contactId: chatId,
-                                            usuario:{
-                                                nombre: user.nombreClient,
-                                            },
-                                            messages:[
-                                                {
-                                                    sender: 'Cliente',
-                                                    message: user.Descripcion,
-                                                    idMessageClient: `msg_MessageProblem-${user.Descripcion.length}`,
-                                                }
-                                            ],
-                                            chat: 'messenger',
-                                        }; 
-
-                                        const messageResponse = await fetch('http://localhost:3001/message/', {
-                                            method: 'POST',
-                                            headers: { 'Content-Type': 'application/json' },
-                                            body: JSON.stringify(newMessage),
-                                        });
-
-                                        if (!messageResponse.ok) throw new Error('Error al guardar el mensaje en message');
-                                        console.log('Mensaje guardado correctamente.');
-                                    } else {
-                                        console.log('El mensaje ya existe, no se enviará.');
-                                    }
-                                }
-                            }
-                        }
-
-                    } catch (error) {
-                        console.error('Error al momento de consultar los datos de la API:', error);
+                    });
+                    if (!responseEmple.ok) {
+                        throw new Error('Error al momento de consultar los datos del empleado');
                     }
-                };
-                fetchEmple();
-            }, []);
+                    const resultEmple = await responseEmple.json();
+                    const dataEmple = resultEmple.data.docs;
+                    console.log(dataEmple);
+                    const assignedEmple = dataEmple.filter((emple) => emple.idEmple === EmpleId);
+                    if (assignedEmple && assignedEmple.length > 0) {
+                        for (let i = 0; i < assignedEmple.length; i++) {
+                            const user = assignedEmple[i];
+                            const chatId = user.cahtId;
+                            const nameEmple = user.nombreEmple;
+                            if(!nameEmple){
+                                console.log('Este campo esta vacio por favor registre el empleado como empleado asignado antes de realizar la consulta')
+                            }
+                            console.log('el nombre del empleado asignado es: ', nameEmple);
+                            setNombreEmpleado(nameEmple);
+                            console.log('El ID del chat es:', chatId);
+                            if (user.chatName === 'ChatBotMessenger') {
+                                await fetchManychat(chatId);
+                                const response = await fetch(`http://localhost:3001/message/?contactId=${activeContact.id}&chat=messenger`, {
+                                    method: 'GET',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    }
+                                });
+
+                                if (!response.ok) {
+                                    throw new Error('Error al obtener los mensajes del contacto');
+                                }
+
+                                const result = await response.json();
+                                const data = result.data.docs;
+                                const exists = data.some(msg => msg.contactId === user.chatId && msg.message === user.Descripcion);
+                                if (!exists) {
+                                    const newMessage = {
+                                        contactId: chatId,
+                                        usuario:{
+                                            nombre: user.nombreClient,
+                                        },
+                                        messages:[
+                                            {
+                                                sender: 'Cliente',
+                                                message: user.Descripcion,
+                                                idMessageClient: `msg_MessageProblem-${user.Descripcion.length}`,
+                                            }
+                                        ],
+                                        chat: 'messenger',
+                                    };
+
+                                    const messageResponse = await fetch('http://localhost:3001/message/', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify(newMessage),
+                                    });
+                                    if (!messageResponse.ok) throw new Error('Error al guardar el mensaje en message');
+                                    console.log('Mensaje guardado correctamente.');
+                                } else {
+                                    console.log('El mensaje ya existe, no se enviará.');
+                                }
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error al momento de consultar los datos de la API:', error);
+                }
+            };
+            fetchEmple();
+        }, []);
 
         useEffect(() => {
             if (!activeContact) return;
@@ -432,7 +406,7 @@
                                     <div className="contact-info">
                                         <p>{contact.nombre}</p>
                                         <p className="lastMessage">
-                                            {contact.lastMessage ? contact.lastMessage.message : ''}
+                                           {contact.lastSender}: {contact.lastMessage ? contact.lastMessage.message : ''}
                                         </p>
                                     </div>
                                     {unreadMessages[contact.id] && <span className="unread-dot"></span>}
@@ -527,20 +501,8 @@
                                         onKeyPress={handleKeyPress}
                                     />
 
-                                    <input
-                                        type="file"
-                                        ref={fileInputRef}
-                                        onChange={handleFileChage}
-                                        accept="audio/*"
-                                        style={{ display: "none" }}
-                                    />
-
-                                    <button onClick={() => fileInputRef.current.click()} className="upload-btn">
-                                        <AiFillAudio size={22} color="#333" />
-                                    </button>
-
                                     <button onClick={handleSendMessage}>
-                                        <VscSend />
+                                        <VscSend  className="icon1"/>
                                     </button>
                                 </div>
                             </>

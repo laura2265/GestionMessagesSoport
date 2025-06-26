@@ -87,5 +87,11 @@
     "Motivo": null,
     "contactado": true,
     "processedAt": "2025-06-18T13:15:11.055Z"
+  },
+  {
+    "id": "8486345801395814",
+    "Motivo": "OTRO",
+    "message": null,
+    "processedAt": "2025-06-26T16:48:25.050Z"
   }
 ]
