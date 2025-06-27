@@ -79,67 +79,66 @@
         };
 
         const imageUploadNube = async () => {
-  if (!selectedImage || !activeContact) return;
+          if (!selectedImage || !activeContact) return;
 
-  try {
-    const formData = new FormData();
-    formData.append('file', selectedImage);
-
-    const response = await fetch('http://localhost:3001/image-post-message', {
-      method: 'POST',
-      body: formData
-    });
-
-    if (!response.ok) throw new Error('Error al subir la imagen a la nube');
-
-    const data = await response.json();
-    const image = data?.data?.secure_url || '';
-
-    if (!image) throw new Error('No se encontró la URL de la imagen');
-
-    // Armar mensaje para Mongo
-    const newMessage = {
-      messages: [
-        {
-          sender: 'Empleado',
-          message: image,
-          contexto: currentMessage, 
-          idMessageClient: `msg_imageWithText_${Date.now()}`
-        }
-      ]
-    };
-
-    // Guardar en Mongo
-    const saveResponse = await fetch(`http://localhost:3001/message/${activeContact.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newMessage)
-    });
-
-    if (!saveResponse.ok) throw new Error('Error al guardar el mensaje');
-
-    // Enviar a ManyChat (imagen + texto)
-    const responseManychat = await fetch('http://localhost:3001/post-message', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        suscriberID: activeContact.id,
-        message: image,
-        contexto: currentMessage,
-        chat: 'messenger'
-      })
-    });
-
-    if (!responseManychat.ok) throw new Error('Error al enviar a ManyChat');
-
-    setMessages(prev => [...prev, newMessage]);
-    setSelectedImage(null);
-    setCurrentMessage(""); // limpia el texto
-
-  } catch (error) {
-    console.error('Error al subir la imagen a la nube: ', error);
-  }
-};
+          try {
+            const formData = new FormData();
+            formData.append('file', selectedImage);
+        
+            const response = await fetch('http://localhost:3001/image-post-message', {
+              method: 'POST',
+              body: formData
+            });
+        
+            if (!response.ok) throw new Error('Error al subir la imagen a la nube');
+        
+            const data = await response.json();
+            const image = data?.data?.secure_url || '';
+        
+            if (!image) throw new Error('No se encontró la URL de la imagen');
+        
+            // Armar mensaje para Mongo
+            const newMessage = {
+              messages: [
+                {
+                  sender: 'Empleado',
+                  message: image,
+                  contexto: currentMessage, 
+                  idMessageClient: `msg_imageWithText_${Date.now()}`
+                }
+              ]
+            };
+        
+            // Guardar en Mongo
+            const saveResponse = await fetch(`http://localhost:3001/message/${activeContact.id}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(newMessage)
+            });
+        
+            if (!saveResponse.ok) throw new Error('Error al guardar el mensaje');
+        
+            const responseManychat = await fetch('http://localhost:3001/post-message', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                suscriberID: activeContact.id,
+                message: image,
+                contexto: currentMessage,
+                chat: 'messenger'
+              })
+            });
+        
+            if (!responseManychat.ok) throw new Error('Error al enviar a ManyChat');
+        
+            setMessages(prev => [...prev, newMessage]);
+            setSelectedImage(null);
+            setCurrentMessage("");
+        
+          } catch (error) {
+            console.error('Error al subir la imagen a la nube: ', error);
+          }
+        };
 
 
         useEffect(()=>{

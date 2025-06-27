@@ -9,40 +9,6 @@ async function MetodoPostManychat(req, res) {
         return res.status(400).json({ error: 'Faltan parametros requeridos (suscriberID, message)' });
     }
 
-    
-    if (typeof message !== 'string') return null;
-
-    if(message.includes('https://res.cloudinary.com/')){
-        if(chat === 'telegram' || chat === 'instagram'){
-            try{
-                const myHeaders = {
-                    accept: 'application/json',
-                    Authorization: `Bearer ${manyChatToken}`,
-                    'Content-Type': 'application/json',
-                };
-
-                bodyContent = JSON.stringify({
-                    "subscriber_id": suscriberID,
-                    "data": {
-                      "version": "v2",
-                      "content": {
-                        "type": chat,
-                        "messages": [
-                          {
-                            "type": "image",
-                            "url": message,
-                          }
-                        ]
-                      }
-                    },
-                    "message_tag": "ACCOUNT_UPDATE"
-                });
-                const responseImageMany = await fetch('https://api.manychat.com/fb/sending/sendContent')
-            }catch(error){
-                console.error('Error al enviar la imagen correctamente: ', error)
-            }
-        }
-    }
     if(chat === 'telegram' || chat === 'instagram'){
         try {
             const myHeaders = {
@@ -59,7 +25,8 @@ async function MetodoPostManychat(req, res) {
                     "type": chat,
                     "messages": [
                       {
-                        isImage
+                        "type": 'text',
+                        "text": message
                       }
                     ]
                   }
@@ -100,13 +67,13 @@ async function MetodoPostManychat(req, res) {
                   "content": {
                     "messages": [
                       {
-                        isImage
+                        "type": "text",
+                        "text": message
                       }
                     ]
                   }
                 },
                   "message_tag": "ACCOUNT_UPDATE"
-            
               });
 
               const myHeaders = new Headers();
