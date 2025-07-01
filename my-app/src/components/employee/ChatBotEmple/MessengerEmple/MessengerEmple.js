@@ -108,7 +108,7 @@
                 }
               ]
             };
-        
+
             // Guardar en Mongo
             const saveResponse = await fetch(`http://localhost:3001/message/${activeContact.id}`, {
               method: 'PUT',
@@ -275,9 +275,11 @@
                             'Content-Type': 'application/json',
                         }
                     });
+
                     if (!responseEmple.ok) {
                         throw new Error('Error al momento de consultar los datos del empleado');
                     }
+
                     const resultEmple = await responseEmple.json();
                     const dataEmple = resultEmple.data.docs;
                     console.log(dataEmple);
@@ -396,7 +398,7 @@
                                         );
 
                                         setUnreadMessages(prev => ({
-                                            ...prev,
+                                            ...prev, 
                                             [contact.id]: false
                                         }));
                                     }}
