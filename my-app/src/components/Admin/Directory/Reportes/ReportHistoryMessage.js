@@ -7,7 +7,8 @@ import ModoClaro from '../../../../assets/img/soleado.png';
 import { useRef } from "react";
 import jsPDF from "jspdf";
 import { useNavigate } from "react-router-dom";
-import React from 'react';
+import { resolve } from "path";
+
 
 function ReportHistoryMessage(){
     const {theme, toggleTheme} = useContext(ThemeContext);
@@ -68,26 +69,31 @@ function ReportHistoryMessage(){
     },[navigate]);
 
     const fetchMessage = async (chatId) => {
-        try {
-            const response = await fetch(`http://localhost:3001/message`, {
+        try{
+            const response = await fetch(`http://localhost:3001/message`,{
                 method: 'GET',
-                headers: { 'Content-Type': 'application/json' }
-            });
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
 
-            if (!response.ok) {
-                throw new Error('Error al momento de consultar los mensajes');
+            if(!response.ok){
+                throw new Error('Error al consultar los datos')
             }
 
             const dataMessage = await response.json();
             const resultsMessage = dataMessage.data.docs;
 
-            const messageId = resultsMessage.filter((message) => message.contactId === chatId);
+            const conversacion = resultsMessage.find((conv)=> conv.contactId === chatId)
 
-            return Array.isArray(messageId) ? messageId : [];
+            if(!conversacion){
+                return [];
+            }
 
-        } catch (error) {
-            console.error('Error al consultar los mensajes en la API:', error);
-            return [];
+            const mensajesOrdenados = conversacion.messages.sort((a,b)=> new  Date(a.timeStamp) - Date(b.timeStamp))
+            return mensajesOrdenados;
+        }catch(error){
+            console.error('Error al moemnto de consultar los datos de la api:', error)
         }
     };
 
@@ -104,7 +110,7 @@ function ReportHistoryMessage(){
             const dataEmple = resultEmple.data.docs;
 
             const empleadosConDatos = await Promise.all(dataEmple.map(async (user) => {
-                const idEmple = user.idEmple;   
+                const idEmple = user.idEmple;
                 const chatId = user.cahtId;
                 const chatContact = user.chatName;
                 const FechaRegister = user.createdAt;
@@ -114,7 +120,7 @@ function ReportHistoryMessage(){
                 const message = await fetchMessage(chatId);
 
                 return { idEmple, chatId, chatContact,FechaRegister, userData, manychatData, message };
-            }));  
+            }));
 
             setEmpleAsociado(empleadosConDatos);
             setShowPreview(false);
@@ -138,13 +144,12 @@ function ReportHistoryMessage(){
             return dataUser.filter((user) => user._id === idEmple) || null;
         } catch (error) {
             console.error("Error al consultar usuario:", error);
-            return null;
+            return null;    
         }
     };
 
     const fetchManychat = async (chatId) => {
         try {
-
             const responseMany = await fetch(`http://localhost:3001/manychat/${chatId}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
@@ -166,14 +171,29 @@ function ReportHistoryMessage(){
             if (!acc[date]) {
                 acc[date] = [];
             }
+
             acc[date].push(message);
             acc[date].sort((a, b) => new Date(a.updatedAt) - new Date(b.updatedAt));
             return acc;
         }, {});
     }
 
-    const generateReport = () => {
+    const esURL = (texto) => {
+        const regex = /https?:\/\/[^\s]+/;
+        return regex.test(texto);
+    };
+    const loadImageAsBase64 = async (url) => {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    };
 
+    const generateReport = () => {
         if (empleAsociado.length === 0) {
             alert('No hay datos para generar el reporte.');
             return;
@@ -184,34 +204,19 @@ function ReportHistoryMessage(){
             unit: "mm",
             format: 'a4'
         });
-    
+
         const marginLeft = 15;
         const marginTop = 25;
         const pageHeight = doc.internal.pageSize.height;
         const lineHeight = 10;
         let yOffset = marginTop;
-        const loadImageAsBase64 = async (url) => {
-            const response = await fetch(url);
-            const blob = await response.blob();
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result);
-                reader.onerror = reject;
-                reader.readAsDataURL(blob);
-            });
-        };
 
         const addHeader = () => {
-            doc.setFontSize(18);
-            const logBae64 = loadImageAsBase64()
-            doc.addImage(logBae64, 'PNG', marginLeft, yOffset, 40, 40);
-            yOffset += 50;
-    
             doc.setFontSize(12);
             doc.text('Reporte de Empleados Asociados', marginLeft, yOffset);
             yOffset += 10;
         }
-    
+
         const addNewPageIfNeeded = () => {
             if (yOffset + lineHeight > pageHeight) {
                 doc.addPage();
@@ -224,7 +229,7 @@ function ReportHistoryMessage(){
 
         empleAsociado.forEach((emple, index) => {
             addNewPageIfNeeded();
-    
+
             doc.setFontSize(14);
             doc.setFont("helvetica", "bold");
             doc.text(`Empleado:`, 14, yOffset);
@@ -232,42 +237,42 @@ function ReportHistoryMessage(){
             doc.setFontSize(12);
             doc.setFont("helvetica", "normal");
             doc.text(`${emple.userData[0].name} (${emple.userData[0].email})`, 40, yOffset);
-    
+
             yOffset += lineHeight;
-    
+
             doc.setFont("helvetica", "normal");
             doc.setFontSize(12);
             doc.text(`Atendio al siguiente cliente:`, 24, yOffset);
             yOffset += lineHeight;
-    
+
             doc.setFont("helvetica", "bold");
             doc.text(`Cliente:`, 35, yOffset);
             doc.setFont("helvetica", "normal");
             doc.text(`${emple.manychatData.name}`, 55, yOffset);
             yOffset += lineHeight;
-    
+
             doc.setFont("helvetica", "bold");
             doc.text(`Chat ID: `, 35, yOffset);
             doc.setFont("helvetica", "normal");
             doc.text(`${emple.chatId}`, 55, yOffset);
             yOffset += lineHeight;
-    
+
             doc.setFont("helvetica", "bold");
             doc.text(`Fecha de contacto:`, 35, yOffset);
             doc.setFont("helvetica", "normal");
             doc.text(`${new Date(emple.FechaRegister).toLocaleDateString()}`, 75, yOffset);
             yOffset += lineHeight;
-    
+
             doc.setFont("helvetica", "bold");
             doc.text("Chat: ", 35, yOffset);
             doc.setFont("helvetica", "normal");
             doc.text(`${emple.chatContact}`, 47, yOffset);
             yOffset += lineHeight;
-    
+
             doc.setFont("helvetica", "bold");
             doc.text('Mensajes:', 44, yOffset);
             yOffset += lineHeight;
-    
+
             const groupedMessages = groupMessagesByDate(emple.message);
     
             if (Object.keys(groupedMessages).length === 0) {
@@ -280,18 +285,21 @@ function ReportHistoryMessage(){
                     doc.setFont("helvetica", "bold");
                     doc.text(date, 50, yOffset);
                     yOffset += lineHeight;
-    
+
                     messagesOnDate.map((message) => {
                         addNewPageIfNeeded();
                         doc.setFontSize(12);
                         doc.setFont("helvetica", "normal");
-    
+
                         const senderText = message.sender === 'Cliente' ? 'Cliente: ' : 'Empleado: ';
                         const distancia = message.sender;
+
+                        const mensajeMostrar = (message.message)?'imagen':message.message
+
                         doc.setFont("helvetica", "bold");
                         doc.text(`•  ${senderText}`, 54, yOffset);
                         doc.setFont("helvetica", "normal");
-    
+
                         doc.text(`${message.message} ${new Date(message.updatedAt).toLocaleString([], {hour: '2-digit', minute: '2-digit'})}`, distancia === 'Cliente'? 75: 80, yOffset);
                         yOffset += lineHeight;
                     });
@@ -299,10 +307,11 @@ function ReportHistoryMessage(){
             }
         });
     
-        doc.save('Reporte_Empleados_Asociados.pdf');
+        const pdfBlob = doc.output('blob');
+        const url = URL.createObjectURL(pdfBlob);
+        setPdfUrl(url); 
+        setShowPreview(true);
     }
-    
-    
 
     return(
         <>
@@ -352,7 +361,7 @@ function ReportHistoryMessage(){
                             {showPreview && pdfUrl &&(
                                 <div className="pdf-preview">
                                     <h2>Vista Previa Del Reporte</h2>
-                                    <iframe ref={iframeRef} width="100%" height="500px"></iframe>
+                                    <iframe ref={iframeRef} src={pdfUrl} width="100%" height="500px" />
                                     <a href={pdfUrl} download="Reporte_Empleado_Asignado.pdf" className="download-btn" >Descargar PDF</a>
                                 </div>
                             )}

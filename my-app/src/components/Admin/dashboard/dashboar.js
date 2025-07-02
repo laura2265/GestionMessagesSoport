@@ -40,23 +40,23 @@ function Dashboard() {
         img3dMujer2,
         img3dMujer3,
     ];
-    
+
     const [selectedIndex, setSelectedIndex] = useState(0);
 
     const handleAvatarClick = () => {
         const nextIndex = (selectedIndex + 1) % avatars.length;
         setSelectedIndex(nextIndex);
-      };
+    };
 
-    const navigate = useNavigate()
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetch('http://localhost:3001/api')
             .then(async response => {
                 if (!response.ok) throw new Error('Error al consultar los datos de esta API');
                 const result = await response.json();
-                setData(result)
-                console.log('datos: ', result)
+                setData(result);
+                console.log('datos: ', result);
                 const messageCount = result.reduce((acc, item) => {
 
                     if (item.Message) {
@@ -86,7 +86,6 @@ function Dashboard() {
                 console.log("Elementos que cumplen la condición:", itemsNoFunciono);
                 console.log("Cantidad de 'No funciono':", itemsNoFunciono.length);
 
-
                 const totalMessages = result.length;
                 setMessageStats(Object.fromEntries(
                     Object.entries(messageCount).map(([message, count]) => [message, (count / totalMessages * 100).toFixed(1)])
@@ -106,6 +105,7 @@ function Dashboard() {
         if(!userId){
             navigate('/login')
         }
+
     },[navigate])
 
     return (

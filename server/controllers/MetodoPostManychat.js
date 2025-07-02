@@ -12,8 +12,8 @@ async function MetodoPostManychat(req, res) {
     if(chat === 'telegram' || chat === 'instagram'){
         try {
             const myHeaders = {
-                accept: 'application/json',
-                Authorization: `Bearer ${manyChatToken}`,
+                'accept': 'application/json',
+                'Authorization':` Bearer ${manyChatToken}`,
                 'Content-Type': 'application/json',
             };
 
@@ -25,8 +25,8 @@ async function MetodoPostManychat(req, res) {
                     "type": chat,
                     "messages": [
                       {
-                        "type": 'image',
-                        "url": message
+                        "type": 'text',
+                        "text": message
                       }
                     ]
                   }
@@ -58,23 +58,23 @@ async function MetodoPostManychat(req, res) {
         }
 
     }else if(chat === 'messenger'){
-        console.log('entro al envio de messenger', suscriberID);
+        console.log('entro al envio de messenger', suscriberID)
         try{
-            const raw = JSON.stringify({
-                "recipient": {
-                  "id": suscriberID
-                },
-                "message": {
-                  "attachment": {
-                    "type": "image",
-                    "payload": {
-                      "url": message,
-                      "is_reusable": true
-                    }
+          const raw = JSON.stringify({
+            "subscriber_id": suscriberID,
+            "data": {
+              "version": "v2",
+              "content": {
+                "messages": [
+                  {
+                    "type": "text",
+                    "text": message
                   }
-                },
-                "tag": "ACCOUNT_UPDATE"
-              });
+                ]
+              }
+            },
+            "message_tag": "ACCOUNT_UPDATE"
+          });
 
               const myHeaders = new Headers();
                 myHeaders.append("accept", "application/json");
@@ -90,7 +90,7 @@ async function MetodoPostManychat(req, res) {
 
             const response = await fetch('https://api.manychat.com/fb/sending/sendContent', requestOptions)
 
-            const data = await response.json();
+            const data = await response.json()
             console.log('Mensaje enviado correctamente: ', data)
 
             res.status(200).json({

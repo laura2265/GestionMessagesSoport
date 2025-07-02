@@ -452,7 +452,7 @@
                                                         {imgUrl || mensaje.startsWith('https://scontent.xx.fbcdn.net') || mensaje.startsWith('https://res.cloudinary.com') ? (
                                                             <>
                                                                 <img src={mensaje} style={{ maxWidth: '200px', borderRadius: '10px' }} /><br/>
-                                                            </>
+                                                            </> 
                                                         ) : audioUrl || mensaje.startsWith('https://cdn.fbsbx.com') ? (
                                                             <>
                                                                 <audio controls>
@@ -461,6 +461,7 @@
                                                                 </audio>
                                                                 <br/>
                                                             </>
+
                                                         ) : (
                                                             <p>{mensaje}</p>
                                                         )}
@@ -470,7 +471,6 @@
                                                     </div>
                                                 );
                                             })}
-
 
                                         </div>
                                     ))
