@@ -7,8 +7,6 @@ import ModoClaro from '../../../../assets/img/soleado.png';
 import { useRef } from "react";
 import jsPDF from "jspdf";
 import { useNavigate } from "react-router-dom";
-import { resolve } from "path";
-
 
 function ReportHistoryMessage(){
     const {theme, toggleTheme} = useContext(ThemeContext);
@@ -125,6 +123,7 @@ function ReportHistoryMessage(){
             setEmpleAsociado(empleadosConDatos);
             setShowPreview(false);
             console.log('Datos asociados:', empleadosConDatos);
+
         } catch (error) {
             console.error(`Error al consultar los datos del empleado asociado`, error);
         }
@@ -141,10 +140,12 @@ function ReportHistoryMessage(){
                 const resultUser = await responseUser.json();
                 const dataUser = resultUser.data.docs;
 
-            return dataUser.filter((user) => user._id === idEmple) || null;
+                return dataUser.filter((user) => user._id === idEmple) || null;
+
         } catch (error) {
             console.error("Error al consultar usuario:", error);
-            return null;    
+            return null;
+
         }
     };
 
@@ -178,21 +179,6 @@ function ReportHistoryMessage(){
         }, {});
     }
 
-    const esURL = (texto) => {
-        const regex = /https?:\/\/[^\s]+/;
-        return regex.test(texto);
-    };
-    const loadImageAsBase64 = async (url) => {
-      const response = await fetch(url);
-      const blob = await response.blob();
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
-    };
-
     const generateReport = () => {
         if (empleAsociado.length === 0) {
             alert('No hay datos para generar el reporte.');
@@ -205,113 +191,154 @@ function ReportHistoryMessage(){
             format: 'a4'
         });
 
+        const esURL = (texto) => {
+            const regex = /https?:\/\/[^\s]+/;
+            return regex.test(texto);
+        };
+
+        const loadImageAsBase64 = async (url) => {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+        };
+
         const marginLeft = 15;
         const marginTop = 25;
+        const maxTextWidth = doc.internal.pageSize.width - marginLeft * 2;
         const pageHeight = doc.internal.pageSize.height;
         const lineHeight = 10;
         let yOffset = marginTop;
 
         const addHeader = () => {
             doc.setFontSize(12);
+            doc.setFont("helvetica", "bold");
             doc.text('Reporte de Empleados Asociados', marginLeft, yOffset);
-            yOffset += 10;
-        }
+            yOffset += lineHeight;
+        };
 
-        const addNewPageIfNeeded = () => {
-            if (yOffset + lineHeight > pageHeight) {
+        const addNewPageIfNeeded = (extra = 10) => {
+            if (yOffset + extra > pageHeight) {
                 doc.addPage();
                 yOffset = marginTop;
                 addHeader();
             }
-        }
-
+        };
+        
         addHeader();
 
-        empleAsociado.forEach((emple, index) => {
-            addNewPageIfNeeded();
+        const processMessages = async () => {
 
-            doc.setFontSize(14);
-            doc.setFont("helvetica", "bold");
-            doc.text(`Empleado:`, 14, yOffset);
+            for (const emple of empleAsociado) {
+                addNewPageIfNeeded();
 
-            doc.setFontSize(12);
-            doc.setFont("helvetica", "normal");
-            doc.text(`${emple.userData[0].name} (${emple.userData[0].email})`, 40, yOffset);
+                doc.setFontSize(14);
+                doc.setFont("helvetica", "bold");
+                doc.text(`Empleado:`, marginLeft, yOffset);
 
-            yOffset += lineHeight;
-
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(12);
-            doc.text(`Atendio al siguiente cliente:`, 24, yOffset);
-            yOffset += lineHeight;
-
-            doc.setFont("helvetica", "bold");
-            doc.text(`Cliente:`, 35, yOffset);
-            doc.setFont("helvetica", "normal");
-            doc.text(`${emple.manychatData.name}`, 55, yOffset);
-            yOffset += lineHeight;
-
-            doc.setFont("helvetica", "bold");
-            doc.text(`Chat ID: `, 35, yOffset);
-            doc.setFont("helvetica", "normal");
-            doc.text(`${emple.chatId}`, 55, yOffset);
-            yOffset += lineHeight;
-
-            doc.setFont("helvetica", "bold");
-            doc.text(`Fecha de contacto:`, 35, yOffset);
-            doc.setFont("helvetica", "normal");
-            doc.text(`${new Date(emple.FechaRegister).toLocaleDateString()}`, 75, yOffset);
-            yOffset += lineHeight;
-
-            doc.setFont("helvetica", "bold");
-            doc.text("Chat: ", 35, yOffset);
-            doc.setFont("helvetica", "normal");
-            doc.text(`${emple.chatContact}`, 47, yOffset);
-            yOffset += lineHeight;
-
-            doc.setFont("helvetica", "bold");
-            doc.text('Mensajes:', 44, yOffset);
-            yOffset += lineHeight;
-
-            const groupedMessages = groupMessagesByDate(emple.message);
-    
-            if (Object.keys(groupedMessages).length === 0) {
-                doc.text('No hay mensajes disponibles', 18, yOffset);
+                doc.setFontSize(12);
+                doc.setFont("helvetica", "normal");
+                doc.text(`${emple.userData[0].name} (${emple.userData[0].email})`, 40, yOffset);
                 yOffset += lineHeight;
-            } else {
-                Object.entries(groupedMessages).map(([date, messagesOnDate]) => {
-                    addNewPageIfNeeded();
-                    doc.setFontSize(14);
-                    doc.setFont("helvetica", "bold");
-                    doc.text(date, 50, yOffset);
+
+                doc.setFont("helvetica", "normal");
+                doc.text(`Atendió al siguiente cliente:`, 24, yOffset);
+                yOffset += lineHeight;
+
+                doc.setFont("helvetica", "bold");
+                doc.text(`Cliente:`, 35, yOffset);
+                doc.setFont("helvetica", "normal");
+                doc.text(`${emple.manychatData.name}`, 55, yOffset);
+                yOffset += lineHeight;
+
+                doc.setFont("helvetica", "bold");
+                doc.text(`Chat ID: `, 35, yOffset);
+                doc.setFont("helvetica", "normal");
+                doc.text(`${emple.chatId}`, 55, yOffset);
+                yOffset += lineHeight;
+
+                doc.setFont("helvetica", "bold");
+                doc.text(`Fecha de contacto:`, 35, yOffset);
+                doc.setFont("helvetica", "normal");
+                doc.text(`${new Date(emple.FechaRegister).toLocaleDateString()}`, 75, yOffset);
+                yOffset += lineHeight;
+
+                doc.setFont("helvetica", "bold");
+                doc.text("Chat: ", 35, yOffset);
+                doc.setFont("helvetica", "normal");
+                doc.text(`${emple.chatContact}`, 47, yOffset);
+                yOffset += lineHeight;
+
+                doc.setFont("helvetica", "bold");
+                doc.text('Mensajes:', 44, yOffset);
+                yOffset += lineHeight;
+
+                const groupedMessages = groupMessagesByDate(emple.message);
+
+                if (Object.keys(groupedMessages).length === 0) {
+                    doc.text('No hay mensajes disponibles', 18, yOffset);
                     yOffset += lineHeight;
 
-                    messagesOnDate.map((message) => {
+                } else {
+                    for (const [date, messagesOnDate] of Object.entries(groupedMessages)) {
                         addNewPageIfNeeded();
-                        doc.setFontSize(12);
-                        doc.setFont("helvetica", "normal");
-
-                        const senderText = message.sender === 'Cliente' ? 'Cliente: ' : 'Empleado: ';
-                        const distancia = message.sender;
-
-                        const mensajeMostrar = (message.message)?'imagen':message.message
-
+                        doc.setFontSize(14);
                         doc.setFont("helvetica", "bold");
-                        doc.text(`•  ${senderText}`, 54, yOffset);
-                        doc.setFont("helvetica", "normal");
-
-                        doc.text(`${message.message} ${new Date(message.updatedAt).toLocaleString([], {hour: '2-digit', minute: '2-digit'})}`, distancia === 'Cliente'? 75: 80, yOffset);
+                        doc.text(date, 50, yOffset);
                         yOffset += lineHeight;
-                    });
-                });
+
+                        for (const message of messagesOnDate) {
+                            addNewPageIfNeeded();
+                            doc.setFontSize(12);
+                            doc.setFont("helvetica", "normal");
+
+                            const senderText = message.sender === 'Cliente' ? 'Cliente: ' : 'Empleado: ';
+                            const xOffset = message.sender === 'Cliente' ? 75 : 80;
+                            const hora = message.timeStamp
+                                ? new Date(message.timeStamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                : 'Sin hora';
+
+                            doc.setFont("helvetica", "bold");
+                            doc.text(`•  ${senderText}`, 54, yOffset);
+                            doc.setFont("helvetica", "normal");
+
+                            if (esURL(message.message)) {
+                                try {
+                                    const base64Image = await loadImageAsBase64(message.message);
+
+                                    addNewPageIfNeeded(35);
+                                    doc.text(`Imagen - ${hora}`, xOffset, yOffset);
+                                    yOffset += 5;
+
+                                    doc.addImage(base64Image, 'JPEG', xOffset, yOffset, 40, 30);
+                                    yOffset += 35;
+                
+                                } catch (err) {
+                                    doc.text('(Error al cargar imagen)', xOffset, yOffset);
+                                    yOffset += lineHeight;
+                                }
+                            } else {
+                                const cleanText = message.message.replace(/[^\x00-\x7F]/g, "");
+                                doc.text(`${cleanText} - ${hora}`, xOffset, yOffset);
+                                yOffset += lineHeight;
+                            }
+                        }
+                    }
+                }
             }
-        });
-    
-        const pdfBlob = doc.output('blob');
-        const url = URL.createObjectURL(pdfBlob);
-        setPdfUrl(url); 
-        setShowPreview(true);
-    }
+
+            const pdfBlob = doc.output('blob');
+            const url = URL.createObjectURL(pdfBlob);
+            setPdfUrl(url); 
+            setShowPreview(true);
+        };
+
+        processMessages();
+    };
 
     return(
         <>
