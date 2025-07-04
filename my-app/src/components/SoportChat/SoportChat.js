@@ -26,11 +26,12 @@ function SoportChat (){
     const [nombre, setNombre] = useState("");
     const [nombreTemporal, setNombreTemporal] = useState("");
     const [email, setEmail] = useState("");
+    const [documentTitular, setDocumentTitular] = useState("");
     const [estado, setEstado] = useState("esperando_nombre");
-    const chatIdUser = localStorage.getItem("chatUserId")
+    const chatIdUser = localStorage.getItem("chatUserId");
 
     //Variables para el audio y los mensajes
-    const [handleNewMessage, setHandleNewMessage] = useState(false)
+    const [handleNewMessage, setHandleNewMessage] = useState(false);
     const [userInput, setUserInput] = useState("");
     const audioRef = useRef(new Audio(Notificacion));
     const toggleChat=()=>{
@@ -54,7 +55,7 @@ function SoportChat (){
       "AndroidMultiplesEquipoSinInternet",
       "iPhoneMultiplesEquipoSinInternet"
     ];
-    
+
     const validStatesSinInternetBombilloLos = [
       "EstaEncendidoElBombillo",
       "EstaApagadoElBombillo",
@@ -251,24 +252,33 @@ function SoportChat (){
         return;
       }
 
-      if(!conversacionState){
-        if (estado === "esperando_email") {
-          setEmail(userInput);
+      if(estado === "esperando_email"){
+        setEmail(userInput);
+        setTimeout(()=>addBotMessage(`Por favor puedes ingresar el numero de documento del titular o del que va a solicitar el servicio para poder continuar`),1000);
+        setEstado("esperando_documento")
+        setUserInput("");
+        return;
+      }
 
+      if (!conversacionState) {
+        if (estado === "esperando_documento") {
+          setDocumentTitular(userInput);
+        
           const ip = await getPublicIp();
           const navegador = navigator.userAgent;
-
+        
           console.log("Datos enviados:", {
             id: localStorage.getItem("chatUserId"),
             usuario: {
               nombre: nombreTemporal,
-              email: userInput,
+              email: email,
+              documento: userInput, 
               navegador,
               ip, 
             },
             fechaInicio: new Date().toISOString(),
           });
-
+        
           await fetch('http://localhost:3001/conversacion-server', {
             method: 'POST',
             headers: {
@@ -278,14 +288,15 @@ function SoportChat (){
               id: localStorage.getItem("chatUserId"),
               usuario: {
                 nombre: nombreTemporal,
-                email: userInput,
+                email: email,
+                documento: userInput,
                 navegador,
                 ip,
               },
               fechaInicio: new Date().toISOString() 
             })
           });
-
+        
           setTimeout(() => addBotMessage(
             `¡Perfecto, ${nombreTemporal}! Ya puedes comenzar a chatear con nosotros\n ¿En qué podemos ayudarte?`,
             [
@@ -293,11 +304,12 @@ function SoportChat (){
               "Traslado", "Solicitar servicio", "PQR(Peticion, Queja, Reclamo)",
               "Pagar Facturas", "Cambio de titular", "Otro"
             ]), 1000);
+
           setEstado("conversacion");
+          setConversacionState(true);
           setUserInput("");
           return;
         }
-        setConversacionState(true);
       }
 
       if(estado === "conversacion"){

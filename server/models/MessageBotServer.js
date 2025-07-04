@@ -18,6 +18,7 @@ const ConversacionSchema = new mongoose.Schema({
   usuario: { 
     nombre: String,
     email: String,
+    documento: String,
     navegador: String,
     ip: String,
   },

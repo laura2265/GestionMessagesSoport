@@ -23,6 +23,7 @@ export const getDataMessageId = async (req, res) => {
 export const getDataMesage = async(req, res) => {
     try{
         const {page = 1, limit = 100} = req.query;
+
         const options = {
             page: parseInt(page),
             limit: parseInt(limit),

@@ -169,6 +169,7 @@ function ReportHistoryMessage(){
     function groupMessagesByDate(messages) {
         return messages.reduce((acc, message) => {
             const date = new Date(message.updatedAt).toLocaleDateString();
+
             if (!acc[date]) {
                 acc[date] = [];
             }
@@ -181,163 +182,156 @@ function ReportHistoryMessage(){
 
     const generateReport = () => {
         if (empleAsociado.length === 0) {
-            alert('No hay datos para generar el reporte.');
-            return;
-        }
+          alert('No hay datos para generar el reporte.');
+          return;
+      }
+      const doc = new jsPDF({
+          orientation: 'p',
+          unit: "mm",
+          format: 'a4'
+      });
+  
+      const esURL = (texto) => {
+          const regex = /https?:\/\/[^\s]+/;
+          return regex.test(texto);
+      };
+  
+      const loadImageAsBase64 = async (url) => {
+          const response = await fetch(url);
+          const blob = await response.blob();
+          return new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result);
+              reader.onerror = reject;
+              reader.readAsDataURL(blob);
+          });
+      };
+      const marginLeft = 15;
+      const marginRight = 15;
+      const marginTop = 25;
+      const maxTextWidth = doc.internal.pageSize.width - marginLeft - marginRight;
+      const pageHeight = doc.internal.pageSize.height;
+      const lineHeight = 10;
+      let yOffset = marginTop;
+  
+      const addHeader = () => {
+          doc.setFontSize(12);
+          doc.setFont("helvetica", "bold");
+          doc.text('Reporte de Empleados Asociados', marginLeft, yOffset);
+          yOffset += lineHeight;
+      };
+  
+      const addNewPageIfNeeded = (extra = 10) => {
+          if (yOffset + extra > pageHeight) {
+              doc.addPage();
+              yOffset = marginTop;
+              addHeader();
+          }
+      };
+  
+      addHeader();
 
-        const doc = new jsPDF({
-            orientation: 'p',
-            unit: "mm",
-            format: 'a4'
-        });
+      const processMessages = async()=>{
+        for(const emple of empleAsociado){
+            addNewPageIfNeeded();
+  
+              doc.setFontSize(14);
+              doc.setFont("helvetica", "bold");
+              doc.text(`Empleado:`, marginLeft, yOffset);
+  
+              doc.setFontSize(12);
+              doc.setFont("helvetica", "normal");
+              doc.text(`${emple.userData[0].name} (${emple.userData[0].email})`, marginLeft + 25, yOffset);
+              yOffset += lineHeight;
+  
+              doc.setFont("helvetica", "normal");
+              doc.text(`Atendió al siguiente cliente:`, marginLeft + 10, yOffset);
+              yOffset += lineHeight;
+  
+              doc.setFont("helvetica", "bold");
+              doc.text(`Cliente:`, marginLeft + 20, yOffset);
+              doc.setFont("helvetica", "normal");
+              doc.text(`${emple.manychatData.name}`, marginLeft + 40, yOffset);
+              yOffset += lineHeight;
+  
+              doc.setFont("helvetica", "bold");
+              doc.text(`Chat ID: `, marginLeft + 20, yOffset);
+              doc.setFont("helvetica", "normal");
+              doc.text(`${emple.chatId}`, marginLeft + 40, yOffset);
+              yOffset += lineHeight;
 
-        const esURL = (texto) => {
-            const regex = /https?:\/\/[^\s]+/;
-            return regex.test(texto);
-        };
 
-        const loadImageAsBase64 = async (url) => {
-            const response = await fetch(url);
-            const blob = await response.blob();
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result);
-                reader.onerror = reject;
-                reader.readAsDataURL(blob);
-            });
-        };
+               doc.setFont("helvetica", "bold");
+              doc.text(`Fecha de contacto:`, marginLeft + 20, yOffset);
+              doc.setFont("helvetica", "normal");
+              doc.text(`${new Date(emple.FechaRegister).toLocaleDateString()}`, marginLeft + 55, yOffset);
+              yOffset += lineHeight;
+  
+              doc.setFont("helvetica", "bold");
+              doc.text("Chat: ", marginLeft + 20, yOffset);
+              doc.setFont("helvetica", "normal");
+              doc.text(`${emple.chatContact}`, marginLeft + 35, yOffset);
+              yOffset += lineHeight;
+  
+              doc.setFont("helvetica", "bold");
+              doc.text('Mensajes:', marginLeft + 10, yOffset);
+              yOffset += lineHeight;
+  
+              const groupedMessages = groupMessagesByDate(emple.message);
 
-        const marginLeft = 15;
-        const marginTop = 25;
-        const maxTextWidth = doc.internal.pageSize.width - marginLeft * 2;
-        const pageHeight = doc.internal.pageSize.height;
-        const lineHeight = 10;
-        let yOffset = marginTop;
-
-        const addHeader = () => {
-            doc.setFontSize(12);
-            doc.setFont("helvetica", "bold");
-            doc.text('Reporte de Empleados Asociados', marginLeft, yOffset);
-            yOffset += lineHeight;
-        };
-
-        const addNewPageIfNeeded = (extra = 10) => {
-            if (yOffset + extra > pageHeight) {
-                doc.addPage();
-                yOffset = marginTop;
-                addHeader();
-            }
-        };
-        
-        addHeader();
-
-        const processMessages = async () => {
-
-            for (const emple of empleAsociado) {
-                addNewPageIfNeeded();
-
-                doc.setFontSize(14);
-                doc.setFont("helvetica", "bold");
-                doc.text(`Empleado:`, marginLeft, yOffset);
-
-                doc.setFontSize(12);
-                doc.setFont("helvetica", "normal");
-                doc.text(`${emple.userData[0].name} (${emple.userData[0].email})`, 40, yOffset);
-                yOffset += lineHeight;
-
-                doc.setFont("helvetica", "normal");
-                doc.text(`Atendió al siguiente cliente:`, 24, yOffset);
-                yOffset += lineHeight;
-
-                doc.setFont("helvetica", "bold");
-                doc.text(`Cliente:`, 35, yOffset);
-                doc.setFont("helvetica", "normal");
-                doc.text(`${emple.manychatData.name}`, 55, yOffset);
-                yOffset += lineHeight;
-
-                doc.setFont("helvetica", "bold");
-                doc.text(`Chat ID: `, 35, yOffset);
-                doc.setFont("helvetica", "normal");
-                doc.text(`${emple.chatId}`, 55, yOffset);
-                yOffset += lineHeight;
-
-                doc.setFont("helvetica", "bold");
-                doc.text(`Fecha de contacto:`, 35, yOffset);
-                doc.setFont("helvetica", "normal");
-                doc.text(`${new Date(emple.FechaRegister).toLocaleDateString()}`, 75, yOffset);
-                yOffset += lineHeight;
-
-                doc.setFont("helvetica", "bold");
-                doc.text("Chat: ", 35, yOffset);
-                doc.setFont("helvetica", "normal");
-                doc.text(`${emple.chatContact}`, 47, yOffset);
-                yOffset += lineHeight;
-
-                doc.setFont("helvetica", "bold");
-                doc.text('Mensajes:', 44, yOffset);
-                yOffset += lineHeight;
-
-                const groupedMessages = groupMessagesByDate(emple.message);
-
-                if (Object.keys(groupedMessages).length === 0) {
-                    doc.text('No hay mensajes disponibles', 18, yOffset);
-                    yOffset += lineHeight;
-
-                } else {
-                    for (const [date, messagesOnDate] of Object.entries(groupedMessages)) {
+              if(Object.keys(groupedMessages).length === 0){
+                  doc.text('No hay mensajes disponibles', marginLeft, yOffset);
+                  yOffset += lineHeight;
+              }else{
+                for(const [date, messagesOnDate] of Object.entries(groupedMessages)){
+                    for(const message of messagesOnDate){
                         addNewPageIfNeeded();
-                        doc.setFontSize(14);
-                        doc.setFont("helvetica", "bold");
-                        doc.text(date, 50, yOffset);
-                        yOffset += lineHeight;
-
-                        for (const message of messagesOnDate) {
-                            addNewPageIfNeeded();
-                            doc.setFontSize(12);
-                            doc.setFont("helvetica", "normal");
-
-                            const senderText = message.sender === 'Cliente' ? 'Cliente: ' : 'Empleado: ';
-                            const xOffset = message.sender === 'Cliente' ? 75 : 80;
-                            const hora = message.timeStamp
-                                ? new Date(message.timeStamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                                : 'Sin hora';
-
-                            doc.setFont("helvetica", "bold");
-                            doc.text(`•  ${senderText}`, 54, yOffset);
-                            doc.setFont("helvetica", "normal");
-
-                            if (esURL(message.message)) {
-                                try {
-                                    const base64Image = await loadImageAsBase64(message.message);
-
-                                    addNewPageIfNeeded(35);
-                                    doc.text(`Imagen - ${hora}`, xOffset, yOffset);
-                                    yOffset += 5;
-
-                                    doc.addImage(base64Image, 'JPEG', xOffset, yOffset, 40, 30);
-                                    yOffset += 35;
+                        doc.setFontSize(12);
+                        doc.setFont("helvetica", "normal");
                 
-                                } catch (err) {
-                                    doc.text('(Error al cargar imagen)', xOffset, yOffset);
-                                    yOffset += lineHeight;
-                                }
-                            } else {
-                                const cleanText = message.message.replace(/[^\x00-\x7F]/g, "");
-                                doc.text(`${cleanText} - ${hora}`, xOffset, yOffset);
+                        const senderText = message.sender === 'Cliente' ? 'Cliente: ' : 'Empleado: ';
+                        const xOffset = marginLeft + 25;
+                        const hora = message.timeStamp
+                        ? new Date(message.timeStamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                        : 'Sin hora';
+                        
+                        doc.setFont("helvetica", "bold");
+                        doc.text(`•  ${senderText}`, marginLeft, yOffset);
+                        doc.setFont("helvetica", "normal");
+
+                        if(esURL(message.message)){
+                          try{
+                              const base64Image = await loadImageAsBase64(message.message)
+                              addNewPageIfNeeded(35);
+                              doc.text(`Imagen - ${hora}`, xOffset, yOffset);
+                                yOffset += 5;
+                          
+                                doc.addImage(base64Image, 'JPEG', xOffset, yOffset, 50, 30);
+                                yOffset += 35;
+                          }catch(error){
+                                doc.text('(Error al cargar imagen)', xOffset, yOffset);
                                 yOffset += lineHeight;
-                            }
+                          }
+                        }else{
+                          const cleanText = message.message.replace(/[^const cleanText = message.message.replace(/[^\x00-const cleanText = message.message.replace(/[^\x00-\x7F]/g, "");
+                            const wrappedText = doc.splitTextToSize(`${cleanText} - ${hora}`, maxTextWidth - 25);
+                            wrappedText.forEach(line => {
+                                addNewPageIfNeeded();
+                                doc.text(line, xOffset, yOffset);
+                                yOffset += lineHeight;
+                            });
                         }
                     }
                 }
-            }
+              }
+        }
+        const pdfBlob = doc.output('blob');
+          const url = URL.createObjectURL(pdfBlob);
+          setPdfUrl(url);
+          setShowPreview(true);
+      }
 
-            const pdfBlob = doc.output('blob');
-            const url = URL.createObjectURL(pdfBlob);
-            setPdfUrl(url); 
-            setShowPreview(true);
-        };
-
-        processMessages();
+      processMessages();
     };
 
     return(
