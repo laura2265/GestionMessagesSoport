@@ -289,9 +289,9 @@ function SoportChat (){
               usuario: {
                 nombre: nombreTemporal,
                 email: email,
-                documento: userInput,
+                documento: userInput, 
                 navegador,
-                ip,
+                ip, 
               },
               fechaInicio: new Date().toISOString() 
             })

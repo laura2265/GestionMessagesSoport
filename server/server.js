@@ -2,7 +2,7 @@ import express, { response } from "express";
 import routerUser from "./routers/User.js";
 import connectDB from "./config/db.js";
 import cors from 'cors'
-import { ApiKeyWisphub, manyChatToken } from "./config/config.js";
+import { manyChatToken } from "./config/config.js";
 import { loadProcessedUser, saveProcessedUser } from "./controllers/ProcesarUser.js";
 import { BuscarCedulaInstagram, BuscarCedulaMessenger, BuscarCedulaTelegram } from "./controllers/BuscarCedula/BuscarCedulaUser.js";
 

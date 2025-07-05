@@ -1,364 +1,340 @@
-    import { useContext, useEffect, useRef, useState } from "react";
-    import ThemeContext from "../../../ThemeContext";
-    import Navbar from "../../../navbar/Navbar";
-    import SliderEmploye from "../../../navbar/SliderEmploye";
-    import ModoOscuro from '../../../../assets/img/modo-oscuro.png';
-    import ModoClaro from '../../../../assets/img/soleado.png';
-    import Usuario from '../../../../assets/img/usuario.png';
-    import { VscSend } from "react-icons/vsc";
-    import MessageChat from "../../../MessageChat";
-    import '../WhatsappEmple/whatsappEmple.css';
-    import { CiImageOn } from "react-icons/ci";
-    import { AiFillAudio } from "react-icons/ai";
+import { useContext, useEffect, useRef, useState } from "react";
+import ThemeContext from "../../../ThemeContext";
+import Navbar from "../../../navbar/Navbar";
+import SliderEmploye from "../../../navbar/SliderEmploye";
+import ModoOscuro from '../../../../assets/img/modo-oscuro.png';
+import ModoClaro from '../../../../assets/img/soleado.png';
+import Usuario from '../../../../assets/img/usuario.png';
+import { VscSend } from "react-icons/vsc";
+import MessageChat from "../../../MessageChat";
+import '../WhatsappEmple/whatsappEmple.css';
+import { CiImageOn } from "react-icons/ci";
+import { AiFillAudio } from "react-icons/ai";
 
-    function MessengerEmple (){
-        const {theme, toggleTheme} = useContext(ThemeContext);
-        const [contacts, setContacts] = useState([]);
-        const [activeContact, setActiveContact] = useState(null);
-        const [messages, setMessages] = useState([]);
-        const [ isLoggedIn, setIsLoggedIn] = useState(false);
-        const [unreadMessages, setUnreadMessages] = useState({});
-        const [currentMessage, setCurrentMessage] = useState('');
-        const [ selectedImage, setSelectedImage] = useState(null);
-        const fileInputRef = useRef(null);
-        const [nombreEmpleado, setNombreEmpleado]= useState("");
-
-        const handleKeyPress = (e) =>{
-            if(e.key === 'Enter'){
-                handleSendMessage();
-            }
+function MessengerEmple (){
+    const {theme, toggleTheme} = useContext(ThemeContext);
+    const [contacts, setContacts] = useState([]);
+    const [activeContact, setActiveContact] = useState(null);
+    const [messages, setMessages] = useState([]);
+    const [ isLoggedIn, setIsLoggedIn] = useState(false);
+    const [unreadMessages, setUnreadMessages] = useState({});
+    const [currentMessage, setCurrentMessage] = useState('');
+    const [ selectedImage, setSelectedImage] = useState(null);
+    const fileInputRef = useRef(null);
+    const [nombreEmpleado, setNombreEmpleado]= useState("");
+    const handleKeyPress = (e) =>{
+        if(e.key === 'Enter'){
+            handleSendMessage();
         }
-        const handleSendMessage = async () => {
-            if (currentMessage.trim() !== "" && activeContact) {
-                const newMessage = {
-                    messages: [
-                        {
-                            sender: 'Empleado',
-                            message: currentMessage,
-                            idMessageClient: `msg_${Date.now()}-${currentMessage.length}`
-                        }
-                    ]
-                };
-
-                const rawMessage = {
-                    suscriberID: activeContact.id,
-                    message: currentMessage,
-                    chat: 'messenger',
-                };
-            
-                try {
-                    const response = await fetch(`http://localhost:3001/post-message`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(rawMessage),
-                    });
-
-                    if (!response.ok) throw new Error('Error al guardar el mensaje en post-message');
-                
-                    const messageResponse = await fetch(`http://localhost:3001/message/${activeContact.id}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(newMessage),
-                    });
-
-                    if (!messageResponse.ok) throw new Error('Error al guardar el mensaje en message');
-
-                    setMessages(prevMessages => [...prevMessages, newMessage]);
-                } catch (error) {
-                    console.error('Error al guardar el mensaje: ', error);
-                }
-                setCurrentMessage("");
-            }
-        };
-
-        // Manejo del envío de archivos
-        const handleFileChage = (e) => {
-            if(e.target.files[0]){
-                setSelectedImage(e.target.files[0]);
-            }
-        };
-
-        const imageUploadNube = async () => {
-          if (!selectedImage || !activeContact) return;
-
-          try {
-            const formData = new FormData();
-            formData.append('file', selectedImage);
-        
-            const response = await fetch('http://localhost:3001/image-post-message', {
-              method: 'POST',
-              body: formData
-            });
-        
-            if (!response.ok) throw new Error('Error al subir la imagen a la nube');
-        
-            const data = await response.json();
-            const image = data?.data?.secure_url || '';
-        
-            if (!image) throw new Error('No se encontró la URL de la imagen');
-        
-            // Armar mensaje para Mongo
+    }
+    const handleSendMessage = async () => {
+        if (currentMessage.trim() !== "" && activeContact) {
             const newMessage = {
-              messages: [
-                {
-                  sender: 'Empleado',
-                  message: image,
-                  contexto: currentMessage, 
-                  idMessageClient: `msg_imageWithText_${Date.now()}`
-                }
-              ]
+                messages: [
+                    {
+                        sender: 'Empleado',
+                        message: currentMessage,
+                        idMessageClient: `msg_${Date.now()}-${currentMessage.length}`
+                    }
+                ]
             };
-
-            // Guardar en Mongo
-            const saveResponse = await fetch(`http://localhost:3001/message/${activeContact.id}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(newMessage)
-            });
-        
-            if (!saveResponse.ok) throw new Error('Error al guardar el mensaje');
-        
-            const responseManychat = await fetch('http://localhost:3001/post-message', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
+            const rawMessage = {
                 suscriberID: activeContact.id,
-                message: image,
-                contexto: currentMessage,
-                chat: 'messenger'
-              })
-            });
+                message: currentMessage,
+                chat: 'messenger',
+            };
         
-            if (!responseManychat.ok) throw new Error('Error al enviar a ManyChat');
-        
-            setMessages(prev => [...prev, newMessage]);
-            setSelectedImage(null);
-            setCurrentMessage("");
-        
-          } catch (error) {
-            console.error('Error al subir la imagen a la nube: ', error);
-          }
-        };
-
-
-        useEffect(()=>{
-            const userId = localStorage.getItem('UserId');
-            const rolUser = localStorage.getItem('rol-user');
-            if(userId && rolUser){
-                setIsLoggedIn(true);
-            }else{
-                setIsLoggedIn(false);
-            }
-        },[]);
-
-        //mensajes de MongoDB
-        const fetchMessenger = async (activeContact) => {
             try {
-                const response = await fetch(`http://localhost:3001/message/?contactId=${activeContact.id}&chat=messenger`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
+                const response = await fetch(`http://localhost:3001/post-message`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(rawMessage),
                 });
-
-                if (!response.ok) {
-                    throw new Error('Error al obtener los mensajes del contacto');
-                }
-
-                const result = await response.json();
-                console.log('Respuesta obtenida de la API de mensajes:', result);
-
-                const data = result?.data?.docs || [];
-
-                if (!Array.isArray(data) || data.length === 0) {
-                    setMessages([]);
-                    return;
-                }
-
-                const flattenedMessages = data.flatMap(doc => {
-                    if (!Array.isArray(doc.messages)) return [];
-                
-                    return doc.messages.map(msg => ({
-                        ...msg,
-                        contactId: doc.contactId,
-                        chat: doc.chat,
-                        usuario: doc.usuario,
-                        updatedAt: msg.timeStamp || doc.updatedAt,
-                    }));
+                if (!response.ok) throw new Error('Error al guardar el mensaje en post-message');
+            
+                const messageResponse = await fetch(`http://localhost:3001/message/${activeContact.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newMessage),
                 });
-
-                const mensajesOrdenados = flattenedMessages.sort((a, b) =>
-                    new Date(a.updatedAt) - new Date(b.updatedAt)
-                );
-
-                setMessages(mensajesOrdenados);
-                const lastMessage = mensajesOrdenados[mensajesOrdenados.length - 1];
-                const lastSender = lastMessage?.sender === 'Cliente'? "Cliente" : "Empleado"
-
-                setUnreadMessages(prev => ({
-                    ...prev,
-                    [activeContact.id]: activeContact.id !== activeContact.id 
-                }));
-
-                setContacts(prevContacts => 
-                    prevContacts.map(contact =>
-                        contact.id === activeContact.id
-                        ? { ...contact, lastMessage,  lastSender   }
-                        : contact
-                    )
-                );
-
+                if (!messageResponse.ok) throw new Error('Error al guardar el mensaje en message');
+                setMessages(prevMessages => [...prevMessages, newMessage]);
             } catch (error) {
-                console.error('Error al consultar los datos de la API:', error);
+                console.error('Error al guardar el mensaje: ', error);
             }
+            setCurrentMessage("");
+        }
+    };
+
+    // Manejo del envío de archivos
+    const handleFileChage = (e) => {
+        if(e.target.files[0]){
+            setSelectedImage(e.target.files[0]);
+        }
+    };
+
+    const imageUploadNube = async () => {
+      if (!selectedImage || !activeContact) return;
+      try {
+        const formData = new FormData();
+        formData.append('file', selectedImage);
+    
+        const response = await fetch('http://localhost:3001/image-post-message', {
+          method: 'POST',
+          body: formData
+        });
+    
+        if (!response.ok) throw new Error('Error al subir la imagen a la nube');
+    
+        const data = await response.json();
+        const image = data?.data?.secure_url || '';
+    
+        if (!image) throw new Error('No se encontró la URL de la imagen');
+    
+        // Armar mensaje para Mongo
+        const newMessage = {
+          messages: [
+            {
+              sender: 'Empleado',
+              message: image,
+              contexto: currentMessage, 
+              idMessageClient: `msg_imageWithText_${Date.now()}`
+            }
+          ]
         };
+        // Guardar en Mongo
+        const saveResponse = await fetch(`http://localhost:3001/message/${activeContact.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newMessage)
+        });
+    
+        if (!saveResponse.ok) throw new Error('Error al guardar el mensaje');
+    
+        const responseManychat = await fetch('http://localhost:3001/post-message', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            suscriberID: activeContact.id,
+            message: image,
+            contexto: currentMessage,
+            chat: 'messenger'
+          })
+        });
+    
+        if (!responseManychat.ok) throw new Error('Error al enviar a ManyChat');
+    
+        setMessages(prev => [...prev, newMessage]);
+        setSelectedImage(null);
+        setCurrentMessage("");
+    
+      } catch (error) {
+        console.error('Error al subir la imagen a la nube: ', error);
+      }
+    };
 
-        const groupMessagesByDate = (messages) => {
-            return messages.reduce((acc, message) => {
-                const dateKey = new Date(message.updatedAt).toLocaleDateString('es-ES');
 
-                if (!acc[dateKey]) {
-                    acc[dateKey] = [];
+    useEffect(()=>{
+        const userId = localStorage.getItem('UserId');
+        const rolUser = localStorage.getItem('rol-user');
+        if(userId && rolUser){
+            setIsLoggedIn(true);
+        }else{
+            setIsLoggedIn(false);
+        }
+    },[]);
+
+    //mensajes de MongoDB
+    const fetchMessenger = async (activeContact) => {
+        try {
+            const response = await fetch(`http://localhost:3001/message/?contactId=${activeContact.id}&chat=messenger`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
                 }
+            });
+            if (!response.ok) {
+                throw new Error('Error al obtener los mensajes del contacto');
+            }
+            const result = await response.json();
+            console.log('Respuesta obtenida de la API de mensajes:', result);
+            const data = result?.data?.docs || [];
+            if (!Array.isArray(data) || data.length === 0) {
+                setMessages([]);
+                return;
+            }
+            const flattenedMessages = data.flatMap(doc => {
+                if (!Array.isArray(doc.messages)) return [];
+            
+                return doc.messages.map(msg => ({
+                    ...msg,
+                    contactId: doc.contactId,
+                    chat: doc.chat,
+                    usuario: doc.usuario,
+                    updatedAt: msg.timeStamp || doc.updatedAt,
+                }));
+            });
+            const mensajesOrdenados = flattenedMessages.sort((a, b) =>
+                new Date(a.updatedAt) - new Date(b.updatedAt)
+            );
+            setMessages(mensajesOrdenados);
+            const lastMessage = mensajesOrdenados[mensajesOrdenados.length - 1];
+            const lastSender = lastMessage?.sender === 'Cliente'? "Cliente" : "Empleado"
+            setUnreadMessages(prev => ({
+                ...prev,
+                [activeContact.id]: activeContact.id !== activeContact.id 
+            }));
+            setContacts(prevContacts => 
+                prevContacts.map(contact =>
+                    contact.id === activeContact.id
+                    ? { ...contact, lastMessage,  lastSender   }
+                    : contact
+                )
+            );
+        } catch (error) {
+            console.error('Error al consultar los datos de la API:', error);
+        }
+    };
 
-                acc[dateKey].push(message);
-                return acc;
-            }, {});
-        };
+    const groupMessagesByDate = (messages) => {
+        return messages.reduce((acc, message) => {
+            const dateKey = new Date(message.updatedAt).toLocaleDateString('es-ES');
+            if (!acc[dateKey]) {
+                acc[dateKey] = [];
+            }
+            acc[dateKey].push(message);
+            return acc; 
+        }, {});
+    };
+ 
+    const fetchManychat = async (chatId) => {
+        try {
+            const responseMany = await fetch(`http://localhost:3001/manychat/${chatId}`, {
+                method: 'GET',
+                headers: { 
+                    'Content-Type': 'application/json'
+                }
+            });
+            if (!responseMany.ok) {
+                throw new Error('Error al momento de consultar los datos de Manychat:');
+            }
+            const resultMany = await responseMany.json();
+            const dataMany = resultMany.cliente.data;
+            const newContact = {
+                id: dataMany.id,
+                nombre: dataMany.name,
+                perfil: dataMany.profile_pic,
+                estado: dataMany.status,
+            }
+            console.log('id es: ', newContact);
+            setContacts(prevContacts => {
+                const exists = prevContacts.find(contact => contact.id === newContact.id);
+                
+                if(!exists){
+                    return[...prevContacts, newContact];
+                }
+                return prevContacts;
+            });
+        } catch (error) {
+            console.error('Error al momento de consultar los datos de la API:', error);
+        }
+    };
 
-        const fetchManychat = async (chatId) => {
+    useEffect(() => {
+        const fetchEmple = async () => {
             try {
-                const responseMany = await fetch(`http://localhost:3001/manychat/${chatId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (!responseMany.ok) {
-                    throw new Error('Error al momento de consultar los datos de Manychat:');
+                const EmpleId = localStorage.getItem('UserId');
+                const responseEmple = await fetch(`http://localhost:3001/asignaciones/`);
+                if (!responseEmple.ok) {
+                    throw new Error('Error al consultar asignaciones');
                 }
 
-                const resultMany = await responseMany.json();
-                const dataMany = resultMany.cliente.data;
+                const resultEmple = await responseEmple.json();
+                const dataEmple = resultEmple.data.docs;
+                console.log('Asignaciones:', dataEmple);
 
-                const newContact = {
-                    id: dataMany.id,
-                    nombre: dataMany.name,
-                    perfil: dataMany.profile_pic,
-                    estado: dataMany.status,
-                }
+                const assignedEmple = dataEmple.filter((emple) => emple.idEmple === EmpleId);
 
-                console.log('id es: ', newContact);
-                setContacts(prevContacts => {
-                    const exists = prevContacts.find(contact => contact.id === newContact.id);
-                    
-                    if(!exists){
-                        return[...prevContacts, newContact];
+                if (assignedEmple.length > 0) {
+                    // ✅ Guardamos los contactos para mostrarlos en la lista
+                    const contactos = assignedEmple.map(user => ({
+                        id: user.cahtId,
+                        nombre: user.nombreClient,
+                        lastMessage: {
+                            message: user.Descripcion
+                        },
+                        lastSender: 'Cliente',
+                        perfil: user.perfil || null
+                    }));
+
+                    setContacts(contactos);
+
+                    // Si el contacto está asignado a ChatBotMessenger, lo manejamos aparte
+                    for (let user of assignedEmple) {
+                        const chatId = user.cahtId;
+                        if (user.chatName === 'ChatBotMessenger') {
+                            await fetchManychat(chatId);
+
+                            const response = await fetch(`http://localhost:3001/message/?contactId=${chatId}&chat=messenger`);
+                            if (!response.ok) throw new Error('Error al obtener mensajes');
+
+                            const result = await response.json();
+                            const data = result.data.docs;
+
+                            const exists = data.some(msg => msg.contactId === chatId && msg.message === user.Descripcion);
+
+                            if (!exists) {
+                                const newMessage = {    
+                                    contactId: chatId,
+                                    usuario: {
+                                        nombre: user.nombreClient,
+                                    },
+                                    messages: [{
+                                        sender: 'Cliente',
+                                        message: user.Descripcion,
+                                        idMessageClient: `msg_MessageProblem-${user.Descripcion.length}`,
+                                    }],
+                                    chat: 'messenger',
+                                };
+
+                                const messageResponse = await fetch('http://localhost:3001/message/', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(newMessage),
+                                });
+
+                                if (!messageResponse.ok) throw new Error('Error al guardar el mensaje');
+                                console.log('Mensaje guardado correctamente.');
+                            } else {
+                                console.log('Mensaje ya existe.');
+                            }
+                        }
                     }
-
-                    return prevContacts;
-                });
+                } else {
+                    console.log('No hay empleados asignados');
+                    setContacts([]); // por si se reinicia
+                }
 
             } catch (error) {
                 console.error('Error al momento de consultar los datos de la API:', error);
             }
         };
 
-        useEffect(() => {
-            const fetchEmple = async () => {
-                try {
-                    const EmpleId = localStorage.getItem('UserId');
-                    const responseEmple = await fetch(`http://localhost:3001/asignaciones/`, {
-                        method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        }
-                    });
+        fetchEmple();
+    }, []);
 
-                    if (!responseEmple.ok) {
-                        throw new Error('Error al momento de consultar los datos del empleado');
-                    }
 
-                    const resultEmple = await responseEmple.json();
-                    const dataEmple = resultEmple.data.docs;
-                    console.log(dataEmple);
-                    const assignedEmple = dataEmple.filter((emple) => emple.idEmple === EmpleId);
-                    if (assignedEmple && assignedEmple.length > 0) {
-                        for (let i = 0; i < assignedEmple.length; i++) {
-                            const user = assignedEmple[i];
-                            const chatId = user.cahtId;
-                            const nameEmple = user.nombreEmple;
-                            if(!nameEmple){
-                                console.log('Este campo esta vacio por favor registre el empleado como empleado asignado antes de realizar la consulta')
-                            }
-                            console.log('el nombre del empleado asignado es: ', nameEmple);
-                            setNombreEmpleado(nameEmple);
-                            console.log('El ID del chat es:', chatId);
-                            if (user.chatName === 'ChatBotMessenger') {
-                                await fetchManychat(chatId);
-                                const response = await fetch(`http://localhost:3001/message/?contactId=${activeContact.id}&chat=messenger`, {
-                                    method: 'GET',
-                                    headers: {
-                                        'Content-Type': 'application/json'
-                                    }
-                                });
-
-                                if (!response.ok) {
-                                    throw new Error('Error al obtener los mensajes del contacto');
-                                }
-
-                                const result = await response.json();
-                                const data = result.data.docs;
-                                const exists = data.some(msg => msg.contactId === user.chatId && msg.message === user.Descripcion);
-                                if (!exists) {
-                                    const newMessage = {
-                                        contactId: chatId,
-                                        usuario:{
-                                            nombre: user.nombreClient,
-                                        },
-                                        messages:[
-                                            {
-                                                sender: 'Cliente',
-                                                message: user.Descripcion,
-                                                idMessageClient: `msg_MessageProblem-${user.Descripcion.length}`,
-                                            }
-                                        ],
-                                        chat: 'messenger',
-                                    };
-
-                                    const messageResponse = await fetch('http://localhost:3001/message/', {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify(newMessage),
-                                    });
-                                    if (!messageResponse.ok) throw new Error('Error al guardar el mensaje en message');
-                                    console.log('Mensaje guardado correctamente.');
-                                } else {
-                                    console.log('El mensaje ya existe, no se enviará.');
-                                }
-                            }
-                        }
-                    }
-                } catch (error) {
-                    console.error('Error al momento de consultar los datos de la API:', error);
-                }
+    useEffect(() => {
+        if (!activeContact) return;
+            const updateMessages = async () => {
+                await fetchMessenger(activeContact);
             };
-            fetchEmple();
-        }, []);
+            updateMessages();
 
-        useEffect(() => {
-            if (!activeContact) return;
-
-                const updateMessages = async () => {
-                    await fetchMessenger(activeContact);
-                };
-                updateMessages();
-
-                // Iniciar el intervalo
-                const intervalId = setInterval(updateMessages, 5000);
-                return () => clearInterval(intervalId);
-        }, [activeContact]);
+            // Iniciar el intervalo
+            const intervalId = setInterval(updateMessages, 5000);
+            return () => clearInterval(intervalId);
+    }, [activeContact]);
 
     //enviar mensaje
     return(
