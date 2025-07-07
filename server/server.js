@@ -56,8 +56,6 @@ async function fetchMessagesMongo() {
         console.log('la conversacion es: ', mensajes)
         console.log('✅ Mensajes recibidos:', mensajes);
 
-        processedUsers = await loadProcessedUser();
-
         const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 
         for(const mensaje of mensajes){
@@ -99,7 +97,6 @@ async function fetchUserData() {
         if (!response.ok) throw new Error('Error en la solicitud');
 
         const result = await response.json();
-        processedUsers = await loadProcessedUser();
 
         const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -180,7 +177,7 @@ async function fetchUserData() {
                         console.log("no pusiste respuesta");
                     }
 
-                }else if(NameChat === "ChatBotTelegram"){
+                }else if(NameChat === "ChatBotTelegram"){2
                     console.log(`Cambio de plan id: ${idUser}, nombre ${nombreUser}, Nombre chat ${NameChat}, mensaje: ${messageProblem}, duracion ${ServicioDuracion}, descripcion: nombre titular${NameTitular}, docuemnto titular: ${DocumentoTitular}, servicio ${ServicioTitular}, motivo: ${MotivoCambio} `)
 
                     if(ServicioDuracion === "0 - 6 meses"){
@@ -212,6 +209,12 @@ async function fetchUserData() {
     } catch (error) {
         console.error('❌ Error en fetchUserData:', error); 
     }
+}
+
+async function UserNew() {
+    processedUsers = await loadProcessedUser();
+
+    const yaExiste = processedUsers
 }
 
 setInterval(fetchUserData, 10000);

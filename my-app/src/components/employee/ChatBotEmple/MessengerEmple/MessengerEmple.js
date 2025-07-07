@@ -97,11 +97,12 @@ function MessengerEmple (){
             {
               sender: 'Empleado',
               message: image,
-              contexto: currentMessage, 
+              contexto: currentMessage,
               idMessageClient: `msg_imageWithText_${Date.now()}`
             }
           ]
         };
+
         // Guardar en Mongo
         const saveResponse = await fetch(`http://localhost:3001/message/${activeContact.id}`, {
           method: 'PUT',
@@ -133,7 +134,6 @@ function MessengerEmple (){
       }
     };
 
-
     useEffect(()=>{
         const userId = localStorage.getItem('UserId');
         const rolUser = localStorage.getItem('rol-user');
@@ -153,6 +153,7 @@ function MessengerEmple (){
                     'Content-Type': 'application/json'
                 }
             });
+
             if (!response.ok) {
                 throw new Error('Error al obtener los mensajes del contacto');
             }
@@ -163,6 +164,7 @@ function MessengerEmple (){
                 setMessages([]);
                 return;
             }
+
             const flattenedMessages = data.flatMap(doc => {
                 if (!Array.isArray(doc.messages)) return [];
             
@@ -174,23 +176,28 @@ function MessengerEmple (){
                     updatedAt: msg.timeStamp || doc.updatedAt,
                 }));
             });
+
             const mensajesOrdenados = flattenedMessages.sort((a, b) =>
                 new Date(a.updatedAt) - new Date(b.updatedAt)
             );
+
             setMessages(mensajesOrdenados);
             const lastMessage = mensajesOrdenados[mensajesOrdenados.length - 1];
             const lastSender = lastMessage?.sender === 'Cliente'? "Cliente" : "Empleado"
+
             setUnreadMessages(prev => ({
                 ...prev,
                 [activeContact.id]: activeContact.id !== activeContact.id 
             }));
-            setContacts(prevContacts => 
+
+            setContacts(prevContacts =>
                 prevContacts.map(contact =>
                     contact.id === activeContact.id
                     ? { ...contact, lastMessage,  lastSender   }
                     : contact
                 )
             );
+
         } catch (error) {
             console.error('Error al consultar los datos de la API:', error);
         }
@@ -202,6 +209,7 @@ function MessengerEmple (){
             if (!acc[dateKey]) {
                 acc[dateKey] = [];
             }
+
             acc[dateKey].push(message);
             return acc; 
         }, {});
@@ -211,13 +219,15 @@ function MessengerEmple (){
         try {
             const responseMany = await fetch(`http://localhost:3001/manychat/${chatId}`, {
                 method: 'GET',
-                headers: { 
+                headers: {
                     'Content-Type': 'application/json'
                 }
             });
+
             if (!responseMany.ok) {
                 throw new Error('Error al momento de consultar los datos de Manychat:');
             }
+
             const resultMany = await responseMany.json();
             const dataMany = resultMany.cliente.data;
             const newContact = {
@@ -226,15 +236,18 @@ function MessengerEmple (){
                 perfil: dataMany.profile_pic,
                 estado: dataMany.status,
             }
+
             console.log('id es: ', newContact);
             setContacts(prevContacts => {
                 const exists = prevContacts.find(contact => contact.id === newContact.id);
-                
+
                 if(!exists){
                     return[...prevContacts, newContact];
                 }
+
                 return prevContacts;
             });
+
         } catch (error) {
             console.error('Error al momento de consultar los datos de la API:', error);
         }
@@ -256,6 +269,7 @@ function MessengerEmple (){
                 const assignedEmple = dataEmple.filter((emple) => emple.idEmple === EmpleId);
 
                 if (assignedEmple.length > 0) {
+
                     // ✅ Guardamos los contactos para mostrarlos en la lista
                     const contactos = assignedEmple.map(user => ({
                         id: user.cahtId,
@@ -263,6 +277,7 @@ function MessengerEmple (){
                         lastMessage: {
                             message: user.Descripcion
                         },
+
                         lastSender: 'Cliente',
                         perfil: user.perfil || null
                     }));
@@ -284,7 +299,7 @@ function MessengerEmple (){
                             const exists = data.some(msg => msg.contactId === chatId && msg.message === user.Descripcion);
 
                             if (!exists) {
-                                const newMessage = {    
+                                const newMessage = {
                                     contactId: chatId,
                                     usuario: {
                                         nombre: user.nombreClient,
@@ -297,7 +312,7 @@ function MessengerEmple (){
                                     chat: 'messenger',
                                 };
 
-                                const messageResponse = await fetch('http://localhost:3001/message/', {
+                                const messageResponse = await fetch('http://localhost:3001/message', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify(newMessage),
@@ -312,7 +327,7 @@ function MessengerEmple (){
                     }
                 } else {
                     console.log('No hay empleados asignados');
-                    setContacts([]); // por si se reinicia
+                    setContacts([]);
                 }
 
             } catch (error) {
@@ -323,12 +338,12 @@ function MessengerEmple (){
         fetchEmple();
     }, []);
 
-
     useEffect(() => {
         if (!activeContact) return;
             const updateMessages = async () => {
                 await fetchMessenger(activeContact);
             };
+
             updateMessages();
 
             // Iniciar el intervalo

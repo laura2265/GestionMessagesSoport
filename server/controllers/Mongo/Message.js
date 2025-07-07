@@ -36,6 +36,7 @@ export const getDataMesage = async(req, res) => {
             success: true,
             data: messages
         })
+
     }catch(error){
         res.status(500).json({
             success: false,
@@ -45,8 +46,8 @@ export const getDataMesage = async(req, res) => {
     }
 }
 
-export const postDataMessage = async(req, res) => {
-    try{
+export const postDataMessage = async (req, res) => {
+    try {
         const {
             contactId,
             usuario,
@@ -54,13 +55,21 @@ export const postDataMessage = async(req, res) => {
             chat,
         } = req.body;
 
-        const existingUser = await MessageScheme.findOne({ $or: [{ contactId }] });
-
-        if(existingUser){
-            return res.status(404).json({
+        if (!contactId || !chat || !messages || !Array.isArray(messages)) {
+            return res.status(400).json({
                 success: false,
-                message: 'El usuario ya existe con el mismo id'
-            })
+                message: 'Datos incompletos o incorrectos'
+            });
+        }
+
+        const existingConversation = await MessageScheme.findOne({ contactId, chat });
+
+        if (existingConversation) {
+            return res.status(200).json({
+                success: true,
+                message: 'La conversación ya existe. Usa PUT para actualizar mensajes.',
+                data: existingConversation
+            });
         }
 
         const newMessage = new MessageScheme({
@@ -70,22 +79,24 @@ export const postDataMessage = async(req, res) => {
             chat,
         });
 
-        const guardado = await newMessage.save();
-        console.log('Mensaje guardadoCorrectamente: ', guardado);
+        const saved = await newMessage.save();
+        console.log('✅ Conversación creada:', saved);
+
         res.status(201).json({
             success: true,
-            data: guardado,
-        })
+            data: saved,
+        });
 
-    }catch(error){
-        console.error('Error al momento de guardar el mensaje');
+    } catch (error) {
+        console.error('❌ Error al guardar conversación:', error);
         res.status(500).json({
             success: false,
-            message: 'Error al momento de guardar el mensaje',
+            message: 'Error al guardar la conversación',
             error: error.message
-        })
+        });
     }
-}
+};
+
 
 export const addMessageToConversation = async (req, res) => {
     try {

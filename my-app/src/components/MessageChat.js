@@ -9,7 +9,6 @@ function MessageChat() {
 
     useEffect(() => {
         const intervalId = setInterval(async () => {
-
             try {
                 const EmpleId = localStorage.getItem('UserId');
                 const responseEmple = await fetch(`http://localhost:3001/asignaciones/`);
@@ -104,22 +103,29 @@ function MessageChat() {
                             : {
                                 messages: [messageToSave]
                             };
-                        
+
                         console.log("📤 Body que se va a enviar:", JSON.stringify(body, null, 2));
-                        
-                        const responseSave = await fetch(isNew
+
+                        const url = isNew
                             ? 'http://localhost:3001/message/'
-                            : `http://localhost:3001/message/${chatId}`, {
+                            : `http://localhost:3001/message/${chatId}`;
+
+                        const responseSave = await fetch(url, {
                             method: isNew ? 'POST' : 'PUT',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify(body),
                         });
-                    
+
+                        if (!responseSave.ok) {
+                            const errorText = await responseSave.text();
+                            throw new Error(`Error al guardar el mensaje: ${errorText}`);
+                        }
+
                         const resultSave = await responseSave.json();
                         console.log("🟢 Resultado del guardado:", isNew ? 'POST' : 'PUT', resultSave);
-                    
+
                         notifiedMessagesRef.current.add(messageId);
-                    
+
                         newNotifications.push({
                             contactId: chatId,
                             message: cleanMessage,
@@ -128,7 +134,6 @@ function MessageChat() {
                             nombre: chatUserName,
                         });
                     }
-
                 }
 
                 if (newNotifications.length > 0) {
@@ -139,16 +144,13 @@ function MessageChat() {
                             console.warn("🔇 No se pudo reproducir el sonido:", err);
                         });
                     }
-
                     setTimeout(() => {
                         setNotificacions(prev => prev.slice(newNotifications.length));
                     }, 3000);
                 }
-
             } catch (error) {
                 console.error(`❌ Error en interval: ${error.message}`);
             }
-            
         }, 3000);
 
         return () => clearInterval(intervalId);
