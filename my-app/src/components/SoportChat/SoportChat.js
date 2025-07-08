@@ -215,6 +215,7 @@ function SoportChat (){
           console.error('No se pudo consultar los datos de la api: ', error);
         }
       }
+
       iniciarConversacion();
     },[]);
 
@@ -367,6 +368,24 @@ function SoportChat (){
       } catch (error) {
         console.error('Error al momento de consutlar los datos de la api: ', error)
       }
+    }
+    
+    const extraerDatosUsuario = (mensaje)=>{
+      const datos = {
+        nombre: null,
+        documento: null,
+        servicio: null,
+        motivo:  null
+      }
+      const partes = mensaje.includes(',' ? mensaje.split(',') : mensaje.split(' '));
+
+      if(partes.length >= 4){
+        datos.nombre = partes[0].trim();
+        datos.nombre = partes[1].trim();
+        datos.nombre = partes[2].trim();
+        datos.nombre = partes[3].join(' ').trim();
+      }
+      return datos;
     }
 
     const botomRef = useRef(null);
@@ -714,6 +733,7 @@ function SoportChat (){
 
         //Otras opciones
       }else if (option === "Cambiar Contraseña") {
+        setStateChat("CambioDeContraseña");
         setTimeout(() => addBotMessage(`Para poder solicitar el cambio de contraseña, te vamos a solicitar unos datos, los cuales vas a enviar en un solo mensaje separado por *Comas*, *Tipo lista sin números ni caracteres especiales*, o tambien *De corrido pero con espacios*. \n
             Los datos son:
             \n1️⃣Nombre completo del titular del servicio.
@@ -723,21 +743,35 @@ function SoportChat (){
             \n5️⃣Servicio por el cual solicita el cambio de contraseña.
             \n6️⃣Motivo de cambio de contraseña.
             \nsi no tiene correo registrado escriba *null*.`), 1000);
-        setWaitingForDocument(true); 
+        setWaitingForDocument(true);
 
       } else if (option === "Cancelar Servicio") {
+        setStateChat("CancelarServicio");
         setTimeout(() => addBotMessage(`Señor/a, para realizar esta acción puedes acercarte a la oficina más cercana con la fotocopia de la cedula y la carta con el motivo de porque va a cancelación el servicio.`), 1000);
         setWaitingForDocument(true);
 
       } else if(option === "Cambio de plan"){
-        setTimeout(() => addBotMessage(`Para poder solicitar un cambio de plan, te vamos a solicitar unos datos, los cuales vas a enviar en un solo mensaje separado por *Comas*, *Tipo lista sin números ni caracteres especiales*, o tambien *De corrido pero con espacios*.\n 
-          \nLos datos son:
-          \n1️⃣ Nombre completo del titular del servicio.
-          \n2️⃣ Número de documento del titular.
-          \n3️⃣ El servicio que desea cancelar *(Internet, TV, etc.)*.
-          \n6️⃣Motivo de la cancelación del servicio.`), 1000);
+        setStateChat("CambioDePlan");
+        setTimeout(() => addBotMessage(`Me podrías confirmar cuanto tiempo llevas con nuestro servicios`,
+          ['0 - 6 meses', '6 meses - 1 año', '1 año o más']
+        ), 1000);
         setWaitingForDocument(true);
 
+      }else if(option === "0 - 6 meses" && stateChat === 'CambioDePlan'){
+        setStateChat("CeroASeisMeses");
+        setEstado("Esperando_datos");
+        setTimeout(() => addBotMessage(`📝 Para poder solicitar un cambio de plan, te vamos a solicitar unos datos, los cuales vas a enviar en un solo mensaje separado por *Comas*, *Tipo lista sin números ni caracteres especiales*, o tambien *De corrido pero con espacios*. 
+          \n
+          Los datos son:
+          \n
+          1️⃣ Nombre completo del titular del servicio.
+          \n
+          2️⃣ Número de documento del titular.
+          \n
+          3️⃣ El servicio que desea cancelar *(Internet, TV, etc.)*.
+          \n
+          6️⃣Motivo de la cancelación del servicio.
+        `), 1000)
       }else if(option === 'Traslado'){
         setTimeout(() => addBotMessage('Señor/a, para poder realizar esta acción puede pasar a la oficina más cercana con carta del traslado, copia del recibo del nuevo domicilio ya sea de la luz, del agua, etc.'), 1000);
         setWaitingForDocument(true);

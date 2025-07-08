@@ -47,6 +47,7 @@ function EmpleAssigned(idUser){
 async function fetchMessagesMongo() {
     try{
         const response = await fetch('http://localhost:3001/conversacion-server');
+
         if(!response.ok){
             throw new Error('Error al consultar mensajes de MongoDB')
         }
@@ -97,7 +98,6 @@ async function fetchUserData() {
         if (!response.ok) throw new Error('Error en la solicitud');
 
         const result = await response.json();
-
         const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
         for (const item of result){
@@ -113,10 +113,6 @@ async function fetchUserData() {
                 console.log(`⚠️ El usuario ${idUser} ya tiene el problema  o motivo que es"${problem ||ConsultChat}" registrado.`);
                 continue;
             }
-
-            lastProcessedId = idUser;
-            processedUserSet.add(idUser);
-            console.log(`✅ Nuevo registro para el usuario: ${idUser}, Problema: "${problem}"`);
 
             // Asignación de empleados según la hoja
             if (['Sheet1', 'Sheet2', 'Sheet3', 'Sheet4', 'Sheet5',
@@ -147,74 +143,42 @@ async function fetchUserData() {
                     MotivoCambio
                 }
 
-                if(NameChat === 'ChatBotMessenger'){
-                    console.log(`Cambio de plan id: ${idUser}, nombre ${nombreUser}, Nombre chat ${NameChat}, mensaje: ${messageProblem}, duracion ${ServicioDuracion}, descripcion: nombre titular${NameTitular}, docuemnto titular: ${DocumentoTitular}, servicio ${ServicioTitular}, motivo: ${MotivoCambio} `);
+                const chatsValids = ['ChatBotMessenger', 'ChatBotInstagram', 'ChatBotTelegram'];
 
-                    if(ServicioDuracion === "0 - 6 meses"){
+                if(chatsValids.includes(NameChat)){
+                    switch(ServicioDuracion){
+                        case "0 - 6 meses": 
                         console.log('Usted debe tener más de 6 meses, sin embargo te vamos a pasar a soporte');
                         EmpleAssigned(idUser);
-                    }else if(ServicioDuracion === "6 meses - 1 año"){
-                        console.log('duracion media');
-                    }else if(ServicioDuracion === "1 año o mas"){
-                        console.log('Vamos a confirmar unos datos y te verificamos el proceso');
-                        BuscarCedulaMessenger(userData);
-                    }else{
-                        console.log("no pusiste respuesta");
+                        break;
+
+                        case "6 meses - 1 año" : 
+                        console.log('duración media');
+                        break;
+
+                        case "1 año o mas":
+                            console.log('Vamos a confirmar unos datos y te verificamos el proceso');
+                            if(NameChat === 'ChatBotMessenger'){
+                                BuscarCedulaMessenger(userData);
+                            }else if(NameChat === 'ChatBotInstagram'){
+                                BuscarCedulaInstagram(userData)
+                            }else if(NameChat === 'ChatBotTelegram'){
+                                BuscarCedulaTelegram(userData)
+                            }
+                            break;
+                        default:
+                            console.log('⚠️ No se recibió una respuesta válida en duración de servicio')
                     }
 
-                }else if(NameChat === "ChatBotInstagram"){
-                    console.log(`Cambio de plan id: ${idUser}, nombre ${nombreUser}, Nombre chat ${NameChat}, mensaje: ${messageProblem}, duracion ${ServicioDuracion}, descripcion: nombre titular${NameTitular}, docuemnto titular: ${DocumentoTitular}, servicio ${ServicioTitular}, motivo: ${MotivoCambio} `)
 
-                    if(ServicioDuracion === "0 - 6 meses"){
-                        console.log('Usted debe tener más de 6 meses, sin embargo te vamos a pasar a soporte');
-                        EmpleAssigned(idUser);
-                    }else if(ServicioDuracion === "6 meses - 1 año"){
-                        console.log('duracion media');
-                    }else if(ServicioDuracion === "1 año o mas"){
-                        console.log('Vamos a confirmar unos datos y te verificamos el proceso');
-                        BuscarCedulaMessenger(userData);
-                    }else{
-                        console.log("no pusiste respuesta");
-                    }
-
-                }else if(NameChat === "ChatBotTelegram"){2
-                    console.log(`Cambio de plan id: ${idUser}, nombre ${nombreUser}, Nombre chat ${NameChat}, mensaje: ${messageProblem}, duracion ${ServicioDuracion}, descripcion: nombre titular${NameTitular}, docuemnto titular: ${DocumentoTitular}, servicio ${ServicioTitular}, motivo: ${MotivoCambio} `)
-
-                    if(ServicioDuracion === "0 - 6 meses"){
-                        console.log('Usted debe tener más de 6 meses, sin embargo te vamos a pasar a soporte');
-                        EmpleAssigned(idUser);
-                    }else if(ServicioDuracion === "6 meses - 1 año"){
-                        console.log('duracion media');
-                    }else if(ServicioDuracion === "1 año o mas"){
-                        console.log('Vamos a confirmar unos datos y te verificamos el proceso');
-                        BuscarCedulaMessenger(userData);
-                    }else{
-                        console.log("no pusiste respuesta");
-                    }
                 }
             }
-
-            processedUsers.push({
-                id: idUser,
-                Motivo: ConsultChat,
-                message: problem || null,
-                processedAt: new Date().toISOString()
-            });
-
-            await saveProcessedUser(processedUsers);
-            await delay(1000);
         }
 
         lastProcessedId = result;
     } catch (error) {
         console.error('❌ Error en fetchUserData:', error); 
     }
-}
-
-async function UserNew() {
-    processedUsers = await loadProcessedUser();
-
-    const yaExiste = processedUsers
 }
 
 setInterval(fetchUserData, 10000);
