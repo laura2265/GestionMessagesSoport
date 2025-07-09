@@ -200,8 +200,9 @@ function SoportChat (){
             const mensajeGuardados = data.data.conversacion.map(m => ({
               sender: m.de === 'bot' ? 'bot' : 'user',
               text: typeof m.mensaje === 'string' ? m.mensaje : m.mensaje.text || JSON.stringify(m.mensaje),
-              buttons: m.mensaje.buttons || null,
+              buttons: m.mensaje.buttons?.length ? m.mensaje.buttons : null,
             }));
+
 
             setMessages(mensajeGuardados);
             setNombre(data.data.usuario.nombre);
@@ -264,7 +265,7 @@ function SoportChat (){
       if (!conversacionState) {
         if (estado === "esperando_documento") {
           setDocumentTitular(userInput);
-        
+
           const ip = await getPublicIp();
           const navegador = navigator.userAgent;
         
@@ -290,9 +291,9 @@ function SoportChat (){
               usuario: {
                 nombre: nombreTemporal,
                 email: email,
-                documento: userInput, 
+                documento: userInput,
                 navegador,
-                ip, 
+                ip,
               },
               fechaInicio: new Date().toISOString() 
             })
@@ -308,6 +309,29 @@ function SoportChat (){
 
           setEstado("conversacion");
           setConversacionState(true);
+          setUserInput("");
+          return;
+        }
+
+        if(estado === "esperando_datos_usuario"){
+          const datos = extraerDatosUsuario(userInput);
+          if(datos.nombre && datos.documento && datos.servicio && datos.motivo){
+            console.log('Datos capturados correctamene: ', datos);
+
+            await enviarMensaje(chatIdUser, 'usuario',{
+              text: `Datos capturados: ${JSON.stringify(datos)}`
+            });
+
+            setTimeout(()=> addBotMessage(`Gracias ${datos.nombre}. Estamos procesando tu solucitud para ${datos.servicio}...`), 1000);
+
+            setEstado("conversacion");
+            setWaitingForDocument(false);
+          }else{
+            setTimeout(()=>addBotMessage(
+              `Parece que no entendi bien los datos. Por favor envíalos así: \n\n`+
+              `Ejemplo: Laura, 12345, Internet, Me voy de viaje y ya no usare el servicio`
+            ),1000);
+          }
           setUserInput("");
           return;
         }
@@ -370,23 +394,26 @@ function SoportChat (){
       }
     }
     
-    const extraerDatosUsuario = (mensaje)=>{
+    const extraerDatosUsuario = (mensaje) => {
       const datos = {
         nombre: null,
         documento: null,
         servicio: null,
-        motivo:  null
-      }
-      const partes = mensaje.includes(',' ? mensaje.split(',') : mensaje.split(' '));
-
-      if(partes.length >= 4){
+        motivo: null,
+      };
+    
+      const partes = mensaje.includes(",") ? mensaje.split(",") : mensaje.split(" ");
+    
+      if (partes.length >= 4) {
         datos.nombre = partes[0].trim();
-        datos.nombre = partes[1].trim();
-        datos.nombre = partes[2].trim();
-        datos.nombre = partes[3].join(' ').trim();
+        datos.documento = partes[1].trim();
+        datos.servicio = partes[2].trim();
+        datos.motivo = partes.slice(3).join(" ").trim();
       }
+    
       return datos;
-    }
+    };
+
 
     const botomRef = useRef(null);
 
@@ -759,7 +786,7 @@ function SoportChat (){
 
       }else if(option === "0 - 6 meses" && stateChat === 'CambioDePlan'){
         setStateChat("CeroASeisMeses");
-        setEstado("Esperando_datos");
+        setEstado("esperando_datos_usuario");
         setTimeout(() => addBotMessage(`📝 Para poder solicitar un cambio de plan, te vamos a solicitar unos datos, los cuales vas a enviar en un solo mensaje separado por *Comas*, *Tipo lista sin números ni caracteres especiales*, o tambien *De corrido pero con espacios*. 
           \n
           Los datos son:
@@ -771,7 +798,7 @@ function SoportChat (){
           3️⃣ El servicio que desea cancelar *(Internet, TV, etc.)*.
           \n
           6️⃣Motivo de la cancelación del servicio.
-        `), 1000)
+        `), 1000);
       }else if(option === 'Traslado'){
         setTimeout(() => addBotMessage('Señor/a, para poder realizar esta acción puede pasar a la oficina más cercana con carta del traslado, copia del recibo del nuevo domicilio ya sea de la luz, del agua, etc.'), 1000);
         setWaitingForDocument(true);

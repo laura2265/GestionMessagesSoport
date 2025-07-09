@@ -50,6 +50,7 @@ function MessengerEmple (){
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(rawMessage),
                 });
+
                 if (!response.ok) throw new Error('Error al guardar el mensaje en post-message');
             
                 const messageResponse = await fetch(`http://localhost:3001/message/${activeContact.id}`, {
@@ -57,8 +58,10 @@ function MessengerEmple (){
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(newMessage),
                 });
+
                 if (!messageResponse.ok) throw new Error('Error al guardar el mensaje en message');
                 setMessages(prevMessages => [...prevMessages, newMessage]);
+
             } catch (error) {
                 console.error('Error al guardar el mensaje: ', error);
             }
@@ -416,7 +419,7 @@ function MessengerEmple (){
                                 <>
                                     <img
                                         src={activeContact.perfil || Usuario}
-                                        alt={`${activeContact.nombre}'s avatar` }
+                                        alt={`${activeContact.nombre}'s avatar`}
                                         className="contactAvatar"
                                      />
                                      <p>{activeContact.nombre}</p>
