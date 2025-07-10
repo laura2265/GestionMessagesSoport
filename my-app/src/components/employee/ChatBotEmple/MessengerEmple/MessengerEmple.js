@@ -505,7 +505,19 @@ function MessengerEmple (){
                             <p className="nullData">Seleccione un chat para empezar a chatear</p>
                         )}
                     </div>
+                    {activeContact && (
+                    <div className="extraPanel">
+                        <div className="contentTitle">
+                            <p>Detalles del cliente</p>
+                        </div>
+                        <p><strong>Nombre:</strong> {activeContact.nombre}</p>
+                        <p><strong>Correo:</strong> {activeContact.email || 'No disponible'}</p>
+                        <p><strong>Documento:</strong> {activeContact.documento || 'No disponible'}</p>
+                        <button onClick={()=>console.log("Accion personalizada")}>Ver historial completo</button>
+                    </div>
+                )}
                 </div>
+                
                 {isLoggedIn && <MessageChat/>}
             </div>
         </>

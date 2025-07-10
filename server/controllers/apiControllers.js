@@ -63,6 +63,7 @@ const getDataFetch = async (req, res) => {
                     const FuncionaIndex = headers.indexOf('FuncionamientoInternet');
                     const cableDañadoIndex = headers.indexOf('CableDañado');
                     const funcionoIndex1 = headers.indexOf('FuncionoConexion1');
+                    const numeroDocumento = headers.indexOf('DocumentoTitular')
 
                     if(`Sheet${index+1}` === `Sheet1`){
                         rows.forEach(row => {
@@ -80,7 +81,8 @@ const getDataFetch = async (req, res) => {
                                 bombilloLos: row[bombilloLosIndex],
                                 Funciono: row[FuncionaIndex],
                                 cable: row[cableDañadoIndex],
-                                funciono1: row[funcionoIndex1]
+                                funciono1: row[funcionoIndex1],
+                                numDocTitular: row[numeroDocumento]
                             })
                         })
                     }
@@ -90,6 +92,7 @@ const getDataFetch = async (req, res) => {
                     const testVelIndex = headers.indexOf('VelocidadTest');
                     const porcentajeIndex = headers.indexOf('PorcentajeVelocidad');
                     const ResultTestIndex = headers.indexOf('FuncionamientoTestVelocidad');
+                    const NumeroDocumento = headers.indexOf('DocumentoTitular');
 
                     if(idIndex !== -1 && NameIndex !== -1 && chatIndex !== -1 && messageIndex !== -1 && ProblemaConexionIndex !== -1 && testVelIndex !== -1 && porcentajeIndex !== -1 && ResultTestIndex !== -1){
                         rows.forEach(row=>{
@@ -102,7 +105,8 @@ const getDataFetch = async (req, res) => {
                                 ProblemaInt: row[ProblemaConexionIndex],
                                 testVel: row[testVelIndex],
                                 porcentaje: row[porcentajeIndex],
-                                result: row[ResultTestIndex]
+                                result: row[ResultTestIndex],
+                                numDocTitular: row[NumeroDocumento]
                             })
                         })
                     }
@@ -118,6 +122,7 @@ const getDataFetch = async (req, res) => {
                     const DispVPN = headers.indexOf('DispositivoVPN');
                     const funcionoVPN = headers.indexOf('FuncionoVPN');
                     const NamePage = headers.indexOf('Nombrepagina');
+                    const NumeroDocumento = headers.indexOf('DocumentoTitular');
 
                     if(idIndex !== -1 && NameIndex !== -1 && chatIndex !== -1 && messageIndex !== -1 && ProblemaConexionIndex !== -1 && ProblemaPage !== -1 && ResultPage !== -1 && ExplicacionPage!== -1 && DispPage!== -1 && ResultPage1!== -1 && confirVPN !== -1 && DispVPN !== -1 &&funcionoVPN !== -1 && NamePage !== -1){
                         rows.forEach(row => {
@@ -137,6 +142,7 @@ const getDataFetch = async (req, res) => {
                                 DispositivoVPN: row[DispVPN],
                                 funcionoVpn: row[funcionoVPN],
                                 namePage: row[NamePage],
+                                numDocTitular: row[NumeroDocumento],
                             })
                         })
                     }
@@ -148,6 +154,7 @@ const getDataFetch = async (req, res) => {
                     const FuncionoSeñal = headers.indexOf('FuncionoSeñal');
                     const SeñalTV = headers.indexOf('BombilloCATV');
                     const FuncionoFinal = headers.indexOf('FuncionoSeñalFinal');
+                    const NumeroDocumento = headers.indexOf('DocumentoTitular');
 
                     if(idIndex !== -1 && NameIndex !== -1 && chatIndex !== -1 && messageIndex !== -1 && ProblemaConexionIndex !== -1 && ProblemSeñal !== -1 && CantSeñal !== -1 && ConectCable !== -1 && FuncionoSeñal !== -1 && SeñalTV !== -1 && FuncionoFinal !== -1){
                         rows.forEach(row=>{
@@ -164,6 +171,7 @@ const getDataFetch = async (req, res) => {
                                 FuncionoSeñal: row[FuncionoSeñal],
                                 bombilloTv: row[SeñalTV],
                                 FuncionoFinal: row[FuncionoFinal],
+                                numDocTitular: row[NumeroDocumento],
                             })
                         })
                     }
@@ -177,6 +185,7 @@ const getDataFetch = async (req, res) => {
                     const DispConexionInestable = headers.indexOf('DispositivoConexionInestable');
                     const RedDisp = headers.indexOf('RedConexionInestable');
                     const resultadoFinal = headers.indexOf('ResultadoRedInestable');
+                    const NumeroDocumento = headers.indexOf('DocumentoTitular');
 
                     if(idIndex !== -1 && NameIndex !== -1 && chatIndex !== -1 && messageIndex !== -1 && ProblemaConexionIndex !== -1 && typeProblem !== -1 && bombilloLan !== -1 && ProblemWifi !== -1 && BombilloWifi !== -1 && DispConexionInestable !== -1 && RedDisp !== -1 && resultadoFinal){
                         rows.forEach(row=>{
@@ -193,13 +202,15 @@ const getDataFetch = async (req, res) => {
                                 bombilloWifi: row[BombilloWifi],
                                 DispConexion: row[DispConexionInestable],
                                 RedDisp: row[RedDisp],
-                                resultadoFinal: row[resultadoFinal]
+                                resultadoFinal: row[resultadoFinal],
+                                numDocTitular: row[NumeroDocumento],
                             })
                         })
                     }
 
                 }else if(`Sheet${index+1}` === `Sheet6`){
                     const ProblemaConexionIndex = headers.indexOf('problema-conexion');
+                    const NumeroDocumento = headers.indexOf('DocumentoTitular');
                     if(idIndex !== -1 && NameIndex !== -1 && chatIndex !== -1 && messageIndex !== -1 && ProblemaConexionIndex !== -1){
                         rows.forEach(row => {
                             formattedData.push({
@@ -209,6 +220,7 @@ const getDataFetch = async (req, res) => {
                                 chatName: row[chatIndex],
                                 Message: row[messageIndex],
                                 ProblemaInt: row[ProblemaConexionIndex],
+                                numDocTitular: row[NumeroDocumento],
                             })
                         })
                     }
