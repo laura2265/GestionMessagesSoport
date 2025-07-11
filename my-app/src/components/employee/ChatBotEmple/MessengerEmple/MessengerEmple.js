@@ -163,7 +163,7 @@ function MessengerEmple (){
             const result = await response.json();
             console.log('Respuesta obtenida de la API de mensajes:', result);
             const data = result?.data?.docs || [];
-            if (!Array.isArray(data) || data.length === 0) {
+            if (!Array.isArray(data) ||(data && data.length === 0)) {
                 setMessages([]);
                 return;
             }
@@ -328,11 +328,11 @@ function MessengerEmple (){
                             }
                         }
                     }
+
                 } else {
                     console.log('No hay empleados asignados');
                     setContacts([]);
                 }
-
             } catch (error) {
                 console.error('Error al momento de consultar los datos de la API:', error);
             }
@@ -342,16 +342,18 @@ function MessengerEmple (){
     }, []);
 
     useEffect(() => {
-        if (!activeContact) return;
-            const updateMessages = async () => {
-                await fetchMessenger(activeContact);
-            };
+        if(!activeContact){
+            return;
+        }
+        const updateMessages = async()=>{
+            await fetchMessenger(activeContact);
+        }
+        
+        updateMessages();
 
-            updateMessages();
+        const intervalId = setInterval(updateMessages, 5000);
 
-            // Iniciar el intervalo
-            const intervalId = setInterval(updateMessages, 5000);
-            return () => clearInterval(intervalId);
+        return ()=>clearInterval(intervalId)
     }, [activeContact]);
 
     //enviar mensaje
@@ -383,6 +385,7 @@ function MessengerEmple (){
                                     key={contact.id}
                                     className={`contactContent ${activeContact?.id === contact.id ? 'active' : ''}`}
                                     onClick={() => {
+                                        setMessages([])
                                         setActiveContact(contact);
 
                                         setContacts(prevContacts =>

@@ -23,6 +23,19 @@ connectDB();
 let processedUsers = [];
 const processedUserSet = new Set();
 
+// Cargar usuarios procesados desde JSON al iniciar
+(async () => {
+    try {
+        processedUsers = await loadProcessedUser();
+        processedUsers.forEach(user => {
+            if (user.id) processedUserSet.add(user.id);
+        });
+        console.log(`✅ Procesados cargados: ${processedUserSet.size}`);
+    } catch (error) {
+        console.error('❌ Error al cargar usuarios procesados:', error);
+    }
+})();
+
 // Headers para ManyChat
 const myHeaders = {
     accept: "application/json",
@@ -85,16 +98,14 @@ async function fetchAndProcessUsers() {
         for (const user of allUsers) {
             const { idUser, Motivo } = user;
 
-            const yaProcesado = processedUsers.some(u =>
-                u.id === idUser &&
-                (u.message === Motivo || u.Motivo === Motivo)
-            );
-
-            if (yaProcesado) {
-                console.log(`⚠️ Usuario ${idUser} ya procesado con motivo "${Motivo}"`);
+            // ❗ Nueva validación con Set
+            if (processedUserSet.has(idUser)) {
+                console.log(`⚠️ Usuario ${idUser} ya procesado`);
                 continue;
             }
 
+            // Registrar nuevo usuario procesado
+            processedUserSet.add(idUser);
             processedUsers.push({
                 id: idUser,
                 Motivo: Motivo || null,
@@ -147,7 +158,6 @@ async function fetchAndProcessUsers() {
                     }
                 }
             }
-
             await delay(1000);
         }
 

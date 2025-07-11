@@ -97,9 +97,9 @@ export const postDataMessage = async (req, res) => {
     }
 };
 
-
 export const addMessageToConversation = async (req, res) => {
     try {
+
         const { contactId } = req.params;
         const { messages } = req.body;
 
