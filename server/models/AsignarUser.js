@@ -4,31 +4,35 @@ import mongoosePaginate from 'mongoose-paginate-v2'
 const AsignarUser = new mongoose.Schema({
     nombreEmple: {
         type: String,
-        require: true
+        require: true,
     },
     idEmple:{
         type: String,
-        require: true
+        require: true,
     },
     nombreClient: {
         type: String,
-        require: true
+        require: true,
     },
-    cahtId: {
+    numDocTitular:{
         type: String,
-        require: true
+        require: true,
+    },
+    chatId: {
+        type: String,
+        require: true,
     },
     chatName:{
         type: String,
-        require: true
+        require: true,
     },
     categoriaTicket: {
         type: String,
-        require: true 
+        require: true,
     },
     Descripcion: {
         type: [String],
-        require: true
+        require: true,
     }
 },{timestamps: true})
 

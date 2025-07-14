@@ -280,7 +280,6 @@ function MessengerEmple (){
                         lastMessage: {
                             message: user.Descripcion
                         },
-
                         lastSender: 'Cliente',
                         perfil: user.perfil || null
                     }));
