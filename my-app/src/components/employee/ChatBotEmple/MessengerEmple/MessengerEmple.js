@@ -27,6 +27,7 @@ function MessengerEmple (){
             handleSendMessage();
         }
     }
+
     const handleSendMessage = async () => {
         if (currentMessage.trim() !== "" && activeContact) {
             const newMessage = {
@@ -38,12 +39,13 @@ function MessengerEmple (){
                     }
                 ]
             };
+
             const rawMessage = {
                 suscriberID: activeContact.id,
                 message: currentMessage,
                 chat: 'messenger',
             };
-        
+
             try {
                 const response = await fetch(`http://localhost:3001/post-message`, {
                     method: 'POST',
@@ -65,6 +67,7 @@ function MessengerEmple (){
             } catch (error) {
                 console.error('Error al guardar el mensaje: ', error);
             }
+
             setCurrentMessage("");
         }
     };
@@ -160,6 +163,7 @@ function MessengerEmple (){
             if (!response.ok) {
                 throw new Error('Error al obtener los mensajes del contacto');
             }
+
             const result = await response.json();
             console.log('Respuesta obtenida de la API de mensajes:', result);
             const data = result?.data?.docs || [];
@@ -170,7 +174,7 @@ function MessengerEmple (){
 
             const flattenedMessages = data.flatMap(doc => {
                 if (!Array.isArray(doc.messages)) return [];
-            
+
                 return doc.messages.map(msg => ({
                     ...msg,
                     contactId: doc.contactId,
@@ -241,15 +245,7 @@ function MessengerEmple (){
             }
 
             console.log('id es: ', newContact);
-            setContacts(prevContacts => {
-                const exists = prevContacts.find(contact => contact.id === newContact.id);
-
-                if(!exists){
-                    return[...prevContacts, newContact];
-                }
-
-                return prevContacts;
-            });
+            return newContact;
 
         } catch (error) {
             console.error('Error al momento de consultar los datos de la API:', error);
@@ -274,7 +270,7 @@ function MessengerEmple (){
                 if (assignedEmple.length > 0) {
 
                     // ✅ Guardamos los contactos para mostrarlos en la lista
-                    const contactos = assignedEmple.map(user => ({
+                    const contactos = assignedEmple.filter(user => user.chatName === 'ChatBotMessenger').map(user => ({
                         id: user.cahtId,
                         nombre: user.nombreClient,
                         lastMessage: {
@@ -290,7 +286,17 @@ function MessengerEmple (){
                     for (let user of assignedEmple) {
                         const chatId = user.cahtId;
                         if (user.chatName === 'ChatBotMessenger') {
-                            await fetchManychat(chatId);
+                            const newContact = await fetchManychat(chatId);
+
+                            if(newContact){
+                                setContacts(prevContacts=>{
+                                    const exists = prevContacts.find(c => c.id === newContact.id);
+                                    if(!exists){
+                                        return[...prevContacts, newContact]
+                                    }
+                                    return prevContacts;
+                                })
+                            }
 
                             const response = await fetch(`http://localhost:3001/message/?contactId=${chatId}&chat=messenger`);
                             if (!response.ok) throw new Error('Error al obtener mensajes');
@@ -525,4 +531,5 @@ function MessengerEmple (){
         </>
     )
 }
+
 export default MessengerEmple
