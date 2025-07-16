@@ -22,7 +22,7 @@ function MessageChat() {
 
                 for (let user of assignedEmple) {
                     try{
-                        const chatId = user.chatId;
+                        const chatId = user.cahtId || user.chatId;
                         const chatUserName = user.nombreClient;
                         const motivo = user.categoriaTicket;
 

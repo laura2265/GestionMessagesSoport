@@ -22,6 +22,7 @@ function MessengerEmple (){
     const [ selectedImage, setSelectedImage] = useState(null);
     const fileInputRef = useRef(null);
     const [nombreEmpleado, setNombreEmpleado]= useState("");
+
     const handleKeyPress = (e) =>{
         if(e.key === 'Enter'){
             handleSendMessage();
@@ -256,7 +257,13 @@ function MessengerEmple (){
         const fetchEmple = async () => {
             try {
                 const EmpleId = localStorage.getItem('UserId');
-                const responseEmple = await fetch(`http://localhost:3001/asignaciones/`);
+                const responseEmple = await fetch(`http://localhost:3001/asignaciones/`,{
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
                 if (!responseEmple.ok) {
                     throw new Error('Error al consultar asignaciones');
                 }

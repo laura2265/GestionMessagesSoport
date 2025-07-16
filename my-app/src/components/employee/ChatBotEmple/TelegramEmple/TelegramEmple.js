@@ -1,22 +1,150 @@
-import { useContext, useEffect, useState } from "react"
-import ThemeContext from "../../../ThemeContext"
-import Navbar from "../../../navbar/Navbar"
-import SliderEmploye from "../../../navbar/SliderEmploye"
-import ModoOScuro from '../../../../assets/img/modo-oscuro.png'
-import ModoClaro from '../../../../assets/img/soleado.png'
-import Usuario from '../../../../assets/img/usuario.png'
-import Enviar from '../../../../assets/img/enviar.png'
-import MessageChat from "../../../MessageChat"
+import { useContext, useEffect, useRef, useState } from "react";
+import ThemeContext from "../../../ThemeContext";
+import Navbar from "../../../navbar/Navbar";
+import SliderEmploye from "../../../navbar/SliderEmploye";
+import ModoOScuro from '../../../../assets/img/modo-oscuro.png';
+import ModoClaro from '../../../../assets/img/soleado.png';
+import Usuario from '../../../../assets/img/usuario.png';
+import Enviar from '../../../../assets/img/enviar.png';
+import MessageChat from "../../../MessageChat";
 import '../chatBotEmple.css'
+import { VscSend } from "react-icons/vsc";
+import '../WhatsappEmple/whatsappEmple.css';
+import { CiImageOn } from "react-icons/ci";
 
 function TelegramEmple (){
-    const {theme, toggleTheme} = useContext(ThemeContext)
-    const [contacts, setContacts] = useState([])
-    const [activeContact, setActiveContact] = useState(null)
-    const [messages, setMessages] = useState([])
-    const [currentMessage, setCurrentMessage] = useState('')
+    const {theme, toggleTheme} = useContext(ThemeContext);
+    const [contacts, setContacts] = useState([]);
+    const [activeContact, setActiveContact] = useState(null);
+    const [messages, setMessages] = useState([]);
     const [ isLoggedIn, setIsLoggedIn] = useState(false);
-        
+    const [unreadMessages, setUnreadMessages] = useState({});
+    const [currentMessage, setCurrentMessage] = useState('');
+    const [ selectedImage, setSelectedImage] = useState(null);
+    const fileInputRef = useRef(null);
+    const [nombreEmpleado, setNombreEmpleado]= useState("");
+    
+    //enviar mensaje
+    const handleKeyPress = (e) =>{
+        if(e.key === 'Enter'){
+            handleSendMessage()
+        }
+    }
+
+    const handleSendMessage = async () => {
+        if (currentMessage.trim() !== "" && activeContact) {
+            const newMessage = {
+                messages: [
+                    {
+                        sender: 'Empleado',
+                        message: currentMessage,
+                        idMessageClient: `msg_${Date.now()}-${currentMessage.length}`
+                    }
+                ]
+            };
+
+            const rawMessage = {
+                suscriberID: activeContact.id,
+                message: currentMessage,
+                chat: 'telegram'
+            }
+    
+            try {
+                const response = await fetch(`http://localhost:3001/post-message`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(rawMessage),
+                });
+    
+                if (!response.ok) throw new Error('Error al guardar el mensaje en post-message');
+    
+                const messageResponse = await fetch('http://localhost:3001/message/', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newMessage),
+                });
+
+                if (!messageResponse.ok) throw new Error('Error al guardar el mensaje en message');
+    
+                setMessages(prevMessages => [...prevMessages, newMessage]);
+    
+            } catch (error) {
+                console.error('Error al guardar el mensaje: ', error);
+            }
+
+            setCurrentMessage("");
+        }
+    };
+    // Manejo del envío de archivos
+    const handleFileChage = (e) => {
+        if(e.target.files[0]){
+            setSelectedImage(e.target.files[0]);
+        }
+    };
+
+    const imageUploadNube = async () => {
+      if (!selectedImage || !activeContact) return;
+
+      try {
+        const formData = new FormData();
+        formData.append('file', selectedImage);
+    
+        const response = await fetch('http://localhost:3001/image-post-message', {
+          method: 'POST',
+          body: formData
+        });
+    
+        if (!response.ok) throw new Error('Error al subir la imagen a la nube');
+    
+        const data = await response.json();
+        const image = data?.data?.secure_url || '';
+    
+        if (!image) throw new Error('No se encontró la URL de la imagen');
+    
+        // Armar mensaje para Mongo
+        const newMessage = {
+          messages: [
+            {
+              sender: 'Empleado',
+              message: image,
+              contexto: currentMessage,
+              idMessageClient: `msg_imageWithText_${Date.now()}`
+            }
+          ]
+        };
+
+        // Guardar en Mongo
+        const saveResponse = await fetch(`http://localhost:3001/message/${activeContact.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newMessage)
+        });
+    
+        if (!saveResponse.ok) throw new Error('Error al guardar el mensaje');
+    
+        const responseManychat = await fetch('http://localhost:3001/post-message', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            suscriberID: activeContact.id,
+            message: image,
+            contexto: currentMessage,
+            chat: 'telegram'
+          })
+        });
+    
+        if (!responseManychat.ok) throw new Error('Error al enviar a ManyChat');
+    
+        setMessages(prev => [...prev, newMessage]);
+        setSelectedImage(null);
+        setCurrentMessage("");
+    
+      } catch (error) {
+        console.error('Error al subir la imagen a la nube: ', error);
+      }
+    };
+
+
     useEffect(()=>{
         const userId = localStorage.getItem('UserId')
         const rolUser = localStorage.getItem('rol-user')
@@ -41,16 +169,47 @@ function TelegramEmple (){
                 throw new Error('Error al obtener los mensajes del contacto');
             }
 
-            const result = await response.json()
-            const data = result.data.docs;
-            const messageM = data.filter((message) => message.contactId === activeContact.id)
-            console.log('los mensajes enviados son: ', messageM)
+            const result = await response.json();
+            console.log('Respuesta obtenida de la API de mensajes:', result);
             
-            const mensajesOrdenados = messageM.sort((a, b) => 
+            const data = result?.data?.docs || [];
+            if (!Array.isArray(data) ||(data && data.length === 0)) {
+                setMessages([]);
+                return;
+            }
+
+            const flattenedMessages = data.flatMap(doc => {
+                if (!Array.isArray(doc.messages)) return [];
+
+                return doc.messages.map(msg => ({
+                    ...msg,
+                    contactId: doc.contactId,
+                    chat: doc.chat,
+                    usuario: doc.usuario,
+                    updatedAt: msg.timeStamp || doc.updatedAt,
+                }));
+            });
+
+            const mensajesOrdenados = flattenedMessages.sort((a, b) =>
                 new Date(a.updatedAt) - new Date(b.updatedAt)
             );
 
-            setMessages(mensajesOrdenados)
+            setMessages(mensajesOrdenados);
+            const lastMessage = mensajesOrdenados[mensajesOrdenados.length - 1];
+            const lastSender = lastMessage?.sender === 'Cliente'? "Cliente" : "Empleado"
+
+            setUnreadMessages(prev => ({
+                ...prev,
+                [activeContact.id]: activeContact.id !== activeContact.id 
+            }));
+
+            setContacts(prevContacts =>
+                prevContacts.map(contact =>
+                    contact.id === activeContact.id
+                    ? { ...contact, lastMessage,  lastSender   }
+                    : contact
+                )
+            );
 
         } catch (error) {
             console.error('Error al consultar los datos de la API:', error);
@@ -63,8 +222,9 @@ function TelegramEmple (){
             if (!acc[dateKey]) {
                 acc[dateKey] = [];
             }
+
             acc[dateKey].push(message);
-            return acc;
+            return acc; 
         }, {});
     };
 
@@ -91,6 +251,8 @@ function TelegramEmple (){
                 perfil: dataMany.profile_pic,
                 estado: dataMany.status,
             }
+
+            console.log('id es: ', newContact);
 
             setContacts(prevContacts => {
                 const exists = prevContacts.find(contact => contact.id === newContact.id )
@@ -127,12 +289,35 @@ function TelegramEmple (){
                 const assignedEmple = dataEmple.filter((emple) => emple.idEmple === EmpleId);
     
                 if (assignedEmple && assignedEmple.length > 0) {
+
+                    const contactos = assignedEmple.filter(user => user.chatName ===  'ChatBotTelegram').map(user => ({
+                        id: user.cahtId,
+                        nombre: user.nombreClient,
+                        lastMessage: {
+                            message: user.Descripcion
+                        },
+                        lastSender: 'Cliente',
+                        perfil: user.perfil || null
+                    }))
+
+                    setContacts(contactos);
+
                     for (let i = 0; i < assignedEmple.length; i++){
                         const user = assignedEmple[i];
                         const chatId = user.cahtId;
                         console.log('el id de la primera api es: ', chatId)
                         if(user.chatName === 'ChatBotTelegram'){
-                            await fetchManychat(chatId);
+                            const newContact = await fetchManychat(chatId);
+
+                            if(newContact){
+                                setContacts(prevContacts=>{
+                                    const exists = prevContacts.find(c => c.id === newContact.id);
+                                    if(!exists){
+                                        return[...prevContacts, newContact]
+                                    }
+                                    return prevContacts;
+                                })
+                            }
 
                             const response = await fetch(`http://localhost:3001/message/?contactId=${activeContact.id}&chat=telegram`, {
                                 method: 'GET',
@@ -153,10 +338,15 @@ function TelegramEmple (){
                             if (!exists) {
                                 const newMessage = {
                                     contactId: chatId,
-                                    message: user.Descripcion,
-                                    sender: 'Cliente',
+                                    usuario: {
+                                        nombre: user.nombreClient,
+                                    },
+                                    messages: [{
+                                        sender: 'Cliente',
+                                        message: user.Descripcion,
+                                        idMessageClient: `msg_MessageProblem-${user.Descripcion.length}`,
+                                    }],
                                     chat: 'telegram',
-                                    idMessageClient: `msg_MessageProblem-${user.Descripcion.length}`
                                 };
     
                                 const messageResponse = await fetch('http://localhost:3001/message/', {
@@ -173,77 +363,32 @@ function TelegramEmple (){
                             }
                         }
                     }
+                }else{
+                    console.log('No hay empleados asignados');
+                    setContacts([]);
                 }
             }catch (error) {
                 console.error('Error al momento de consultar los datos de la API:', error);
             }
         };
-
         fetchEmple();
     }, []);
-
-    const handleSendMessage = async () => {
-        if (currentMessage.trim() !== "" && activeContact) {
-            const newMessage = {
-                contactId: activeContact.id,
-                message: currentMessage,
-                sender: 'Empleado',
-                chat: 'telegram',
-                idMessageClient: `msg_${Date.now()}-${currentMessage.length}`
-            };
-    
-            try {
-                const response = await fetch(`http://localhost:3001/post-message`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        suscriberID: activeContact.id,
-                        message: currentMessage,
-                        chat: 'telegram',
-                    }),
-                });
-    
-                if (!response.ok) throw new Error('Error al guardar el mensaje en post-message');
-    
-                const messageResponse = await fetch('http://localhost:3001/message/', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(newMessage),
-                });
-
-                if (!messageResponse.ok) throw new Error('Error al guardar el mensaje en message');
-    
-                setMessages(prevMessages => [...prevMessages, newMessage]);
-    
-            } catch (error) {
-                console.error('Error al guardar el mensaje: ', error);
-            }
-
-            setCurrentMessage("");
-        }
-    };
     
     useEffect(() => {
-        if (!activeContact) return;
-            const updateMessages = async () => {
-                await fetchTelegram(activeContact);
-            };
-            updateMessages();
+        if(!activeContact){
+            return;
+        }
+        const updateMessages = async()=>{
+            await fetchTelegram(activeContact);
+        }
         
-            // Iniciar el intervalo
-            const intervalId = setInterval(updateMessages, 5000);
-            return () => clearInterval(intervalId);
+        updateMessages();
+
+        const intervalId = setInterval(updateMessages, 5000);
+
+        return ()=>clearInterval(intervalId)
     
     }, [activeContact]); 
-    
-    
-    
-    //enviar mensaje
-    const handleKeyPress = (e) =>{
-        if(e.key === 'Enter'){
-            handleSendMessage()
-        }
-    }
 
     return(
         <>
@@ -254,10 +399,12 @@ function TelegramEmple (){
                         <SliderEmploye />
                     </div>
                 </div>
+
                 <div className="BarraSuperior">
                     <h1>Telegram</h1>
                     <a className="ButtonTheme1"  onClick={toggleTheme}><img src={theme === 'light'? ModoClaro: ModoOScuro} /></a>
                 </div>
+
                 <div className="contentChatW">
                     <div className="contentContact">
                         <div className="barrasuperiorContacts">
@@ -266,22 +413,41 @@ function TelegramEmple (){
                         <div className="listContactContent">
                             {contacts.length > 0 ? (
                                 contacts.map(contact =>(
-                                    <>
-                                        <div
-                                            key={contact.id}
-                                            className={`contactContent ${activeContact?.id === contact.id ? 'active': '' }`}
-                                            onClick={()=> setActiveContact(contact)}
-                                        >
-                                            <img src={contact.perfil || Usuario}  />
-                                            <p> {contact.nombre}</p>
+                                    <div
+                                        key={contact.id}
+                                        className={`contactContent ${activeContact?.id === contact.id ? 'active' : ''}`}
+                                        onClick={() => {
+                                            setMessages([])
+                                            setActiveContact(contact);
+    
+                                            setContacts(prevContacts =>
+                                                prevContacts.map(c =>
+                                                    c.id === contact.id ? { ...c, unread: false } : c
+                                                )
+                                            );
+    
+                                            setUnreadMessages(prev => ({
+                                                ...prev,
+                                                [contact.id]: false
+                                            }));
+                                        }}
+                                    >
+                                        <img src={contact.perfil || Usuario} />
+                                        <div className="contact-info">
+                                            <p>{contact.nombre}</p>
+                                            <p className="lastMessage">
+                                               {contact.lastSender}: {contact.lastMessage ? contact.lastMessage.message : ''}
+                                            </p>
                                         </div>
-                                    </>
+                                        {unreadMessages[contact.id] && <span className="unread-dot"></span>}
+                                    </div>
                                 ))
                             ):(
                                 <p className="nullData">No hay contactos disponibles. </p>
                             )}
                         </div>
                     </div>
+
                     <div className="contentChat">
                         <div className="contentTitle">
                             {activeContact ? (  
@@ -313,7 +479,7 @@ function TelegramEmple (){
                                                     </span>
                                                 </div>
                                             ))}
-                                        </div>  
+                                        </div>
                                         </>
                                     ))
                                 ) : (
@@ -338,6 +504,18 @@ function TelegramEmple (){
                             <p className="nullData">Seleccione un chat para empezar a chatear</p>
                         )}
                     </div>
+
+                    {activeContact && (
+                        <div className="extraPanel">
+                            <div className="contentTitle">
+                            <p>Detalles del cliente</p>
+                            </div>
+                            <p><strong>Nombre:</strong> {activeContact.nombre}</p>
+                            <p><strong>Correo:</strong> {activeContact.email || 'No disponible'}</p>
+                            <p><strong>Documento:</strong> {activeContact.documento || 'No disponible'}</p>
+                            <button onClick={()=>console.log("Accion personalizada")}>Ver historial completo</button>
+                        </div>
+                    )}
                 </div>
                 {isLoggedIn && <MessageChat/>}
             </div>
