@@ -100,11 +100,8 @@ export const postDataMessage = async (req, res) => {
 
 export const addMessageToConversation = async (req, res) => {
     try {
-
         const { contactId } = req.params;
-        const { messages } = req.body;
-
-        console.log('📥 BODY RECIBIDO EN PUT:', req.body);
+        const { chat, messages } = req.body;
 
         if (!messages || !Array.isArray(messages) || messages.length === 0) {
             return res.status(400).json({
@@ -129,13 +126,9 @@ export const addMessageToConversation = async (req, res) => {
             timeStamp: new Date(),
         };
 
-        console.log('🆕 MENSAJE A GUARDAR:', newMessage);
-
         const UploadNewConversation = await MessageScheme.findOneAndUpdate(
-            { contactId },
-            {
-                $push: { messages: newMessage }
-            },
+            { contactId, chat },  // 👈 aquí se usa también `chat`
+            { $push: { messages: newMessage } },
             { new: true }
         );
 
@@ -160,3 +153,4 @@ export const addMessageToConversation = async (req, res) => {
         });
     }
 };
+

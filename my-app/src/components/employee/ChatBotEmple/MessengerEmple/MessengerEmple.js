@@ -30,6 +30,8 @@ function MessengerEmple (){
     }
 
     const handleSendMessage = async () => {
+        await ensureConversationExists();
+
         if (currentMessage.trim() !== "" && activeContact) {
             const newMessage = {
                 messages: [
@@ -73,6 +75,37 @@ function MessengerEmple (){
         }
     };
 
+
+    const ensureConversationExists = async () => {
+    try {
+        const res = await fetch(`http://localhost:3001/message/?contactId=${activeContact.id}&chat=messenger`);
+        const result = await res.json();
+        const exists = result.data.docs.length > 0;
+
+        if (!exists) {
+            const createRes = await fetch('http://localhost:3001/message', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contactId: activeContact.id,
+                    usuario: {
+                        nombre: activeContact.nombre
+                    },
+                    chat: 'messenger'
+                })
+            });
+
+            if (!createRes.ok) {
+                throw new Error('No se pudo crear la conversación');
+            }
+            console.log('✅ Conversación creada');
+        }
+    } catch (error) {
+        console.error('Error al asegurar conversación:', error);
+    }
+};
+
+
     // Manejo del envío de archivos
     const handleFileChage = (e) => {
         if(e.target.files[0]){
@@ -81,6 +114,8 @@ function MessengerEmple (){
     };
 
     const imageUploadNube = async () => {
+        await ensureConversationExists();
+
       if (!selectedImage || !activeContact) return;
       try {
         const formData = new FormData();
@@ -291,7 +326,8 @@ function MessengerEmple (){
 
                     // Si el contacto está asignado a ChatBotMessenger, lo manejamos aparte
                     for (let user of assignedEmple) {
-                        const chatId = user.cahtId;
+                        const chatId = user.chatId;
+                        console.log('mensajes del id: ', chatId)
                         if (user.chatName === 'ChatBotMessenger') {
                             const newContact = await fetchManychat(chatId);
 
@@ -311,9 +347,14 @@ function MessengerEmple (){
                             const result = await response.json();
                             const data = result.data.docs;
 
-                            const exists = data.some(msg => msg.contactId === chatId && msg.message === user.Descripcion);
+                            const exists = data.some(msg =>
+                                msg.contactId === chatId &&
+                                msg.messages?.some(m => m.message === user.Descripcion)
+                            );
+                            console.log('existe tu: ', exists)
 
-                            if (!exists) {
+                            if (exists === false) {
+                                console.log('Existo tu ')
                                 const newMessage = {
                                     contactId: chatId,
                                     usuario: {
@@ -327,8 +368,8 @@ function MessengerEmple (){
                                     chat: 'messenger',
                                 };
 
-                                const messageResponse = await fetch('http://localhost:3001/message', {
-                                    method: 'POST',
+                                const messageResponse = await fetch(`http://localhost:3001/message/${chatId}`, {
+                                    method: 'PUT',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify(newMessage),
                                 });
@@ -470,7 +511,6 @@ function MessengerEmple (){
                                                                 </audio>
                                                                 <br/>
                                                             </>
-
                                                         ) : (
                                                             <p>{mensaje}</p>
                                                         )}
@@ -480,13 +520,13 @@ function MessengerEmple (){
                                                     </div>
                                                 );
                                             })}
-
                                         </div>
                                     ))
                                 ) : (
                                     <p className="nullData">No hay mensajes disponibles <time datetime="20:00">20:00 </time>.</p>
                                 )}
                                 </div>
+
                                 <div className="contenttextMessage">
                                     <div className="fileContent">
                                         <input
@@ -503,6 +543,7 @@ function MessengerEmple (){
                                             <button onClick={imageUploadNube} className="send-image-button">Enviar Imagen</button>
                                         )}
                                     </div>
+
                                     <input
                                         type="text"
                                         placeholder="Escribir..."
@@ -520,6 +561,7 @@ function MessengerEmple (){
                             <p className="nullData">Seleccione un chat para empezar a chatear</p>
                         )}
                     </div>
+
                     {activeContact && (
                     <div className="extraPanel">
                         <div className="contentTitle">
@@ -532,7 +574,7 @@ function MessengerEmple (){
                     </div>
                 )}
                 </div>
-                
+
                 {isLoggedIn && <MessageChat/>}
             </div>
         </>

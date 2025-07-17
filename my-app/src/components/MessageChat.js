@@ -1,6 +1,54 @@
 import { useEffect, useRef, useState } from "react";
 import Notificacion from '../assets/sounds/Notificacion.mp3';
 
+function getChatUserType(name){
+    if(name === 'ChatBotMessenger'){
+        return 'messenger';
+    }
+    if(name === 'ChatBotTelegram'){
+        return 'telegram';
+    }
+    if(name === 'ChatBotInstagram'){
+        return 'instagram';
+    }
+
+    return 'desconocido';
+}
+
+function buildMessageId(subscribed, messageText){
+    if(!messageText){
+        return null;
+    }
+
+    const isImage = messageText.includes('scontent.xx.fbcdn.net');
+    const isAudio = messageText.includes('cdn.fbsbx.com');
+    return isImage || isAudio?
+    `${subscribed}-${messageText.split('/').pop().split('?')[0]}`:
+    `${subscribed}-${messageText.slice(-10)}`;
+}
+
+async function saveMessage({chatId, nombreClient, chatuser, sender, message, messageId }){
+    const body = {
+        contactId: chatId,
+        usuario: { nombre: nombreClient },
+        messages: [{ sender, message, idMessageClient: messageId }],
+        chat: chatuser,
+    }
+    const response = await fetch(`http://localhost:3001/message/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Error guardando mensaje: ${errText}`);
+    }
+
+    const result = await response.json();
+    console.log(`✅ ${sender === 'Sistema' ? 'Motivo' : 'Mensaje'} guardado:`, result);
+}
+
 function MessageChat() {
     const notifiedMessagesRef = useRef(new Set());
     const audioRef = useRef(new Audio(Notificacion));
@@ -11,6 +59,7 @@ function MessageChat() {
         const intervalId = setInterval(async () => {
             try {
                 const EmpleId = localStorage.getItem('UserId');
+
                 const responseEmple = await fetch(`http://localhost:3001/asignaciones/`);
                 if (!responseEmple.ok) throw new Error('Error al consultar asignaciones');
 
@@ -22,58 +71,87 @@ function MessageChat() {
 
                 for (let user of assignedEmple) {
                     try{
-                        const chatId = user.cahtId || user.chatId;
-                        const chatUserName = user.nombreClient;
-                        const motivo = user.categoriaTicket;
+                        const { chatId, nombreClient, categoriaTicket, Descripcion, chatName } = user;
+                        if (!chatId) continue;
 
-                        if (!chatId) {
-                            console.warn("⚠️ chatId está indefinido. Objeto user:", user);
-                            return;
-                        }
+                        const chatuser = getChatUserType(chatName);
 
-                        let chatuser = 'desconocido';
                         if (user.chatName === 'ChatBotMessenger') chatuser = 'messenger';
                         else if (user.chatName === 'ChatBotTelegram') chatuser = 'telegram';
                         else if (user.chatName === 'ChatBotInstagram') chatuser = 'instagram';
 
                         const responseMany = await fetch(`http://localhost:3001/manychat/${chatId}`);
                         if (!responseMany.ok) throw new Error('Error al consultar Manychat');
-
                         const dataMany = (await responseMany.json()).cliente.data;
+
                         const messageText = dataMany.last_input_text;
+                        const messageId = buildMessageId(dataMany.subscribed, messageText);
+                        if (!messageId || !messageText) continue;
 
-                        const isImage = messageText.includes('scontent.xx.fbcdn.net');
-                        const isAudio = messageText.includes('cdn.fbsbx.com');
-                        const isMedia = isImage || isAudio;
-
-                        const messageId = isMedia
-                            ? `${dataMany.subscribed}-${messageText.split('/').pop().split('?')[0]}`
-                            : `${dataMany.subscribed}-${messageText.slice(-10)}`;
-
-                        console.log("🟡 Manychat message info:", { messageText, messageId });
-
-                        if (!chatId || !messageText || !messageId) {
-                            console.warn("⚠️ Datos incompletos para guardar mensaje. Skipping...");
-                            continue;
-                        }
-
-                        const responseGetMessage = await fetch(`http://localhost:3001/message/?contactId=${chatId}&chat=${chatuser}`);
+                         const responseGetMessage = await fetch(`http://localhost:3001/message/?contactId=${chatId}&chat=${chatuser}`);
                         if (!responseGetMessage.ok) throw new Error('Error al consultar mensajes previos');
 
                         const backendData = await responseGetMessage.json();
+
                         const dataGetMessage = Array.isArray(backendData.data?.docs)
                             ? backendData.data.docs
                             : Array.isArray(backendData.message)
                                 ? backendData.message
                                 : [];
 
-                        console.log("🟣 Mensajes desde backend:", dataGetMessage);
-
                         const allMessages = dataGetMessage.flatMap(doc => doc.messages || []);
                         const messageExists = allMessages.some(msg => msg.idMessageClient === messageId);
 
                         // Guardar motivo si no existe
-                        if (dataGetMessage.length === 0) {
+                        if (dataGetMessage.length === 0 && Array.isArray(user.Descripcion)) {
+                            
+                            for(let i = 0;  i< user.Descripcion.length; i++){
+                                const descripcionMensaje = user.Descripcion[i];
+                                if(!descripcionMensaje?.trim()){
+                                    continue
+                                }
+
+                                const descId = `${dataMany.subscribed}-descripcion${i}`;
+
+                                const yaExiste = notifiedMessagesRef.current.has(descId) || 
+                                dataGetMessage.some(doc => 
+                                    doc.messages?.some(msg => msg.idMessageClient === descId)
+                                );
+
+                                if(!yaExiste){
+                                    const descResponse = await fetch(`http://localhost:3001/message/`,{
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json'
+                                        },
+                                        body: JSON.stringify({
+                                            contactId: chatId,
+                                            usuario: {
+                                                nombre: chatUserName 
+                                            },
+                                            messages: [
+                                                {
+                                                    sender: 'Cliente',
+                                                    message: descripcionMensaje,
+                                                    idMessageClient: descId,
+                                                }
+                                            ],
+                                            chat: chatuser
+                                        }),
+                                    });
+
+                                    if(!descResponse.ok){
+                                        const errText = await descResponse.text();
+                                        console.warn('⚠️ Error al guardar descripción:', errText)
+                                    }else{
+                                        console.log("✅ Descripción guardada:", descripcionMensaje);
+                                        notifiedMessagesRef.current.add(descId);
+                                    }
+
+                                }
+
+                            }
+
                             const motivoMensaje = `📝 Motivo del contacto: ${motivo}${user.Descripcion?.[0] ? `, con la descripción: ${user.Descripcion[0]}` : ''}`.trim();
 
                             if (motivoMensaje) {
@@ -100,7 +178,9 @@ function MessageChat() {
                         }
 
                         if (!messageExists && !notifiedMessagesRef.current.has(messageId)) {
-                            const isNew = !Array.isArray(dataGetMessage) || dataGetMessage.length === 0 || !dataGetMessage[0].messages || dataGetMessage[0].messages.length === 0;
+                            const conversationExists = dataGetMessage.some(doc => doc && doc._id);
+                            const isNew = !conversationExists;
+                            
                             const cleanMessage = typeof messageText === 'string' ? messageText.trim() : '';
 
                             if (!cleanMessage) {
@@ -128,13 +208,15 @@ function MessageChat() {
                             console.log("📤 Body que se va a enviar:", JSON.stringify(body, null, 2));
 
                             const url = isNew
-                                ? 'http://localhost:3001/message/'
-                                : `http://localhost:3001/message/${chatId}`;
+                              ? 'http://localhost:3001/message/'
+                              : `http://localhost:3001/message/${chatId}`;
 
+                            const method = isNew ? 'POST' : 'PUT';
+             
                             const responseSave = await fetch(url, {
-                                method: isNew ? 'POST' : 'PUT',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify(body),
+                              method,
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify(body),
                             });
 
                             if (!responseSave.ok) {
@@ -183,12 +265,13 @@ function MessageChat() {
 
     return (
         <div className="notificacion-container">
-            {notificacions.map((notif, index) => {
+            {notificacions.map((notif) => {
+                const key = `${notif.contactId}-${notif.message}`;
                 const isImage = notif.message.includes('scontent.xx.fbcdn.net');
                 const isAudio = notif.message.includes('cdn.fbsbx.com');
 
                 return (
-                    <div key={index} className="notificacion">
+                    <div key={key} className="notificacion">
                         <p>📩 {notif.nombre}:</p>
                         {isImage ? (
                             <img src={notif.message} alt="Imagen" />
