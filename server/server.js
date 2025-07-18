@@ -81,7 +81,9 @@ async function fetchAndProcessUsers() {
                 idUser: item.id,
                 chat: item.chatName,
                 nombreUser: item.Name,
-                Motivo: item.ProblemaInt || item.Message || '',
+                Motivo: item.Message,
+                message: item.ProblemaInt || null,
+                numDoc: item.numDocTitular || null,
                 ServicioDuracion: item.duracionServicio,
                 descripcion: item.descripcion || {},
                 sheet: item.sheet
@@ -90,7 +92,7 @@ async function fetchAndProcessUsers() {
                 tipo: 'mongo',
                 idUser: item.id,
                 chat: item.chat,
-                Motivo: item.message
+                Motivo: item.Message
             }))
         ];
 
@@ -109,7 +111,8 @@ async function fetchAndProcessUsers() {
             processedUsers.push({
                 id: idUser,
                 Motivo: Motivo || null,
-                message: Motivo || null,
+                message: user.message || null,
+                numDoc: user.numDoc || null,
                 contactado: true,
                 processedAt: new Date().toISOString()
             });

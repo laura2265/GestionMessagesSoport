@@ -63,6 +63,7 @@ export const AsignarUserPost = async (req, res) => {
             const newAsignacion = await AsignarUser.create({
                 chatId: cliente.id,
                 nombreClient: cliente.Name,
+                numDocTitular: cliente.numDocTitular || '',
                 chatName: cliente.chatName,
                 Descripcion: [cliente.Message],
                 idEmple: empleAsignado._id,
