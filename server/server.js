@@ -30,8 +30,10 @@ const processedUserSet = new Set();
         processedUsers.forEach(user => {
             if (user.id) processedUserSet.add(user.id);
         });
+
         console.log(`✅ Procesados cargados: ${processedUserSet.size}`);
-    } catch (error) {
+
+    }catch (error){
         console.error('❌ Error al cargar usuarios procesados:', error);
     }
 })();
@@ -63,18 +65,15 @@ async function fetchAndProcessUsers() {
     try {
         const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-        // 1. Fetch Google Sheets
         const sheetsRes = await fetch('http://localhost:3001/api');
         if (!sheetsRes.ok) throw new Error('❌ Error en /api');
         const sheetsData = await sheetsRes.json();
 
-        // 2. Fetch MongoDB
         const mongoRes = await fetch('http://localhost:3001/conversacion-server');
         if (!mongoRes.ok) throw new Error('❌ Error en /conversacion-server');
         const mongoData = await mongoRes.json();
         const mongoMensajes = mongoData.data.docs;
 
-        // 3. Unir datos
         const allUsers = [
             ...sheetsData.map(item => ({
                 tipo: 'sheets',
@@ -96,11 +95,9 @@ async function fetchAndProcessUsers() {
             }))
         ];
 
-        // 4. Procesamiento
         for (const user of allUsers) {
             const { idUser, Motivo } = user;
 
-            // ❗ Nueva validación con Set
             if (processedUserSet.has(idUser)) {
                 console.log(`⚠️ Usuario ${idUser} ya procesado`);
                 continue;
@@ -163,7 +160,6 @@ async function fetchAndProcessUsers() {
             }
             await delay(1000);
         }
-
     } catch (error) {
         console.error("❌ Error en fetchAndProcessUsers:", error);
     }

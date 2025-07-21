@@ -17,18 +17,29 @@ function buildMessageId(subscribed, messageText) {
         : `${subscribed}-${messageText.slice(-10)}`;
 }
 
-async function saveMessage({ chatId, nombreClient, chatuser, sender, message, messageId }) {
+  async function saveMessage({ chatId, nombreClient, chatuser, sender, message, messageId, numDocTitular }) {
     const body = {
         contactId: chatId,
-        usuario: { nombre: nombreClient },
+        usuario: { nombre: nombreClient, documento: numDocTitular },
         messages: [{ sender, message, idMessageClient: messageId }],
         chat: chatuser,
     };
 
-    const response = await fetch(`http://localhost:3001/message/`, {
-        method: 'POST',
+    // Verificar si la conversación ya existe
+    const getResponse = await fetch(`http://localhost:3001/message/?contactId=${chatId}&chat=${chatuser}`);
+    const data = await getResponse.json();
+    const exists = data?.data?.docs?.length > 0;
+
+    const url = exists
+        ? `http://localhost:3001/message/${chatId}?chat=${chatuser}`
+          : `http://localhost:3001/message/`;
+
+    const method = exists ? 'PUT' : 'POST';
+
+    const response = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        body: JSON.stringify(exists ? { messages: body.messages } : body),
     });
 
     if (!response.ok) {
@@ -61,6 +72,12 @@ function MessageChat() {
                 let newNotifications = [];
 
                 for (let user of assignedEmple) {
+                    console.log('🧩 Usuario:', {
+                        nombre: user.nombreClient,
+                        categoriaTicket: user.categoriaTicket,
+                        descripcion: user.Descripcion,
+                    });
+
                     try {
                         const { chatId, nombreClient, numDocTitular ,categoriaTicket, Descripcion, chatName } = user;
                         if (!chatId) continue;
@@ -86,6 +103,27 @@ function MessageChat() {
                                 : [];
 
                         const allMessages = dataGetMessage.flatMap(doc => doc.messages || []);
+
+                        if(categoriaTicket && Descripcion?.[0]){
+                            const motivoMensaje = `📝 Motivo del contacto: ${categoriaTicket}, con la descripción: ${Descripcion[0]}`.trim();
+                            const motivoId = `${dataMany.subscribed}-motivo`;
+
+                            const messageYaExist = allMessages.some(msg => msg.idMessageClient === motivoId);
+
+                            if(messageYaExist && ! notifiedMessagesRef.current.has(motivoId)){
+                                await saveMessage({
+                                    chatId,
+                                    nombreClient,
+                                    chatuser,
+                                    sender: 'Cliente',
+                                    message: motivoMensaje,
+                                    messageId: motivoId,
+                                    numDocTitular
+                                });
+                                notifiedMessagesRef.current.add(motivoId);
+                            }
+                        }
+
                         const messageExists = allMessages.some(msg => msg.idMessageClient === messageId);
 
                         // Descripción
@@ -107,7 +145,8 @@ function MessageChat() {
                                         chatuser,
                                         sender: 'Cliente',
                                         message: descripcionMensaje,
-                                        messageId: descId
+                                        messageId: descId,
+                                        numDocTitular
                                     });
                                     notifiedMessagesRef.current.add(descId);
                                 }
@@ -124,7 +163,8 @@ function MessageChat() {
                                     chatuser,
                                     sender: 'Sistema',
                                     message: motivoMensaje,
-                                    messageId: motivoId
+                                    messageId: motivoId,
+                                    numDocTitular
                                 });
                                 notifiedMessagesRef.current.add(motivoId);
                             }
@@ -138,7 +178,8 @@ function MessageChat() {
                                 chatuser,
                                 sender: 'Cliente',
                                 message: messageText.trim(),
-                                messageId
+                                messageId,
+                                numDocTitular
                             });
 
                             notifiedMessagesRef.current.add(messageId);

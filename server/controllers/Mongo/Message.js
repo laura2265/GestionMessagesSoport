@@ -101,7 +101,8 @@ export const postDataMessage = async (req, res) => {
 export const addMessageToConversation = async (req, res) => {
     try {
         const { contactId } = req.params;
-        const { chat, messages } = req.body;
+        const { chat } = req.query;
+        const { messages } = req.body;
 
         if (!messages || !Array.isArray(messages) || messages.length === 0) {
             return res.status(400).json({
@@ -127,7 +128,7 @@ export const addMessageToConversation = async (req, res) => {
         };
 
         const UploadNewConversation = await MessageScheme.findOneAndUpdate(
-            { contactId, chat },  // 👈 aquí se usa también `chat`
+            { contactId, chat },
             { $push: { messages: newMessage } },
             { new: true }
         );
@@ -135,7 +136,7 @@ export const addMessageToConversation = async (req, res) => {
         if (!UploadNewConversation) {
             return res.status(404).json({
                 success: false,
-                message: 'Conversacion no encontrada'
+                message: 'Conversación no encontrada'
             });
         }
 
