@@ -17,7 +17,7 @@ function buildMessageId(subscribed, messageText) {
         : `${subscribed}-${messageText.slice(-10)}`;
 }
 
-  async function saveMessage({ chatId, nombreClient, chatuser, sender, message, messageId, numDocTitular }) {
+async function saveMessage({ chatId, nombreClient, chatuser, sender, message, messageId, numDocTitular }) {
     const body = {
         contactId: chatId,
         usuario: { nombre: nombreClient, documento: numDocTitular },
@@ -25,21 +25,28 @@ function buildMessageId(subscribed, messageText) {
         chat: chatuser,
     };
 
-    // Verificar si la conversación ya existe
     const getResponse = await fetch(`http://localhost:3001/message/?contactId=${chatId}&chat=${chatuser}`);
     const data = await getResponse.json();
-    const exists = data?.data?.docs?.length > 0;
+    const existingId = data?.data?.docs?.[0]?._id;
 
-    const url = exists
-        ? `http://localhost:3001/message/${chatId}?chat=${chatuser}`
-          : `http://localhost:3001/message/`;
+    let url, method, finalBody;
 
-    const method = exists ? 'PUT' : 'POST';
+    if (existingId) {
+        
+        url = `http://localhost:3001/message/${existingId}`;
+        method = 'PUT';
+        finalBody = JSON.stringify(body); 
+    } else {
+        // Si no existe, crea una nueva
+        url = `http://localhost:3001/message/`;
+        method = 'POST';
+        finalBody = JSON.stringify(body);
+    }
 
     const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(exists ? { messages: body.messages } : body),
+        body: finalBody,
     });
 
     if (!response.ok) {
@@ -52,7 +59,7 @@ function buildMessageId(subscribed, messageText) {
 }
 
 function MessageChat() {
-    const notifiedMessagesRef = useRef(new Set());
+    const notifiedMessagesRef = useRef(new Map());
     const audioRef = useRef(new Audio(Notificacion));
     const [notificacions, setNotificacions] = useState([]);
     const [audioEnabled, setAudioEnabled] = useState(true);
@@ -79,8 +86,11 @@ function MessageChat() {
                     });
 
                     try {
-                        const { chatId, nombreClient, numDocTitular ,categoriaTicket, Descripcion, chatName } = user;
-                        if (!chatId) continue;
+                        const { chatId, nombreClient, numDocTitular, categoriaTicket, Descripcion, chatName } = user;
+                        if(!chatId){
+                            console.warn('⚠️ El chatId está indefinido, se omite este contacto.')
+                            continue
+                        }
 
                         const chatuser = getChatUserType(chatName);
 
@@ -90,55 +100,60 @@ function MessageChat() {
 
                         const messageText = dataMany.last_input_text;
                         const messageId = buildMessageId(dataMany.subscribed, messageText);
-                        if (!messageId || !messageText) continue;
 
-                        const responseGet = await fetch(`http://localhost:3001/message/?contactId=${chatId}&chat=${chatuser}`);
-                        if (!responseGet.ok) throw new Error('Error al consultar mensajes previos');
-                        const backendData = await responseGet.json();
+                        const getConv = await fetch(`http://localhost:3001/message/?contactId=${chatId}&chat=${chatuser}`);
+                        const getData = await getConv.json();
+                        const existeConversacion = getData?.data?.docs?.length > 0;
 
-                        const dataGetMessage = Array.isArray(backendData.data?.docs)
-                            ? backendData.data.docs
-                            : Array.isArray(backendData.message)
-                                ? backendData.message
-                                : [];
-
-                        const allMessages = dataGetMessage.flatMap(doc => doc.messages || []);
-
-                        if(categoriaTicket && Descripcion?.[0]){
-                            const motivoMensaje = `📝 Motivo del contacto: ${categoriaTicket}, con la descripción: ${Descripcion[0]}`.trim();
-                            const motivoId = `${dataMany.subscribed}-motivo`;
-
-                            const messageYaExist = allMessages.some(msg => msg.idMessageClient === motivoId);
-
-                            if(messageYaExist && ! notifiedMessagesRef.current.has(motivoId)){
-                                await saveMessage({
-                                    chatId,
-                                    nombreClient,
-                                    chatuser,
-                                    sender: 'Cliente',
-                                    message: motivoMensaje,
-                                    messageId: motivoId,
-                                    numDocTitular
-                                });
-                                notifiedMessagesRef.current.add(motivoId);
-                            }
+                        if (!notifiedMessagesRef.current.has(chatId)) {
+                            notifiedMessagesRef.current.set(chatId, new Set());
                         }
 
-                        const messageExists = allMessages.some(msg => msg.idMessageClient === messageId);
+                        const notifiedSet = notifiedMessagesRef.current.get(chatId);
 
-                        // Descripción
-                        if (dataGetMessage.length === 0 && Array.isArray(Descripcion)) {
+                        if (!existeConversacion) {
+                            await saveMessage({
+                                chatId,
+                                nombreClient,
+                                chatuser,
+                                sender: 'Sistema',
+                                message: '🟢 Inicio de conversación',
+                                messageId: `${chatId}-inicio`,
+                                numDocTitular
+                            });
+                            notifiedSet.add(`${chatId}-inicio`);
+                        }
+
+                        const refreshConv = await fetch(`http://localhost:3001/message/?contactId=${chatId}&chat=${chatuser}`);
+                        const refreshData = await refreshConv.json();
+                        const allMessages = refreshData?.data?.docs?.flatMap(doc => doc.messages || []) || [];
+
+                        const motivoMensaje = `📝 Motivo del contacto: ${categoriaTicket}${Descripcion?.[0] ? `, con la descripción: ${Descripcion[0]}` : ''}`.trim();
+                        const motivoId = `${dataMany.subscribed}-motivo`;
+                        const motivoExiste = allMessages.some(msg => msg.idMessageClient === motivoId);
+
+                        if (!motivoExiste && !notifiedSet.has(motivoId)) {
+                            await saveMessage({
+                                chatId,
+                                nombreClient,
+                                chatuser,
+                                sender: 'Sistema',
+                                message: motivoMensaje,
+                                messageId: motivoId,
+                                numDocTitular
+                            });
+                            notifiedSet.add(motivoId);
+
+                        }
+
+                        if (Array.isArray(Descripcion)) {
                             for (let i = 0; i < Descripcion.length; i++) {
                                 const descripcionMensaje = Descripcion[i]?.trim();
-                                if (!descripcionMensaje) continue;
-
                                 const descId = `${dataMany.subscribed}-descripcion${i}`;
-                                const yaExiste = notifiedMessagesRef.current.has(descId) ||
-                                    dataGetMessage.some(doc =>
-                                        doc.messages?.some(msg => msg.idMessageClient === descId)
-                                    );
+                                const yaExiste = allMessages.some(msg => msg.idMessageClient === descId);
 
-                                if (!yaExiste) {
+                                if (descripcionMensaje && !yaExiste && !notifiedSet.has(descId)) {
+
                                     await saveMessage({
                                         chatId,
                                         nombreClient,
@@ -148,30 +163,14 @@ function MessageChat() {
                                         messageId: descId,
                                         numDocTitular
                                     });
-                                    notifiedMessagesRef.current.add(descId);
+
+                                    notifiedSet.add(descId);
                                 }
-                            }
-
-                            // Motivo
-                            const motivoMensaje = `📝 Motivo del contacto: ${categoriaTicket}${Descripcion?.[0] ? `, con la descripción: ${Descripcion[0]}` : ''}`.trim();
-                            const motivoId = `${dataMany.subscribed}-motivo`;
-
-                            if (!notifiedMessagesRef.current.has(motivoId)) {
-                                await saveMessage({
-                                    chatId,
-                                    nombreClient,
-                                    chatuser,
-                                    sender: 'Sistema',
-                                    message: motivoMensaje,
-                                    messageId: motivoId,
-                                    numDocTitular
-                                });
-                                notifiedMessagesRef.current.add(motivoId);
                             }
                         }
 
-                        // Mensaje del cliente
-                        if (!messageExists && !notifiedMessagesRef.current.has(messageId)) {
+                        const messageExists = allMessages.some(msg => msg.idMessageClient === messageId);
+                        if (messageText && messageId && !messageExists && !notifiedSet.has(messageId)) {
                             await saveMessage({
                                 chatId,
                                 nombreClient,
@@ -182,7 +181,7 @@ function MessageChat() {
                                 numDocTitular
                             });
 
-                            notifiedMessagesRef.current.add(messageId);
+                            notifiedSet.add(messageId);
 
                             newNotifications.push({
                                 contactId: chatId,
@@ -198,7 +197,6 @@ function MessageChat() {
                     }
                 }
 
-                // Notificaciones
                 if (newNotifications.length > 0) {
                     setNotificacions(prev => [...prev, ...newNotifications]);
 
@@ -223,8 +221,8 @@ function MessageChat() {
 
     return (
         <div className="notificacion-container">
-            {notificacions.map((notif) => {
-                const key = `${notif.contactId}-${notif.message}`;
+            {notificacions.map((notif, index) => {
+                const key = `${notif.contactId}-${notif.message}-${index}`;
                 const isImage = notif.message.includes('scontent.xx.fbcdn.net');
                 const isAudio = notif.message.includes('cdn.fbsbx.com');
 

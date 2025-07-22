@@ -450,7 +450,7 @@ function TelegramEmple (){
 
                     <div className="contentChat">
                         <div className="contentTitle">
-                            {activeContact ? (  
+                            {activeContact ? (
                                 <>
                                     <img
                                         src={activeContact.perfil || Usuario}
