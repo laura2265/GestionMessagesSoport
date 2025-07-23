@@ -73,6 +73,7 @@ export const postDataMessage = async (req, res) => {
             });
         }
 
+
         const newMessage = new MessageScheme({
             contactId,
             usuario,
@@ -130,7 +131,7 @@ export const addMessageToConversation = async (req, res) => {
         const UploadNewConversation = await MessageScheme.findOneAndUpdate(
             { contactId, chat },
             { $push: { messages: newMessage } },
-            { new: true }
+            { new: true, upsert: true, setDefaultsOnInsert: true }
         );
 
         if (!UploadNewConversation) {

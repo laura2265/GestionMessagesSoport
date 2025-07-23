@@ -15,8 +15,7 @@ function buildMessageId(subscribed, messageText) {
     return isImage || isAudio
         ? `${subscribed}-${messageText.split('/').pop().split('?')[0]}`
         : `${subscribed}-${messageText.slice(-10)}`;
-}
-
+} 
 async function saveMessage({ chatId, nombreClient, chatuser, sender, message, messageId, numDocTitular }) {
     const body = {
         contactId: chatId,
@@ -25,29 +24,41 @@ async function saveMessage({ chatId, nombreClient, chatuser, sender, message, me
         chat: chatuser,
     };
 
-    const getResponse = await fetch(`http://localhost:3001/message/?contactId=${chatId}&chat=${chatuser}`);
+    let url = `http://localhost:3001/message/?contactId=${chatId}&chat=${chatuser}`;
+    const getResponse = await fetch(url);
     const data = await getResponse.json();
     const existingId = data?.data?.docs?.[0]?._id;
 
-    let url, method, finalBody;
+    let requestUrl, method;
 
     if (existingId) {
-        
-        url = `http://localhost:3001/message/${existingId}`;
+        requestUrl = `http://localhost:3001/message/${existingId}`;
         method = 'PUT';
-        finalBody = JSON.stringify(body); 
     } else {
-        // Si no existe, crea una nueva
-        url = `http://localhost:3001/message/`;
+        requestUrl = `http://localhost:3001/message/`;
         method = 'POST';
-        finalBody = JSON.stringify(body);
     }
 
-    const response = await fetch(url, {
+    const response = await fetch(requestUrl, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: finalBody,
+        body: JSON.stringify(body),
     });
+
+    // Si el PUT falló con 404, intenta POST automáticamente
+    if (!response.ok && method === 'PUT' && response.status === 404) {
+        const retry = await fetch(`http://localhost:3001/message/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+        });
+        if (!retry.ok) {
+            const err = await retry.text();
+            throw new Error(`Error guardando mensaje (POST de recuperación): ${err}`);
+        }
+        console.log(`✅ Conversación creada con POST de recuperación`);
+        return;
+    }
 
     if (!response.ok) {
         const errText = await response.text();
@@ -63,10 +74,11 @@ function MessageChat() {
     const audioRef = useRef(new Audio(Notificacion));
     const [notificacions, setNotificacions] = useState([]);
     const [audioEnabled, setAudioEnabled] = useState(true);
+    const pendienteConversacion =  useRef(new Map())
 
     useEffect(() => {
         const intervalId = setInterval(async () => {
-            try {
+            try {   
                 const EmpleId = localStorage.getItem('UserId');
 
                 const responseEmple = await fetch(`http://localhost:3001/asignaciones/`);
@@ -79,121 +91,131 @@ function MessageChat() {
                 let newNotifications = [];
 
                 for (let user of assignedEmple) {
-                    console.log('🧩 Usuario:', {
-                        nombre: user.nombreClient,
-                        categoriaTicket: user.categoriaTicket,
-                        descripcion: user.Descripcion,
-                    });
-
                     try {
                         const { chatId, nombreClient, numDocTitular, categoriaTicket, Descripcion, chatName } = user;
-                        if(!chatId){
-                            console.warn('⚠️ El chatId está indefinido, se omite este contacto.')
-                            continue
-                        }
-
+                        if (!chatId) continue;
+                    
                         const chatuser = getChatUserType(chatName);
-
-                        const responseMany = await fetch(`http://localhost:3001/manychat/${chatId}`);
-                        if (!responseMany.ok) throw new Error('Error al consultar Manychat');
-                        const dataMany = (await responseMany.json()).cliente.data;
-
-                        const messageText = dataMany.last_input_text;
-                        const messageId = buildMessageId(dataMany.subscribed, messageText);
-
+                        const convKey = `${chatId}|${chatuser}`;
+                    
+                        // Verificar si ya existe conversación
                         const getConv = await fetch(`http://localhost:3001/message/?contactId=${chatId}&chat=${chatuser}`);
                         const getData = await getConv.json();
                         const existeConversacion = getData?.data?.docs?.length > 0;
 
-                        if (!notifiedMessagesRef.current.has(chatId)) {
-                            notifiedMessagesRef.current.set(chatId, new Set());
-                        }
-
-                        const notifiedSet = notifiedMessagesRef.current.get(chatId);
-
                         if (!existeConversacion) {
-                            await saveMessage({
-                                chatId,
-                                nombreClient,
-                                chatuser,
+                            // Nueva conversación: crear
+                            const responseMany = await fetch(`http://localhost:3001/manychat/${chatId}`);
+                            if (!responseMany.ok) throw new Error('Error al consultar Manychat');
+
+                            const dataMany = (await responseMany.json()).cliente.data;
+                            const messageText = dataMany.last_input_text;
+                            const messageId = buildMessageId(dataMany.subscribed, messageText);
+
+                            const messageInit = {
                                 sender: 'Sistema',
                                 message: '🟢 Inicio de conversación',
-                                messageId: `${chatId}-inicio`,
-                                numDocTitular
-                            });
-                            notifiedSet.add(`${chatId}-inicio`);
-                        }
+                                idMessageClient: `${chatId}-inicio`,
+                            };
 
-                        const refreshConv = await fetch(`http://localhost:3001/message/?contactId=${chatId}&chat=${chatuser}`);
-                        const refreshData = await refreshConv.json();
-                        const allMessages = refreshData?.data?.docs?.flatMap(doc => doc.messages || []) || [];
+                            const descripcionText = Array.isArray(Descripcion) && Descripcion.length > 0 ? Descripcion[0] : null;
 
-                        const motivoMensaje = `📝 Motivo del contacto: ${categoriaTicket}${Descripcion?.[0] ? `, con la descripción: ${Descripcion[0]}` : ''}`.trim();
-                        const motivoId = `${dataMany.subscribed}-motivo`;
-                        const motivoExiste = allMessages.some(msg => msg.idMessageClient === motivoId);
+                            const motivoTexto = descripcionText
+                              ? `📝 Motivo del contacto: ${categoriaTicket}, con la descripción: ${descripcionText}`
+                              : `📝 Motivo del contacto: ${categoriaTicket}`;
 
-                        if (!motivoExiste && !notifiedSet.has(motivoId)) {
-                            await saveMessage({
-                                chatId,
-                                nombreClient,
-                                chatuser,
-                                sender: 'Sistema',
-                                message: motivoMensaje,
-                                messageId: motivoId,
-                                numDocTitular
-                            });
-                            notifiedSet.add(motivoId);
+                            const messageMotivo = {
+                              sender: 'Sistema',
+                              message: motivoTexto,
+                              idMessageClient: `${chatId}-motivo`,
+                            };
 
-                        }
+                            const messageReal = {
+                                sender: 'Cliente',
+                                message: messageText,
+                                idMessageClient: messageId,
+                            };
 
-                        if (Array.isArray(Descripcion)) {
-                            for (let i = 0; i < Descripcion.length; i++) {
-                                const descripcionMensaje = Descripcion[i]?.trim();
-                                const descId = `${dataMany.subscribed}-descripcion${i}`;
-                                const yaExiste = allMessages.some(msg => msg.idMessageClient === descId);
+                            if (!pendienteConversacion.current.has(convKey)) {
+                                console.log('💬 Acumulando conversación:', {
+                                  contactId: chatId,
+                                  messages: [messageInit, messageMotivo, messageReal],
+                                });
 
-                                if (descripcionMensaje && !yaExiste && !notifiedSet.has(descId)) {
+                                pendienteConversacion.current.set(convKey, {
+                                    contactId: chatId,
+                                    usuario: { nombre: nombreClient, documento: numDocTitular },
+                                    chat: chatuser,
+                                    messages: [messageInit, messageMotivo, messageReal],
+                                });
+                            }
+                        } else {
+                            // La conversación ya existe: buscar mensajes nuevos
+                            const responseMany = await fetch(`http://localhost:3001/manychat/${chatId}`);
+                            if (!responseMany.ok) throw new Error('Error al consultar Manychat');
+                        
+                            const dataMany = (await responseMany.json()).cliente.data;
+                            const messageText = dataMany.last_input_text;
+                            const messageId = buildMessageId(dataMany.subscribed, messageText);
 
-                                    await saveMessage({
-                                        chatId,
-                                        nombreClient,
-                                        chatuser,
-                                        sender: 'Cliente',
-                                        message: descripcionMensaje,
-                                        messageId: descId,
-                                        numDocTitular
-                                    });
+                            const refreshConv = await fetch(`http://localhost:3001/message/?contactId=${chatId}&chat=${chatuser}`);
+                            const refreshData = await refreshConv.json();
+                            const allMessages = refreshData?.data?.docs?.flatMap(doc => doc.messages || []) || [];
 
-                                    notifiedSet.add(descId);
-                                }
+                            const messageExists = allMessages.some(msg => msg.idMessageClient === messageId);
+                            const notifiedSet = notifiedMessagesRef.current.get(chatId) || new Set();
+
+                            if (!notifiedMessagesRef.current.has(chatId)) {
+                                notifiedMessagesRef.current.set(chatId, notifiedSet);
+                            }
+                        
+                            if (messageText && messageId && !messageExists && !notifiedSet.has(messageId)) {
+                                await saveMessage({
+                                    chatId,
+                                    nombreClient,
+                                    chatuser,
+                                    sender: 'Cliente',
+                                    message: messageText.trim(),
+                                    messageId,
+                                    numDocTitular
+                                });
+                            
+                                notifiedSet.add(messageId);
+                            
+                                newNotifications.push({
+                                    contactId: chatId,
+                                    message: messageText.trim(),
+                                    sender: 'Cliente',
+                                    chat: chatuser,
+                                    nombre: nombreClient,
+                                });
                             }
                         }
 
-                        const messageExists = allMessages.some(msg => msg.idMessageClient === messageId);
-                        if (messageText && messageId && !messageExists && !notifiedSet.has(messageId)) {
-                            await saveMessage({
-                                chatId,
-                                nombreClient,
-                                chatuser,
-                                sender: 'Cliente',
-                                message: messageText.trim(),
-                                messageId,
-                                numDocTitular
-                            });
-
-                            notifiedSet.add(messageId);
-
-                            newNotifications.push({
-                                contactId: chatId,
-                                message: messageText.trim(),
-                                sender: 'Cliente',
-                                chat: chatuser,
-                                nombre: nombreClient,
-                            });
-                        }
-
+                    
                     } catch (error) {
-                        console.error(`🚫 Error procesando el contacto ${user.nombreClient}:`, error.message);
+                        console.error(`🚫 Error procesando asignado ${user.nombreClient}:`, error.message);
+                    }
+                }
+
+                // Al final del interval, guardar todas las conversaciones pendientes
+                for (const [key, convData] of pendienteConversacion.current.entries()) {
+                    try {
+                        const response = await fetch('http://localhost:3001/message/', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(convData),
+                        });
+                    
+                        if (response.ok) {
+                            console.log(`✅ Conversación creada para ${convData.contactId}`);
+                            pendienteConversacion.current.delete(key); // limpiar después de guardar
+                        } else {
+                            const err = await response.text();
+                            console.error(`🚫 Error guardando conversación (${convData.contactId}):`, err);
+                        }
+                    } catch (error) {
+                        console.error(`❌ Fallo al guardar conversación (${convData.contactId}):`, error.message);
                     }
                 }
 
