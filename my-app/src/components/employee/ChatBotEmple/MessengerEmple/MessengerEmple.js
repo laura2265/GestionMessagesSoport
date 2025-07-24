@@ -65,46 +65,50 @@ function MessengerEmple (){
                 });
 
                 if (!messageResponse.ok) throw new Error('Error al guardar el mensaje en message');
-                setMessages(prevMessages => [...prevMessages, newMessage]);
+                setMessages(prevMessages => [...prevMessages,{
+                    sender: 'Empleado',
+                    message: currentMessage,
+                    idMessageClient: `msg_${Date.now()}-${currentMessage.length}`,
+                    updatedAt: new Date().toISOString()
+                }]);
 
             } catch (error) {
                 console.error('Error al guardar el mensaje: ', error);
             }
 
             setCurrentMessage("");
+            await fetchMessenger(activeContact);
         }
     };
 
-
     const ensureConversationExists = async () => {
-    try {
-        const res = await fetch(`http://localhost:3001/message/?contactId=${activeContact.id}&chat=messenger`);
-        const result = await res.json();
-        const exists = result.data.docs.length > 0;
+        try {
+            const res = await fetch(`http://localhost:3001/message/?contactId=${activeContact.id}&chat=messenger`);
+            const result = await res.json();
+            const exists = result.data.docs.length > 0;
 
-        if (!exists) {
-            const createRes = await fetch('http://localhost:3001/message', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contactId: activeContact.id,
-                    usuario: {
-                        nombre: activeContact.nombre
-                    },
-                    chat: 'messenger'
-                })
-            });
+            if (!exists) {
+                const createRes = await fetch('http://localhost:3001/message', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contactId: activeContact.id,
+                        usuario: {
+                            nombre: activeContact.nombre
+                        },
+                        chat: 'messenger'
+                    })
+                });
 
-            if (!createRes.ok) {
-                throw new Error('No se pudo crear la conversación');
+                if (!createRes.ok) {
+                    throw new Error('No se pudo crear la conversación');
+                }
+                console.log('✅ Conversación creada');
             }
-            console.log('✅ Conversación creada');
+        } catch (error) {
+            console.error('Error al asegurar conversación:', error);
         }
-    } catch (error) {
-        console.error('Error al asegurar conversación:', error);
-    }
-};
-
+    };
 
     // Manejo del envío de archivos
     const handleFileChage = (e) => {
@@ -151,9 +155,9 @@ function MessengerEmple (){
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(newMessage)
         });
-    
+
         if (!saveResponse.ok) throw new Error('Error al guardar el mensaje');
-    
+
         const responseManychat = await fetch('http://localhost:3001/post-message', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -164,13 +168,13 @@ function MessengerEmple (){
             chat: 'messenger'
           })
         });
-    
+
         if (!responseManychat.ok) throw new Error('Error al enviar a ManyChat');
-    
+
         setMessages(prev => [...prev, newMessage]);
         setSelectedImage(null);
         setCurrentMessage("");
-    
+
       } catch (error) {
         console.error('Error al subir la imagen a la nube: ', error);
       }
@@ -210,7 +214,7 @@ function MessengerEmple (){
 
             const flattenedMessages = data.flatMap(doc => {
                 if (!Array.isArray(doc.messages)) return [];
-
+                                               
                 return doc.messages.map(msg => ({
                     ...msg,
                     contactId: doc.contactId,
@@ -224,7 +228,10 @@ function MessengerEmple (){
                 new Date(a.updatedAt) - new Date(b.updatedAt)
             );
 
-            setMessages(mensajesOrdenados);
+            const mensajeFiltrado = mensajesOrdenados.filter(msg => msg.contactId === activeContact.id)
+            setMessages(mensajeFiltrado);
+
+
             const lastMessage = mensajesOrdenados[mensajesOrdenados.length - 1];
             const lastSender = lastMessage?.sender === 'Cliente'? "Cliente" : "Empleado"
 
@@ -259,6 +266,7 @@ function MessengerEmple (){
     };
  
     const fetchManychat = async (chatId) => {
+    
         try {
             const responseMany = await fetch(`http://localhost:3001/manychat/${chatId}`, {
                 method: 'GET',
@@ -324,7 +332,6 @@ function MessengerEmple (){
 
                     setContacts(contactos);
 
-                    // Si el contacto está asignado a ChatBotMessenger, lo manejamos aparte
                     for (let user of assignedEmple) {
                         const chatId = user.chatId;
                         console.log('mensajes del id: ', chatId)
@@ -395,19 +402,15 @@ function MessengerEmple (){
     }, []);
 
     useEffect(() => {
-        if(!activeContact){
-            return;
-        }
-        const updateMessages = async()=>{
-            await fetchMessenger(activeContact);
-        }
-        
-        updateMessages();
+    if(!activeContact){
+        return;
+    }
+    const updateMessages = async()=>{ await fetchMessenger(activeContact); }
+    updateMessages();
+    const intervalId = setInterval(updateMessages, 5000);
+    return ()=>clearInterval(intervalId)
+}, [activeContact]);
 
-        const intervalId = setInterval(updateMessages, 5000);
-
-        return ()=>clearInterval(intervalId)
-    }, [activeContact]);
 
     //enviar mensaje
     return(

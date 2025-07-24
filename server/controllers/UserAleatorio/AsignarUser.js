@@ -21,7 +21,9 @@ export const AsignarUserPost = async (req, res) => {
 
         const empleados = EmpleadoData?.data?.docs || [];
 
-        if (empleados.length === 0) {
+        const empleadosRol2 = empleados.filter(e => e.rol === 2);
+
+        if (empleadosRol2.length === 0) {
             return res.status(400).json({
                 success: false,
                 message: "No hay empleados disponibles para asignar."
@@ -58,14 +60,14 @@ export const AsignarUserPost = async (req, res) => {
 
             console.log('Nombre del cliente: ', cliente.Name);
 
-            const empleAsignado = empleados[Math.floor(Math.random() * empleados.length)];
+            const empleAsignado = empleadosRol2[Math.floor(Math.random() * empleadosRol2.length)];
 
             const newAsignacion = await AsignarUser.create({
                 chatId: cliente.id,
                 nombreClient: cliente.Name,
                 numDocTitular: cliente.numDocTitular || '',
                 chatName: cliente.chatName,
-                Descripcion: [cliente.Message],
+                Descripcion: [cliente.Message, cliente.ProblemaInt || null],
                 idEmple: empleAsignado._id,
                 nombreEmple: empleAsignado.name,
                 categoriaTicket: categoria,

@@ -15,7 +15,8 @@ function buildMessageId(subscribed, messageText) {
     return isImage || isAudio
         ? `${subscribed}-${messageText.split('/').pop().split('?')[0]}`
         : `${subscribed}-${messageText.slice(-10)}`;
-} 
+}
+
 async function saveMessage({ chatId, nombreClient, chatuser, sender, message, messageId, numDocTitular }) {
     const body = {
         contactId: chatId,
@@ -78,7 +79,7 @@ function MessageChat() {
 
     useEffect(() => {
         const intervalId = setInterval(async () => {
-            try {   
+            try {
                 const EmpleId = localStorage.getItem('UserId');
 
                 const responseEmple = await fetch(`http://localhost:3001/asignaciones/`);
@@ -87,17 +88,14 @@ function MessageChat() {
                 const dataEmple = (await responseEmple.json()).data.docs;
                 const assignedEmple = dataEmple.filter((emple) => emple.idEmple === EmpleId);
                 if (!assignedEmple.length) return;
-
                 let newNotifications = [];
-
                 for (let user of assignedEmple) {
                     try {
                         const { chatId, nombreClient, numDocTitular, categoriaTicket, Descripcion, chatName } = user;
                         if (!chatId) continue;
-                    
                         const chatuser = getChatUserType(chatName);
                         const convKey = `${chatId}|${chatuser}`;
-                    
+
                         // Verificar si ya existe conversación
                         const getConv = await fetch(`http://localhost:3001/message/?contactId=${chatId}&chat=${chatuser}`);
                         const getData = await getConv.json();
@@ -119,9 +117,10 @@ function MessageChat() {
                             };
 
                             const descripcionText = Array.isArray(Descripcion) && Descripcion.length > 0 ? Descripcion[0] : null;
+                            const descripcionExtra = Array.isArray(Descripcion) && Descripcion.length >1? Descripcion[1] : null;
 
                             const motivoTexto = descripcionText
-                              ? `📝 Motivo del contacto: ${categoriaTicket}, con la descripción: ${descripcionText}`
+                              ? `📝 Motivo del contacto: ${categoriaTicket}, con la descripción: ${descripcionText} ` +(descripcionExtra? `detalle adicional: ${descripcionExtra}`: '')
                               : `📝 Motivo del contacto: ${categoriaTicket}`;
 
                             const messageMotivo = {
@@ -153,7 +152,7 @@ function MessageChat() {
                             // La conversación ya existe: buscar mensajes nuevos
                             const responseMany = await fetch(`http://localhost:3001/manychat/${chatId}`);
                             if (!responseMany.ok) throw new Error('Error al consultar Manychat');
-                        
+
                             const dataMany = (await responseMany.json()).cliente.data;
                             const messageText = dataMany.last_input_text;
                             const messageId = buildMessageId(dataMany.subscribed, messageText);
@@ -168,7 +167,7 @@ function MessageChat() {
                             if (!notifiedMessagesRef.current.has(chatId)) {
                                 notifiedMessagesRef.current.set(chatId, notifiedSet);
                             }
-                        
+
                             if (messageText && messageId && !messageExists && !notifiedSet.has(messageId)) {
                                 await saveMessage({
                                     chatId,
@@ -179,9 +178,9 @@ function MessageChat() {
                                     messageId,
                                     numDocTitular
                                 });
-                            
+
                                 notifiedSet.add(messageId);
-                            
+
                                 newNotifications.push({
                                     contactId: chatId,
                                     message: messageText.trim(),
@@ -209,11 +208,36 @@ function MessageChat() {
                     
                         if (response.ok) {
                             console.log(`✅ Conversación creada para ${convData.contactId}`);
-                            pendienteConversacion.current.delete(key); // limpiar después de guardar
+                            pendienteConversacion.current.delete(key); 
+                        
+                            // 🧠 Validar que el mensaje del motivo quedó guardado
+                            const refresh = await fetch(`http://localhost:3001/message/?contactId=${convData.contactId}&chat=${convData.chat}`);
+                            const refreshed = await refresh.json();
+                            const mensajes = refreshed?.data?.docs?.[0]?.messages || [];
+
+                            const motivoId = `${convData.contactId}-motivo`;
+                            const yaTieneMotivo = mensajes.some(m => m.idMessageClient === motivoId);
+
+                            if (!yaTieneMotivo) {
+                                const motivo = convData.messages.find(m => m.idMessageClient === motivoId);
+                                if (motivo) {
+                                    console.warn(`⚠️ Motivo no guardado, reenviando...`);
+                                    await saveMessage({
+                                        chatId: convData.contactId,
+                                        nombreClient: convData.usuario.nombre,
+                                        chatuser: convData.chat,
+                                        sender: motivo.sender,
+                                        message: motivo.message,
+                                        messageId: motivo.idMessageClient,
+                                        numDocTitular: convData.usuario.documento
+                                    });
+                                }
+                            }
                         } else {
                             const err = await response.text();
                             console.error(`🚫 Error guardando conversación (${convData.contactId}):`, err);
                         }
+
                     } catch (error) {
                         console.error(`❌ Fallo al guardar conversación (${convData.contactId}):`, error.message);
                     }
