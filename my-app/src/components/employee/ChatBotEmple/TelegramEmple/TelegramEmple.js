@@ -32,6 +32,8 @@ function TelegramEmple (){
     }
 
     const handleSendMessage = async () => {
+        await ensureConversationExists();
+
         if (currentMessage.trim() !== "" && activeContact) {
             const newMessage = {
                 messages: [
@@ -46,35 +48,70 @@ function TelegramEmple (){
             const rawMessage = {
                 suscriberID: activeContact.id,
                 message: currentMessage,
-                chat: 'telegram'
-            }
-    
+                chat: 'telegram',
+            };
+
             try {
                 const response = await fetch(`http://localhost:3001/post-message`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(rawMessage),
                 });
-    
+
                 if (!response.ok) throw new Error('Error al guardar el mensaje en post-message');
-    
-                const messageResponse = await fetch('http://localhost:3001/message/', {
+            
+                const messageResponse = await fetch(`http://localhost:3001/message/${activeContact.id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(newMessage),
                 });
 
                 if (!messageResponse.ok) throw new Error('Error al guardar el mensaje en message');
-    
-                setMessages(prevMessages => [...prevMessages, newMessage]);
-    
+                setMessages(prevMessages => [...prevMessages,{
+                    sender: 'Empleado',
+                    message: currentMessage,
+                    idMessageClient: `msg_${Date.now()}-${currentMessage.length}`,
+                    updatedAt: new Date().toISOString()
+                }]);
+
             } catch (error) {
                 console.error('Error al guardar el mensaje: ', error);
             }
 
             setCurrentMessage("");
+            await fetchTelegram(activeContact);
         }
     };
+
+    const ensureConversationExists = async () => {
+        try {
+            const res = await fetch(`http://localhost:3001/message/?contactId=${activeContact.id}&chat=telegram`);
+            const result = await res.json();
+            const exists = result.data.docs.length > 0;
+
+            if (!exists) {
+                const createRes = await fetch('http://localhost:3001/message', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contactId: activeContact.id,
+                        usuario: {
+                            nombre: activeContact.nombre
+                        },
+                        chat: 'telegram'
+                    })
+                });
+
+                if (!createRes.ok) {
+                    throw new Error('No se pudo crear la conversación');
+                }
+                console.log('✅ Conversación creada');
+            }
+        } catch (error) {
+            console.error('Error al asegurar conversación:', error);
+        }
+    };
+
     // Manejo del envío de archivos
     const handleFileChage = (e) => {
         if(e.target.files[0]){
@@ -83,8 +120,9 @@ function TelegramEmple (){
     };
 
     const imageUploadNube = async () => {
-      if (!selectedImage || !activeContact) return;
+        await ensureConversationExists();
 
+      if (!selectedImage || !activeContact) return;
       try {
         const formData = new FormData();
         formData.append('file', selectedImage);
@@ -119,9 +157,9 @@ function TelegramEmple (){
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(newMessage)
         });
-    
+
         if (!saveResponse.ok) throw new Error('Error al guardar el mensaje');
-    
+
         const responseManychat = await fetch('http://localhost:3001/post-message', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -132,13 +170,13 @@ function TelegramEmple (){
             chat: 'telegram'
           })
         });
-    
+
         if (!responseManychat.ok) throw new Error('Error al enviar a ManyChat');
-    
+
         setMessages(prev => [...prev, newMessage]);
         setSelectedImage(null);
         setCurrentMessage("");
-    
+
       } catch (error) {
         console.error('Error al subir la imagen a la nube: ', error);
       }
@@ -146,17 +184,17 @@ function TelegramEmple (){
 
 
     useEffect(()=>{
-        const userId = localStorage.getItem('UserId')
-        const rolUser = localStorage.getItem('rol-user')
+        const userId = localStorage.getItem('UserId');
+        const rolUser = localStorage.getItem('rol-user');
         if(userId && rolUser){
-            setIsLoggedIn(true)
+            setIsLoggedIn(true);
         }else{
-            setIsLoggedIn(false)
+            setIsLoggedIn(false);
         }
-    },[])
+    },[]);
 
     //mensajes de MongoDB
-    const fetchTelegram = async () => {
+    const fetchTelegram = async (activeContact) => {
         try {
             const response = await fetch(`http://localhost:3001/message/?contactId=${activeContact.id}&chat=telegram`, {
                 method: 'GET',
@@ -171,16 +209,18 @@ function TelegramEmple (){
 
             const result = await response.json();
             console.log('Respuesta obtenida de la API de mensajes:', result);
-            
+
             const data = result?.data?.docs || [];
             if (!Array.isArray(data) ||(data && data.length === 0)) {
                 setMessages([]);
                 return;
             }
 
-            const flattenedMessages = data.flatMap(doc => {
-                if (!Array.isArray(doc.messages)) return [];
+            const mensajeContacto = data.filter(doc => doc.contactId === activeContact.id)
 
+            const flattenedMessages = mensajeContacto.flatMap(doc => {
+                if (!Array.isArray(doc.messages)) return [];
+                                               
                 return doc.messages.map(msg => ({
                     ...msg,
                     contactId: doc.contactId,
@@ -194,7 +234,10 @@ function TelegramEmple (){
                 new Date(a.updatedAt) - new Date(b.updatedAt)
             );
 
-            setMessages(mensajesOrdenados);
+            const mensajeFiltrado = mensajesOrdenados.filter(msg => msg.contactId === activeContact.id)
+            setMessages(mensajeFiltrado);
+
+
             const lastMessage = mensajesOrdenados[mensajesOrdenados.length - 1];
             const lastSender = lastMessage?.sender === 'Cliente'? "Cliente" : "Empleado"
 
@@ -228,8 +271,8 @@ function TelegramEmple (){
         }, {});
     };
 
-
     const fetchManychat = async (chatId) => {
+    
         try {
             const responseMany = await fetch(`http://localhost:3001/manychat/${chatId}`, {
                 method: 'GET',
@@ -253,14 +296,7 @@ function TelegramEmple (){
             }
 
             console.log('id es: ', newContact);
-
-            setContacts(prevContacts => {
-                const exists = prevContacts.find(contact => contact.id === newContact.id )
-                if(!exists){
-                    return[...prevContacts, newContact]
-                }
-                return prevContacts
-            })
+            return newContact;
 
         } catch (error) {
             console.error('Error al momento de consultar los datos de la API:', error);
@@ -271,7 +307,7 @@ function TelegramEmple (){
         const fetchEmple = async () => {
             try {
                 const EmpleId = localStorage.getItem('UserId');
-                const responseEmple = await fetch(`http://localhost:3001/asignaciones/`, {
+                const responseEmple = await fetch(`http://localhost:3001/asignaciones/`,{
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -279,34 +315,34 @@ function TelegramEmple (){
                 });
 
                 if (!responseEmple.ok) {
-                    throw new Error('Error al momento de consultar los datos del empleado');
+                    throw new Error('Error al consultar asignaciones');
                 }
 
                 const resultEmple = await responseEmple.json();
                 const dataEmple = resultEmple.data.docs;
-                console.log(dataEmple);
-    
-                const assignedEmple = dataEmple.filter((emple) => emple.idEmple === EmpleId);
-    
-                if (assignedEmple && assignedEmple.length > 0) {
+                console.log('Asignaciones:', dataEmple);
 
-                    const contactos = assignedEmple.filter(user => user.chatName ===  'ChatBotTelegram').map(user => ({
-                        id: user.cahtId,
+                const assignedEmple = dataEmple.filter((emple) => emple.idEmple === EmpleId);
+
+                if (assignedEmple.length > 0) {
+
+                    // ✅ Guardamos los contactos para mostrarlos en la lista
+                    const contactos = assignedEmple.filter(user => user.chatName === 'ChatBotTelegram').map(user => ({
+                        id: user.chatId,
                         nombre: user.nombreClient,
                         lastMessage: {
                             message: user.Descripcion
                         },
                         lastSender: 'Cliente',
                         perfil: user.perfil || null
-                    }))
+                    }));
 
                     setContacts(contactos);
 
-                    for (let i = 0; i < assignedEmple.length; i++){
-                        const user = assignedEmple[i];
-                        const chatId = user.cahtId;
-                        console.log('el id de la primera api es: ', chatId)
-                        if(user.chatName === 'ChatBotTelegram'){
+                    for (let user of assignedEmple) {
+                        const chatId = user.chatId;
+                        console.log('mensajes del id: ', chatId);
+                        if (user.chatName === 'ChatBotTelegram') {
                             const newContact = await fetchManychat(chatId);
 
                             if(newContact){
@@ -319,23 +355,21 @@ function TelegramEmple (){
                                 })
                             }
 
-                            const response = await fetch(`http://localhost:3001/message/?contactId=${activeContact.id}&chat=telegram`, {
-                                method: 'GET',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                }
-                            });
-            
-                            if (!response.ok) {
-                                throw new Error('Error al obtener los mensajes del contacto');
-                            }
+                            const response = await fetch(`http://localhost:3001/message/?contactId=${chatId}&chat=telegram`);
+                            if (!response.ok) throw new Error('Error al obtener mensajes');
 
                             const result = await response.json();
                             const data = result.data.docs;
 
-                            const exists = data.some(msg => msg.contactId === user.chatId && msg.message === user.Descripcion);
-    
-                            if (!exists) {
+                            const exists = data.some(msg =>
+                                msg.contactId === chatId &&
+                                msg.messages?.some(m => m.message === user.Descripcion)
+                            );
+
+                            console.log('existe tu: ', exists)
+
+                            if (exists === false) {
+                                console.log('Existo tu ')
                                 const newMessage = {
                                     contactId: chatId,
                                     usuario: {
@@ -348,29 +382,30 @@ function TelegramEmple (){
                                     }],
                                     chat: 'telegram',
                                 };
-    
-                                const messageResponse = await fetch('http://localhost:3001/message/', {
-                                    method: 'POST',
+
+                                const messageResponse = await fetch(`http://localhost:3001/message/${chatId}`, {
+                                    method: 'PUT',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify(newMessage),
                                 });
-    
-                                if (!messageResponse.ok) throw new Error('Error al guardar el mensaje en message');
-    
+
+                                if (!messageResponse.ok) throw new Error('Error al guardar el mensaje');
                                 console.log('Mensaje guardado correctamente.');
                             } else {
-                                console.log('El mensaje ya existe, no se enviará.');
+                                console.log('Mensaje ya existe.');
                             }
                         }
                     }
-                }else{
+
+                } else {
                     console.log('No hay empleados asignados');
                     setContacts([]);
                 }
-            }catch (error) {
+            } catch (error) {
                 console.error('Error al momento de consultar los datos de la API:', error);
             }
         };
+
         fetchEmple();
     }, []);
     
@@ -378,17 +413,12 @@ function TelegramEmple (){
         if(!activeContact){
             return;
         }
-        const updateMessages = async()=>{
-            await fetchTelegram(activeContact);
-        }
         
+        const updateMessages = async()=>{ await fetchTelegram(activeContact); }
         updateMessages();
-
         const intervalId = setInterval(updateMessages, 5000);
-
         return ()=>clearInterval(intervalId)
-    
-    }, [activeContact]); 
+    }, [activeContact]);
 
     return(
         <>
@@ -468,26 +498,60 @@ function TelegramEmple (){
                                 <div className="messageContainer">
                                 {messages.length > 0 ? (
                                     Object.entries(groupMessagesByDate(messages)).map(([date, messagesOnDate]) => (
-                                        <>
                                         <div key={date}>
                                             <p className="date-label">{date}</p>
-                                            {messagesOnDate.map((message, index)=>(
-                                                <div key={index} className={`message ${message.sender === 'Empleado' ? 'sent' : 'received'}`}>
-                                                    <p>{message.message}</p>
-                                                    <span className="timestamp">
-                                                        {new Date(message.updatedAt).toLocaleString([], {hour: '2-digit', minute:'2-digit'})}
-                                                    </span>
-                                                </div>
-                                            ))}
+                                            {messagesOnDate.map((message, index) => {
+                                                const mensaje = Array.isArray(message.message) ? message.message[0] : message.message ?? '';
+                                                const imgUrl = typeof mensaje === 'string' && mensaje.includes('scontent.xx.fbcdn.net');
+                                                const audioUrl = typeof mensaje === 'string' && mensaje.includes('cdn.fbsbx');
+                        
+                                                return (
+                                                    <div key={index} className={`message ${message.sender === 'Empleado' ? 'sent' : 'received'}`}>
+                                                        {imgUrl || mensaje.startsWith('https://scontent.xx.fbcdn.net') || mensaje.startsWith('https://res.cloudinary.com') ? (
+                                                            <>
+                                                                <img src={mensaje} style={{ maxWidth: '200px', borderRadius: '10px' }} /><br/>
+                                                            </> 
+                                                        ) : audioUrl || mensaje.startsWith('https://cdn.fbsbx.com') ? (
+                                                            <>
+                                                                <audio controls>
+                                                                    <source src={mensaje} type="audio/mpeg" />
+                                                                    Tu navegador no soporta el formato de audio.
+                                                                </audio>
+                                                                <br/>
+                                                            </>
+                                                        ) : (
+                                                            <p>{mensaje}</p>
+                                                        )}
+                                                        <span className="timestamp">
+                                                            {new Date(message.updatedAt).toLocaleString([], { hour: '2-digit', minute: '2-digit' })}
+                                                        </span>
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
-                                        </>
                                     ))
                                 ) : (
-                                    <p className="nullData">No hay mensajes disponibles.</p>
+                                    <p className="nullData">No hay mensajes disponibles <time datetime="20:00">20:00 </time>.</p>
                                 )}
 
                                 </div>
                                 <div className="contenttextMessage">
+                                    <div className="fileContent">
+                                        <input
+                                            type="file"
+                                            ref={fileInputRef}
+                                            onChange={handleFileChage}
+                                            style={{ display: "none" }}
+                                        />
+                                        <CiImageOn
+                                            className="icon"
+                                            onClick={() => fileInputRef.current.click()}
+                                        />
+                                        {selectedImage && (
+                                            <button onClick={imageUploadNube} className="send-image-button">Enviar Imagen</button>
+                                        )}
+                                    </div>
+
                                     <input
                                         type="text"
                                         placeholder="Escribir..."
@@ -495,8 +559,9 @@ function TelegramEmple (){
                                         onChange={(e) => setCurrentMessage(e.target.value)}
                                         onKeyPress={handleKeyPress}
                                     />
+
                                     <button onClick={handleSendMessage}>
-                                        <img src={Enviar} alt="Enviar" />
+                                        <VscSend  className="icon1"/>
                                     </button>
                                 </div>
                             </>

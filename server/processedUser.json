@@ -8,14 +8,6 @@
     "processedAt": "2025-07-24T15:34:22.820Z"
   },
   {
-    "id": "1138345911",
-    "Motivo": "Falla de conexión",
-    "message": "No tengo internet",
-    "numDoc": null,
-    "contactado": true,
-    "processedAt": "2025-07-24T15:34:22.828Z"
-  },
-  {
     "id": "376434432",
     "Motivo": "Falla de conexión",
     "message": "No tengo internet",
@@ -38,5 +30,13 @@
     "numDoc": null,
     "contactado": true,
     "processedAt": "2025-07-24T15:34:22.945Z"
+  },
+  {
+    "id": "1138345911",
+    "Motivo": "Falla de conexión",
+    "message": "No tengo internet",
+    "numDoc": null,
+    "contactado": true,
+    "processedAt": "2025-07-25T20:24:19.028Z"
   }
 ]

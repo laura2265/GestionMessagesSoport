@@ -105,6 +105,7 @@ function MessengerEmple (){
                 }
                 console.log('✅ Conversación creada');
             }
+
         } catch (error) {
             console.error('Error al asegurar conversación:', error);
         }
@@ -206,13 +207,16 @@ function MessengerEmple (){
 
             const result = await response.json();
             console.log('Respuesta obtenida de la API de mensajes:', result);
+
             const data = result?.data?.docs || [];
             if (!Array.isArray(data) ||(data && data.length === 0)) {
                 setMessages([]);
                 return;
             }
 
-            const flattenedMessages = data.flatMap(doc => {
+            const mensajeContacto = data.filter(doc => doc.contactId === activeContact.id)
+
+            const flattenedMessages = mensajeContacto.flatMap(doc => {
                 if (!Array.isArray(doc.messages)) return [];
                                                
                 return doc.messages.map(msg => ({
@@ -281,6 +285,7 @@ function MessengerEmple (){
 
             const resultMany = await responseMany.json();
             const dataMany = resultMany.cliente.data;
+
             const newContact = {
                 id: dataMany.id,
                 nombre: dataMany.name,
@@ -321,7 +326,7 @@ function MessengerEmple (){
 
                     // ✅ Guardamos los contactos para mostrarlos en la lista
                     const contactos = assignedEmple.filter(user => user.chatName === 'ChatBotMessenger').map(user => ({
-                        id: user.cahtId,
+                        id: user.chatId,
                         nombre: user.nombreClient,
                         lastMessage: {
                             message: user.Descripcion
@@ -334,7 +339,7 @@ function MessengerEmple (){
 
                     for (let user of assignedEmple) {
                         const chatId = user.chatId;
-                        console.log('mensajes del id: ', chatId)
+                        console.log('mensajes del id: ', chatId);
                         if (user.chatName === 'ChatBotMessenger') {
                             const newContact = await fetchManychat(chatId);
 
@@ -358,6 +363,7 @@ function MessengerEmple (){
                                 msg.contactId === chatId &&
                                 msg.messages?.some(m => m.message === user.Descripcion)
                             );
+
                             console.log('existe tu: ', exists)
 
                             if (exists === false) {
@@ -395,22 +401,35 @@ function MessengerEmple (){
                 }
             } catch (error) {
                 console.error('Error al momento de consultar los datos de la API:', error);
-            }
+            }   
         };
 
         fetchEmple();
     }, []);
 
     useEffect(() => {
-    if(!activeContact){
-        return;
-    }
-    const updateMessages = async()=>{ await fetchMessenger(activeContact); }
-    updateMessages();
-    const intervalId = setInterval(updateMessages, 5000);
-    return ()=>clearInterval(intervalId)
-}, [activeContact]);
+        if(!activeContact){
+            return;
+        }
 
+        const updateMessages = async()=>{ await fetchMessenger(activeContact); }
+        updateMessages();
+        const intervalId = setInterval(updateMessages, 5000);
+        return ()=>clearInterval(intervalId)
+    }, [activeContact]);
+
+    const wisphubData = async ()=>{
+        try{
+            const responseWisphub = await fetch(`http://localhost:3001/wisphub-data/52128446/`,{
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'appliction/json'
+                }
+            })
+        }catch(error){
+            console.error('Error al consultar los datos de la api de wisphub: ', error)
+        }
+    }
 
     //enviar mensaje
     return(

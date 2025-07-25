@@ -76,81 +76,104 @@ function InstagramEmple (){
         }
     };
 
-    const handleFileChage=(e)=>{
+    const ensureConversationExists = async () =>{
+        try{
+            const res = await fetch(`http://localhost:3001/message/?contactId=${activeContact.id}&chat=messenger`);
+            const result = await res.json();
+            const exists = result.data.docs.length > 0;
+
+            if(!exists){
+                const createRes = await fetch('http://localhost:3001/message',{
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        contactId: activeContact.id,
+                        usuario: {
+                            nombre: activeContact.nombre
+                        },
+                        chat: 'telegram'
+                    })
+                });
+                if(!createRes.ok){
+                    throw new Error('No se pudo crear la conversación');
+                }
+                console.log('✅ Conversación creada');
+            }
+        }catch(error){
+            console.error('Error al asegurar conversación: ', error)
+        }
+    }
+
+    const handleFileChage = (e) => {
         if(e.target.files[0]){
             setSelectedImage(e.target.files[0]);
         }
     };
 
-    const imageUploadNube = async() => {
-        if(!selectedImage || !activeContact){
-            return;
-        }
-        try{
-            const formData = new FormData();
-            formData.append('file', selectedImage);
+    const imageUploadNube = async () => {
+        await ensureConversationExists();
 
-            const response = await fetch('http://localhost:3001/image-post-message',{
-                method: 'POST',
-                body: formData
-            });
-
-            if(!response.ok){
-                throw new Error('Error al subrir la imagen a la nube')
+      if (!selectedImage || !activeContact) return;
+      try {
+        const formData = new FormData();
+        formData.append('file', selectedImage);
+    
+        const response = await fetch('http://localhost:3001/image-post-message', {
+          method: 'POST',
+          body: formData
+        });
+    
+        if (!response.ok) throw new Error('Error al subir la imagen a la nube');
+    
+        const data = await response.json();
+        const image = data?.data?.secure_url || '';
+    
+        if (!image) throw new Error('No se encontró la URL de la imagen');
+    
+        // Armar mensaje para Mongo
+        const newMessage = {
+          messages: [
+            {
+              sender: 'Empleado',
+              message: image,
+              contexto: currentMessage,
+              idMessageClient: `msg_imageWithText_${Date.now()}`
             }
+          ]
+        };
 
-            const data = await response.json();
-            const image = data?.data?.secure_url || '';
+        // Guardar en Mongo
+        const saveResponse = await fetch(`http://localhost:3001/message/${activeContact.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newMessage)
+        });
 
-            if(!image){
-                throw new Error('No se encontro la URL de la imagen');
-            }
+        if (!saveResponse.ok) throw new Error('Error al guardar el mensaje');
 
-            const newMessage = {
-                messages:[
-                    {
-                        sender: 'Empleado',
-                        messages: image,
-                        idMessageClient: `msg_imageWithText_${Date.now()}-${image}`
-                    }
-                ]
-            }
+        const responseManychat = await fetch('http://localhost:3001/post-message', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            suscriberID: activeContact.id,
+            message: image,
+            contexto: currentMessage,
+            chat: 'telegram'
+          })
+        });
 
-            const saveResponse = await fetch(`http://localhost:3001/message/${activeContact.id}`,{
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'aplication/json'
-                },
-                body:JSON.stringify(newMessage),
-            })
+        if (!responseManychat.ok) throw new Error('Error al enviar a ManyChat');
 
-            if(!saveResponse.ok){
-                throw new Error('Error al guardar el mensaje')
-            }
+        setMessages(prev => [...prev, newMessage]);
+        setSelectedImage(null);
+        setCurrentMessage("");
 
-            const responseManychat = await fetch('http://localhost:3001/post-message',{
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    suscriberID: activeContact.id,
-                    message: image,
-                    contexto: currentMessage,
-                    chat: 'instagram'
-                })
-            });
-            if(!responseManychat.ok){
-                throw new Error('Error al enviar a ManyChat')
-            }
-
-            setMessages(prev => [...prev, newMessage]);
-            setSelectedImage(null);
-            setCurrentMessage("");
-        }catch(error){
-            console.error('Error al subir la imagen a la nube: ', error);
-        }
-    }
+      } catch (error) {
+        console.error('Error al subir la imagen a la nube: ', error);
+      }
+    };
 
     useEffect(()=>{
         const userId = localStorage.getItem('UserId')
@@ -165,7 +188,7 @@ function InstagramEmple (){
     //mensajes de MongoDB
     const fetchInstagram = async (activeContact) => {
         try {
-            const response = await fetch(`http://localhost:3001/message/?contactId=${activeContact.id}&chat=instagram`, {
+            const response = await fetch(`http://localhost:3001/message/?contactId=${activeContact.id}&chat=messenger`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
@@ -176,18 +199,20 @@ function InstagramEmple (){
                 throw new Error('Error al obtener los mensajes del contacto');
             }
 
-            const result = await response.json()
+            const result = await response.json();
             console.log('Respuesta obtenida de la API de mensajes:', result);
+            
             const data = result?.data?.docs || [];
-
-            if(!Array.isArray(data) || (data && (data.length === 0))){
+            if (!Array.isArray(data) ||(data && data.length === 0)) {
                 setMessages([]);
                 return;
             }
 
-            const flattenedMessages = data.flatMap(doc => {
-                if(!Array.isArray(doc.messages)) return[];
+            const mensajeContacto = data.filter(doc => doc.contactId === activeContact.id)
 
+            const flattenedMessages = mensajeContacto.flatMap(doc => {
+                if (!Array.isArray(doc.messages)) return [];
+                                               
                 return doc.messages.map(msg => ({
                     ...msg,
                     contactId: doc.contactId,
@@ -201,7 +226,10 @@ function InstagramEmple (){
                 new Date(a.updatedAt) - new Date(b.updatedAt)
             );
 
-            setMessages(mensajesOrdenados);
+            const mensajeFiltrado = mensajesOrdenados.filter(msg => msg.contactId === activeContact.id)
+            setMessages(mensajeFiltrado);
+
+
             const lastMessage = mensajesOrdenados[mensajesOrdenados.length - 1];
             const lastSender = lastMessage?.sender === 'Cliente' ? 'Cliente' : 'Empleado'
 
@@ -270,7 +298,7 @@ function InstagramEmple (){
         const fetchEmple = async () => {
             try {
                 const EmpleId = localStorage.getItem('UserId');
-                const responseEmple = await fetch(`http://localhost:3001/asignaciones/`, {
+                const responseEmple = await fetch(`http://localhost:3001/asignaciones/`,{
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -283,32 +311,34 @@ function InstagramEmple (){
 
                 const resultEmple = await responseEmple.json();
                 const dataEmple = resultEmple.data.docs;
-                console.log('Asignaciones: ', dataEmple);
+                console.log('Asignaciones:', dataEmple);
 
                 const assignedEmple = dataEmple.filter((emple) => emple.idEmple === EmpleId);
 
-                if (assignedEmple && assignedEmple.length > 0) {
+                if (assignedEmple.length > 0) {
 
-                    const contactos = assignedEmple.filter(user => user.chatName === 'ChatBotInstagram').map(user=>({
-                        id: user.cahtId,
+                    // ✅ Guardamos los contactos para mostrarlos en la lista
+                    const contactos = assignedEmple.filter(user => user.chatName === 'ChatBotInstagram').map(user => ({
+                        id: user.chatId,
                         nombre: user.nombreClient,
                         lastMessage: {
                             message: user.Descripcion
                         },
                         lastSender: 'Cliente',
                         perfil: user.perfil || null
-                    }))
+                    }));
 
-                    setContacts(contactos)
-                    for (let i = 0; i < assignedEmple.length; i++){
-                        const user = assignedEmple[i];
-                        const chatId = user.cahtId;
-                        console.log('el id de la primera api es: ', chatId)
-                        if(user.chatName === 'ChatBotInstagram'){
+                    setContacts(contactos);
+
+                    for (let user of assignedEmple) {
+                        const chatId = user.chatId;
+                        console.log('mensajes del id: ', chatId);
+                        if (user.chatName === 'ChatBotInstagram') {
                             const newContact = await fetchManychat(chatId);
+
                             if(newContact){
                                 setContacts(prevContacts=>{
-                                    const exists = prevContacts.find(c=> c.id === newContact.id);
+                                    const exists = prevContacts.find(c => c.id === newContact.id);
                                     if(!exists){
                                         return[...prevContacts, newContact]
                                     }
@@ -316,21 +346,21 @@ function InstagramEmple (){
                                 })
                             }
 
-                            const response = await fetch(`http://localhost:3001/message/?contactId=${chatId}&chat=instagram`,{
-                                method: 'GET',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                }
-                            })
-                            if(!response.ok){
-                                throw new Error('Error al obtener mensajes')
-                            }
+                            const response = await fetch(`http://localhost:3001/message/?contactId=${chatId}&chat=instagram`);
+                            if (!response.ok) throw new Error('Error al obtener mensajes');
+
                             const result = await response.json();
                             const data = result.data.docs;
 
-                            const exists = data.some(msg => msg.contactId === chatId && msg.message === user.Descripcion);
+                            const exists = data.some(msg =>
+                                msg.contactId === chatId &&
+                                msg.messages?.some(m => m.message === user.Descripcion)
+                            );
 
-                            if(!exists){
+                            console.log('existe tu: ', exists)
+
+                            if (exists === false) {
+                                console.log('Existo tu ')
                                 const newMessage = {
                                     contactId: chatId,
                                     usuario: {
@@ -341,32 +371,28 @@ function InstagramEmple (){
                                         message: user.Descripcion,
                                         idMessageClient: `msg_MessageProblem-${user.Descripcion.length}`,
                                     }],
-                                    chat: 'messenger',
+                                    chat: 'instagram',
                                 };
 
-                                const messageResponse = await fetch('http://localhost:3001/message',{
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json'
-                                    },
+                                const messageResponse = await fetch(`http://localhost:3001/message/${chatId}`, {
+                                    method: 'PUT',
+                                    headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify(newMessage),
                                 });
 
-                                if(!messageResponse.ok){
-                                    throw new Error('Error al guardar el mensaje');
-                                }
-                                console.log('Mensaje guardado correctamente.')
-                            }else{
+                                if (!messageResponse.ok) throw new Error('Error al guardar el mensaje');
+                                console.log('Mensaje guardado correctamente.');
+                            } else {
                                 console.log('Mensaje ya existe.');
                             }
                         }
                     }
-                }else{
+
+                } else {
                     console.log('No hay empleados asignados');
                     setContacts([]);
                 }
-
-            }catch (error) {
+            } catch (error) {
                 console.error('Error al momento de consultar los datos de la API:', error);
             }
         };
@@ -379,14 +405,9 @@ function InstagramEmple (){
         if(!activeContact){
             return;
         }
-        const updateMessages = async()=>{
-            await fetchInstagram(activeContact);
-        }
-        
+        const updateMessages = async()=>{ await fetchInstagram(activeContact); }
         updateMessages();
-
         const intervalId = setInterval(updateMessages, 5000);
-
         return ()=>clearInterval(intervalId)
     }, [activeContact]);
 
