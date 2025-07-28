@@ -1,15 +1,31 @@
-.contCards{
+.contCards1{
     position: absolute;
     left: 300px;
     padding-left: 83px;
+    padding-right: 83px;
     padding-bottom: 22px;
     padding-top: 22px;
     width: 1200px;
     justify-content: center;
     align-items: center;
     border: 1px solid #c3c3c3;
-    columns: calc(2);
+    display: flex;
 }
+
+.contCards2{
+    position: absolute;
+    left: 300px;
+    padding-left: 83px;
+    padding-right: 83px;
+    padding-bottom: 22px;
+    padding-top: 212px;
+    width: 1200px;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #c3c3c3;
+    display: flex;
+}
+
 
 .cards1{
     background-color: rgba(219, 219, 219, 0.736);

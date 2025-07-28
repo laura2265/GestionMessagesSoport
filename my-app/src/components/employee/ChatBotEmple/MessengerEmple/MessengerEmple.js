@@ -21,7 +21,7 @@ function MessengerEmple (){
     const [currentMessage, setCurrentMessage] = useState('');
     const [ selectedImage, setSelectedImage] = useState(null);
     const fileInputRef = useRef(null);
-    const [nombreEmpleado, setNombreEmpleado]= useState("");
+    const [wisphubInfo, setWisphubInfo] = useState(null);
 
     const handleKeyPress = (e) =>{
         if(e.key === 'Enter'){
@@ -270,7 +270,6 @@ function MessengerEmple (){
     };
  
     const fetchManychat = async (chatId) => {
-    
         try {
             const responseMany = await fetch(`http://localhost:3001/manychat/${chatId}`, {
                 method: 'GET',
@@ -287,7 +286,7 @@ function MessengerEmple (){
             const dataMany = resultMany.cliente.data;
 
             const newContact = {
-                id: dataMany.id,
+                id: chatId,
                 nombre: dataMany.name,
                 perfil: dataMany.profile_pic,
                 estado: dataMany.status,
@@ -323,8 +322,6 @@ function MessengerEmple (){
                 const assignedEmple = dataEmple.filter((emple) => emple.idEmple === EmpleId);
 
                 if (assignedEmple.length > 0) {
-
-                    // ✅ Guardamos los contactos para mostrarlos en la lista
                     const contactos = assignedEmple.filter(user => user.chatName === 'ChatBotMessenger').map(user => ({
                         id: user.chatId,
                         nombre: user.nombreClient,
@@ -332,68 +329,68 @@ function MessengerEmple (){
                             message: user.Descripcion
                         },
                         lastSender: 'Cliente',
-                        perfil: user.perfil || null
+                        perfil: null,
+                        numDoc: user.numDocTitular
                     }));
 
                     setContacts(contactos);
+                    console.log('Datos enviados desde contact: ', contactos);
 
-                    for (let user of assignedEmple) {
-                        const chatId = user.chatId;
-                        console.log('mensajes del id: ', chatId);
-                        if (user.chatName === 'ChatBotMessenger') {
-                            const newContact = await fetchManychat(chatId);
-
-                            if(newContact){
-                                setContacts(prevContacts=>{
-                                    const exists = prevContacts.find(c => c.id === newContact.id);
-                                    if(!exists){
-                                        return[...prevContacts, newContact]
+                    await Promise.all(
+                      assignedEmple
+                        .filter(user => user.chatName === 'ChatBotMessenger')
+                        .map(async (user) => {
+                          const chatId = user.chatId;
+                          const newContact = await fetchManychat(chatId);
+                        
+                          if (newContact) {
+                            setContacts(prev =>
+                              prev.map(c =>
+                                c.id === chatId
+                                  ? {
+                                      ...c,
+                                      nombre: newContact.nombre || c.nombre,
+                                      perfil: newContact.perfil,
+                                      estado: newContact.estado
                                     }
-                                    return prevContacts;
-                                })
-                            }
-
-                            const response = await fetch(`http://localhost:3001/message/?contactId=${chatId}&chat=messenger`);
-                            if (!response.ok) throw new Error('Error al obtener mensajes');
-
-                            const result = await response.json();
-                            const data = result.data.docs;
-
-                            const exists = data.some(msg =>
-                                msg.contactId === chatId &&
-                                msg.messages?.some(m => m.message === user.Descripcion)
+                                  : c
+                              )
                             );
+                          }
+                      
+                          const response = await fetch(`http://localhost:3001/message/?contactId=${chatId}&chat=messenger`);
+                          if (!response.ok) throw new Error('Error al obtener mensajes');
+                      
+                          const result = await response.json();
+                          const data = result.data.docs;
+                      
+                          const exists = data.some(msg =>
+                            msg.contactId === chatId &&
+                            msg.messages?.some(m => m.message === user.Descripcion)
+                          );
 
-                            console.log('existe tu: ', exists)
-
-                            if (exists === false) {
-                                console.log('Existo tu ')
-                                const newMessage = {
-                                    contactId: chatId,
-                                    usuario: {
-                                        nombre: user.nombreClient,
-                                    },
-                                    messages: [{
-                                        sender: 'Cliente',
-                                        message: user.Descripcion,
-                                        idMessageClient: `msg_MessageProblem-${user.Descripcion.length}`,
-                                    }],
-                                    chat: 'messenger',
-                                };
-
-                                const messageResponse = await fetch(`http://localhost:3001/message/${chatId}`, {
-                                    method: 'PUT',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify(newMessage),
-                                });
-
-                                if (!messageResponse.ok) throw new Error('Error al guardar el mensaje');
-                                console.log('Mensaje guardado correctamente.');
-                            } else {
-                                console.log('Mensaje ya existe.');
-                            }
-                        }
-                    }
+                          if (!exists) {
+                            const newMessage = {
+                              contactId: chatId,
+                              usuario: { nombre: user.nombreClient },
+                              messages: [{
+                                sender: 'Cliente',
+                                message: user.Descripcion,
+                                idMessageClient: `msg_MessageProblem-${user.Descripcion.length}`,
+                              }],
+                              chat: 'messenger',
+                            };
+                        
+                            const messageResponse = await fetch(`http://localhost:3001/message/${chatId}`, {
+                              method: 'PUT',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify(newMessage),
+                            });
+                        
+                            if (!messageResponse.ok) throw new Error('Error al guardar el mensaje');
+                          }
+                        })
+                    );
 
                 } else {
                     console.log('No hay empleados asignados');
@@ -401,9 +398,8 @@ function MessengerEmple (){
                 }
             } catch (error) {
                 console.error('Error al momento de consultar los datos de la API:', error);
-            }   
+            }
         };
-
         fetchEmple();
     }, []);
 
@@ -413,23 +409,59 @@ function MessengerEmple (){
         }
 
         const updateMessages = async()=>{ await fetchMessenger(activeContact); }
+
+        const fetchWisphubInfo = async ()=>{
+            try{
+                const responseWisphub = await fetch(`http://localhost:3001/wisphub-data/${activeContact.numDoc}/`,{
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'appliction/json'
+                    }
+                })
+
+                if(!responseWisphub){
+                    throw new Error(`Error al consultar los datos de wisphub`)
+                }
+
+                const data = await responseWisphub.json();
+                console.log('Los datos de wisphub son: ', data);
+
+                const result = data.data
+
+                for(const client of result){
+                    const detallesClient ={
+                        idServ: client.id_servicio,
+                        nombreUser: client.nombre,
+                        documento: client.cedula,
+                        email: client.email,
+                        direccion: client.direccion,
+                        estado: client.estado,
+                        estado_factura: client.estado_facturas,
+                        fechaCort: client.fecha_corte,
+                        fechaInsta: client.fecha_instalacion,
+                        localidad: client.localidad,
+                        plan: client.plan_internet.nombre,
+                        precio: client.precio_plan,
+                        Zona: client.zona.nombre,
+                        telefono: client.telefono
+                    }
+
+                    console.log('detalles del cliente son: ', detallesClient)
+
+                    setWisphubInfo(detallesClient)
+                }
+
+            }catch(error){
+                console.error('Error al consultar los datos de la api de wisphub: ', error)
+            }
+        }
+
+        fetchWisphubInfo();
+
         updateMessages();
         const intervalId = setInterval(updateMessages, 5000);
         return ()=>clearInterval(intervalId)
     }, [activeContact]);
-
-    const wisphubData = async ()=>{
-        try{
-            const responseWisphub = await fetch(`http://localhost:3001/wisphub-data/52128446/`,{
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'appliction/json'
-                }
-            })
-        }catch(error){
-            console.error('Error al consultar los datos de la api de wisphub: ', error)
-        }
-    }
 
     //enviar mensaje
     return(
@@ -476,10 +508,15 @@ function MessengerEmple (){
                                     }}
                                 >
                                     <img src={contact.perfil || Usuario} />
-                                    <div className="contact-info">
+                                    <div className="contact-in2fo">
                                         <p>{contact.nombre}</p>
                                         <p className="lastMessage">
-                                           {contact.lastSender}: {contact.lastMessage ? contact.lastMessage.message : ''}
+                                           {contact.lastSender}: {contact.lastMessage
+                                                ? contact.lastMessage.message.includes('res.cloudinary.com') || contact.lastMessage.message.includes('scontent')
+                                                  ? '🖼️ Imagen enviada'
+                                                  : contact.lastMessage.message
+                                                : '' 
+                                            }
                                         </p>
                                     </div>
                                     {unreadMessages[contact.id] && <span className="unread-dot"></span>}
@@ -584,15 +621,25 @@ function MessengerEmple (){
                         )}
                     </div>
 
-                    {activeContact && (
+                    {wisphubInfo && (
                     <div className="extraPanel">
                         <div className="contentTitle">
                             <p>Detalles del cliente</p>
                         </div>
-                        <p><strong>Nombre:</strong> {activeContact.nombre}</p>
-                        <p><strong>Correo:</strong> {activeContact.email || 'No disponible'}</p>
-                        <p><strong>Documento:</strong> {activeContact.documento || 'No disponible'}</p>
-                        <button onClick={()=>console.log("Accion personalizada")}>Ver historial completo</button>
+                        <div className="ContentInfoWisphub">
+                            <p><strong>Nombre: </strong> {wisphubInfo.nombreUser}</p>
+                            <p><strong>Documento: </strong> {wisphubInfo.documento || 'No disponible'}</p>
+                            <p><strong>Correo: </strong> {wisphubInfo.email || 'No disponible'}</p>
+                            <p><strong>Telefono: </strong> {wisphubInfo.telefono || 'No disponible'}</p>
+                            <p><strong>Dirección: </strong> {wisphubInfo.direccion || 'No disponible'}</p>
+                            <p><strong>Plan: </strong> {wisphubInfo.plan || 'No disponible'}</p>
+                            <p><strong>Precio: </strong> {wisphubInfo.precio || 'No disponible'}</p>
+                            <p><strong>Localidad: </strong> {wisphubInfo.localidad || 'No disponible'}</p>
+                            <p><strong>Fecha Instalacion: </strong> {wisphubInfo.fechaInsta || 'No disponible'}</p>
+                            <p><strong>Fecha Corte: </strong> {wisphubInfo.fechaCort || 'No disponible'}</p>
+                            <p><strong>Estado De Facturas: </strong> {wisphubInfo.estado_factura || 'No disponible'}</p>
+                            <p><strong>Zona: </strong> {wisphubInfo.Zona || 'No disponible'}</p>
+                        </div>
                     </div>
                 )}
                 </div>

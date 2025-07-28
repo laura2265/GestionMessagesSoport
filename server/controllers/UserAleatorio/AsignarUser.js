@@ -71,7 +71,7 @@ export const AsignarUserPost = async (req, res) => {
                 idEmple: empleAsignado._id,
                 nombreEmple: empleAsignado.name,
                 categoriaTicket: categoria,
-                numDocTitular: cliente.numDocTitular
+                numDocTitular: cliente.numDocTitular,
             });
 
             asignaciones.push(newAsignacion);

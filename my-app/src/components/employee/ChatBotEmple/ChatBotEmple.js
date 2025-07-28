@@ -121,7 +121,7 @@ function ChatBotEmple (){
                     <img src={Bot} />
                     <a>Crear Nuevo Bot</a>
                 </div>
-                <div className="contCards">
+                <div className="contCards1">
                     <div className="cards1">
                         <div className="contentCards1">
                             <div className="contentFlex">
@@ -161,6 +161,11 @@ function ChatBotEmple (){
                             </div>
                         </div>
                     </div>
+                    
+                    {isLoggedIn && <MessageChat/>}
+                </div>
+                <div className="contCards2">
+                    
                     <div className="cards1">
                         <div className="contentCards1">
                             <div className="contentFlex">
@@ -174,7 +179,19 @@ function ChatBotEmple (){
                             </div>
                         </div>
                     </div>
-                    {isLoggedIn && <MessageChat/>}
+                    <div className="cards1">
+                        <div className="contentCards1">
+                            <div className="contentFlex">
+                                <div className="contenttexto1">
+                                    <img src={Bot} />
+                                    <p>Local</p>
+                                </div>
+                                <div className="contentLink">
+                                    <Link to='/telegram-emple'>Ingresar</Link>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </>
