@@ -39,6 +39,7 @@ import InstagramEmple from './components/employee/ChatBotEmple/InstagramEmple/In
 import ReportClient from './components/Admin/Directory/Reportes/ReportClient';
 import ReportEmple from './components/Admin/Directory/Reportes/ReportEmple';
 import ReportHistoryMessage from './components/Admin/Directory/Reportes/ReportHistoryMessage';
+import LocalEmple from './components/employee/ChatBotEmple/LocalEmple/LocalEmple';
 
 function App() {
   return (
@@ -226,6 +227,11 @@ function App() {
       <Route path='/instagram-emple' element={
             <PrivateRouter allowedRoles={[2]}>
               <InstagramEmple/>
+            </PrivateRouter>
+          }/>
+      <Route path='/local-emple' element={
+            <PrivateRouter allowedRoles={[2]}>
+              <LocalEmple/>
             </PrivateRouter>
           }/>
     </Routes>

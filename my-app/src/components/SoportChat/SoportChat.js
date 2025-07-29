@@ -347,9 +347,8 @@ function SoportChat (){
             ["Falla conexión", "Cambiar Contraseña", "Cancelar Servicio", "Cambio de plan", "Traslado", "Solicitar servicio", "PQR(Peticion, Queja, Reclamo)", "Pagar Facturas", "Cambio de titular", "Otro"]
           ),1000);
           setWaitingForDocument(true);
-       }else{
-            setTimeout(() => addBotMessage('Lo siento, no entiendo esa solicitud 😢'),1000);
-            setWaitingForDocument(true);
+       }else if(["CambioDePlan", "CambioDeContraseña", "Pqr", "Otro"].includes(stateChat)){
+            handleSendMessage(userInput)
        }
 
        setUserInput("");

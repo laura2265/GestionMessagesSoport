@@ -5,31 +5,7 @@
     "message": "No tengo internet",
     "numDoc": "52128446",
     "contactado": true,
-    "processedAt": "2025-07-24T15:34:22.820Z"
-  },
-  {
-    "id": "376434432",
-    "Motivo": "Falla de conexión",
-    "message": "No tengo internet",
-    "numDoc": null,
-    "contactado": true,
-    "processedAt": "2025-07-24T15:34:22.861Z"
-  },
-  {
-    "id": "7950419098379258",
-    "Motivo": "Falla de conexión",
-    "message": "Internet lento",
-    "numDoc": "1014476547",
-    "contactado": true,
-    "processedAt": "2025-07-24T15:34:22.896Z"
-  },
-  {
-    "id": "eb9db103-c8d1-4dd3-8db5-5d572308a208",
-    "Motivo": null,
-    "message": null,
-    "numDoc": null,
-    "contactado": true,
-    "processedAt": "2025-07-24T15:34:22.945Z"
+    "processedAt": "2025-07-29T15:20:37.893Z"
   },
   {
     "id": "1138345911",
@@ -37,6 +13,33 @@
     "message": "No tengo internet",
     "numDoc": null,
     "contactado": true,
-    "processedAt": "2025-07-25T20:24:19.028Z"
+    "processedAt": "2025-07-29T15:20:37.897Z"
+  },
+  {
+    "id": "376434432",
+    "Motivo": "Falla de conexión",
+    "message": "No tengo internet",
+    "numDoc": null,
+    "contactado": true,
+    "processedAt": "2025-07-29T15:20:37.912Z"
+  },
+  {
+    "id": "7950419098379258",
+    "Motivo": "Falla de conexión",
+    "message": "Internet lento",
+    "numDoc": "1014476547",
+    "contactado": true,
+    "processedAt": "2025-07-29T15:20:37.931Z"
+  },
+  {
+    "id": "eb9db103-c8d1-4dd3-8db5-5d572308a208",
+    "Motivo": {
+      "text": "Cambio de plan",
+      "buttons": []
+    },
+    "message": null,
+    "numDoc": "19405841",
+    "contactado": true,
+    "processedAt": "2025-07-29T15:37:52.799Z"
   }
 ]

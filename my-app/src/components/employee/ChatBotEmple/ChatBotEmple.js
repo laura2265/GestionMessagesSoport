@@ -161,12 +161,7 @@ function ChatBotEmple (){
                             </div>
                         </div>
                     </div>
-                    
-                    {isLoggedIn && <MessageChat/>}
-                </div>
-                <div className="contCards2">
-                    
-                    <div className="cards1">
+                     <div className="cards1">
                         <div className="contentCards1">
                             <div className="contentFlex">
                                 <div className="contenttexto1">
@@ -187,11 +182,13 @@ function ChatBotEmple (){
                                     <p>Local</p>
                                 </div>
                                 <div className="contentLink">
-                                    <Link to='/telegram-emple'>Ingresar</Link>
+                                    <Link to='/local-emple'>Ingresar</Link>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    
+                    {isLoggedIn && <MessageChat/>}
                 </div>
             </div>
         </>

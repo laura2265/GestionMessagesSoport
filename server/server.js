@@ -90,8 +90,9 @@ async function fetchAndProcessUsers() {
             ...mongoMensajes.map(item => ({
                 tipo: 'mongo',
                 idUser: item.id,
-                chat: item.chat,
-                Motivo: item.Message
+                nombreUser: item.usuario.nombre,
+                numDoc: item.usuario.documento,
+                Motivo: item.conversacion[1].mensaje
             }))
         ];
 
