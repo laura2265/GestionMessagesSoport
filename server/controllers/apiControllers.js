@@ -226,60 +226,27 @@ const getDataFetch = async (req, res) => {
                     }
 
                 }else if(`Sheet${index+1}` === `Sheet7`){
-                    const DescriptionUser = headers.indexOf('DescripcionUser');
+                    const NombreTitular = headers.indexOf('NombreTitular');
+                    const DocumentoTitular = headers.indexOf('DocumentoTirular');
+                    const NumeroTelefono = headers.indexOf('DocumentoTirular');
+                    const Email = headers.indexOf('Email');
+                    const TipoServidor = headers.indexOf('TipoServicio');
+                    const MotivoSolicitud = headers.indexOf('MotivoSolicitud');
 
                     if(idIndex !== -1 && NameIndex !== -1 && chatIndex !== -1 && messageIndex !== -1 && DescriptionUser !== -1){
                         rows.forEach(row => {
-                            let detalles = row[DescriptionUser] ? row[DescriptionUser].trim() : '';
-
-                            let descripcionData = {
-                                Nombre: null,
-                                Documento: null,
-                                Teléfono: null,
-                                Email: null,
-                                Servicio: null,
-                                Motivo: null
-                            };
-
-                            if (detalles.includes(',')) {
-                                let partes = detalles.split(',').map(d => d.trim());
-
-                                descripcionData = {
-                                    Nombre: partes[0] || null,
-                                    Documento: partes[1] || null,
-                                    Teléfono: partes[2] || null,
-                                    Email: partes[3] || null,
-                                    Servicio: partes[4] || null,
-                                    Motivo: partes.slice(5).join(' ') || null
-                                };
-
-                            }else {
-                                let partes = detalles.split(/\s+/);
-
-                                if (partes.length >= 5) {
-                                    let nombreFin = 2;
-                                    while (nombreFin < partes.length && isNaN(partes[nombreFin])) {
-                                        nombreFin++;
-                                    }
-
-                                    descripcionData.Nombre = partes.slice(0, nombreFin).join(' ').trim();
-                                    descripcionData.Documento = partes[nombreFin] || null;
-                                    descripcionData.Teléfono = partes[nombreFin + 1] || null;
-                                    descripcionData.Email = partes[nombreFin + 2] || null;
-                                    descripcionData.Servicio = partes[nombreFin + 3] || null;
-                                    descripcionData.Motivo = partes.slice(nombreFin + 4).join(' ') || null;
-                                } else {
-                                    descripcionData.Motivo = detalles;
-                                }
-                            }
-
                             formattedData.push({
                                 sheet: `Sheet7`,
                                 id: row[idIndex],
                                 Name: row[NameIndex],
                                 chatName: row[chatIndex],
                                 Message: row[messageIndex],
-                                descripcion: descripcionData
+                                nombreUser: row[NombreTitular],
+                                documento: row[DocumentoTitular],
+                                NumeroTelefono: row[NumeroTelefono],
+                                email: row[Email],
+                                TipoServidor: row[TipoServidor],
+                                Motivo: row[MotivoSolicitud],
                             });
                         });
                     }
