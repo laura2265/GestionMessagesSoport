@@ -121,43 +121,51 @@ async function fetchAndProcessUsers() {
                 console.log(`📩 Nuevo mensaje MongoDB: ${idUser} - "${Motivo}"`);
 
             } else if (user.tipo === 'sheets') {
-                const { chat, ServicioDuracion, descripcion, sheet } = user;
-                const chatsValidos = ['ChatBotMessenger', 'ChatBotInstagram', 'ChatBotTelegram'];
+                const { sheet, chat } = user;
+                const chatsValidos = ['ChatBotMessenger', 'ChatBotInstagram', 'ChatBotTelegram']
+                const HojasValidacion = {
+                    Sheet1: 'funciono1',
+                    Sheet2: 'result',
+                    Sheet3: 'funcionoVpn',
+                    Sheet4: 'FuncionoFinal',
+                    Sheet5: 'resultadoFinal'
+                }
 
-                if (['Sheet1','Sheet2','Sheet3','Sheet4','Sheet5','Sheet6','Sheet7','Sheet8','Sheet10','Sheet11','Sheet12','Sheet13','Sheet14','Sheet15'].includes(sheet)) {
-                    console.log(`📄 Asignando por hoja ${sheet}`);
+                const asignacionDirecta = ['Sheet6', 'Sheet7', 'Sheet9', 'Sheet12', 'Sheet15'];
+
+                if(sheet === 'Sheet1' && cable === "Cable Dañado" ){
+                    console.log('🔌 Sheet1 - Cable dañado → Enviar a soporte');
                     EmpleAssigned(idUser);
-                    continue;
+                    return;
                 }
 
-                if (sheet === 'Sheet9' && chatsValidos.includes(chat)) {
-                    switch (ServicioDuracion) {
-                        case "0 - 6 meses":
-                            console.log('⏳ Menos de 6 meses → Asignar');
-                            EmpleAssigned(idUser);
-                            break;
+                if (sheet === 'Sheet4' && user.ProblemaSeñal === 'Otro problema') {
+                    console.log('📺 Sheet4 - Otro problema → Enviar a soporte');
+                    EmpleAssigned(idUser);
+                    return;
+                }
 
-                        case "6 meses - 1 año":
-                            console.log('⏳ Duración media → puedes decidir qué hacer');
-                            break;
-
-                        case "1 año o mas":
-                            console.log('✅ Más de 1 año → verificar datos');
-                            const userData = {
-                                idUser,
-                                ...user,
-                                ...descripcion
-                            };
-
-                            if (chat === 'ChatBotMessenger') await BuscarCedulaMessenger(userData);
-                            else if (chat === 'ChatBotInstagram') await BuscarCedulaInstagram(userData);
-                            else if (chat === 'ChatBotTelegram') await BuscarCedulaTelegram(userData);
-                            break;
-
-                        default:
-                            console.log('⚠️ Duración de servicio no válida');
+                if (Object.keys(HojasValidacion).includes(sheet)) {
+                    const variable = HojasValidacion[sheet];
+                    if (user[variable] === 'No funciono') {
+                        console.log(`📄 ${sheet} - Usuario indicó que no funcionó → Soporte`);
+                        EmpleAssigned(idUser);
+                    } else {
+                        console.log(`✅ ${sheet} - Problema aparentemente resuelto`);
                     }
+                    return;
                 }
+
+                if (asignacionDirecta.includes(sheet)) {
+                    console.log(`📄 ${sheet} - Hoja con datos sensibles → Enviar a soporte`);
+                    EmpleAssigned(idUser);
+                    return;
+                }
+                
+                // Hojas restantes o por defecto
+                console.log(`📄 ${sheet} - Asignación general`);
+                EmpleAssigned(idUser);
+                
             }
             await delay(1000);
         }

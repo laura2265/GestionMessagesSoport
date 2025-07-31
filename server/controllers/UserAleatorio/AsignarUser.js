@@ -1,5 +1,79 @@
 import AsignarUser from "../../models/AsignarUser.js";
 
+function generarDescripcionPorSheet(cliente) {
+    const data = cliente.descripcion || {};
+    const sheet = cliente.sheet;
+    const desc = [];
+
+    desc.push(`🗂 Motivo: ${cliente.Message || 'No disponible'}`);
+    if (cliente.ProblemaInt) desc.push(`📌 Detalle: ${cliente.ProblemaInt}`);
+
+    switch (sheet) {
+        case 'Sheet1':
+            desc.push(`📡 Problema: No tengo internet`);
+            if (data.Dispositivo1) desc.push(`📱 Dispositivo: ${data.TipoDispositivoInternet}`);
+            if (data.bombilloLos) desc.push(`💡 Bombillo: ${data.bombilloLos}`);
+            if (data.cable) desc.push(`🔌 Estado del cable: ${data.cable}`);
+            if (cliente.funciono1) desc.push(`⚙️ Resultado final: ${cliente.funciono1}`);
+            break;
+
+        case 'Sheet2':
+            desc.push(`🐢 Problema: Internet lento`);
+            if (data.testVel) desc.push(`📶 Velocidad subida: ${data.testVel}`);
+            if (cliente.result) desc.push(`⚙️ Resultado del test: ${cliente.result}`);
+            break;
+
+        case 'Sheet3':
+            desc.push(`🌐 Problema: No cargan las páginas`);
+            if (data.ProblemPage) desc.push(`🧭 Tipo de falla: ${data.ProblemPage}`);
+            if (cliente.funcionoVpn) desc.push(`⚙️ Resultado: ${cliente.funcionoVpn}`);
+            if(data.namePage) desc.push(`Pagina que no funciona ${data.namePage}`);
+            break;
+
+        case 'Sheet4':
+            desc.push(`📺 Problema: Señal de Televisión`);
+            if (data.TipoDeProblemaSeñal) desc.push(`🛰️ Tipo de problema: ${data.TipoDeProblemaSeñal}`);
+            if (cliente.FuncionoFinal) desc.push(`⚙️ Resultado: ${cliente.FuncionoFinal}`);
+            break;
+
+        case 'Sheet5':
+            desc.push(`🔁 Problema: Internet se desconecta a ratos`);
+            if (data.ProblemaWifi) desc.push(`📡 Tipo conexión WiFi: ${data.ProblemaWifi}`);
+            if (cliente.resultadoFinal) desc.push(`⚙️ Resultado: ${cliente.resultadoFinal}`);
+            break;
+
+        case 'Sheet6':
+            desc.push(`🛠️ Otro problema técnico ingresado manualmente por el usuario`);
+            break;
+
+        case 'Sheet7':
+            desc.push(`🔒 Cambio de contraseña solicitado`);
+            break;
+
+        case 'Sheet9':
+            desc.push(`📊 Solicitud de cambio de plan`);
+            if (cliente.message) desc.push(`📝 Detalle de plan: ${cliente.message}`);
+            break;
+
+        case 'Sheet12':
+            desc.push(`📣 Queja o reclamo ingresado`);
+            break;
+
+        case 'Sheet15':
+            desc.push(`🆘 Otro tipo de solicitud (no clasificada)`);
+            break;
+
+        // Puedes agregar más cases según sea necesario
+
+        default:
+            desc.push(`📄 Sheet sin descripción específica`);
+    }
+
+    return desc;
+}
+
+
+
 export const AsignarUserPost = async (req, res) => {
     try {
         const { id } = req.params;

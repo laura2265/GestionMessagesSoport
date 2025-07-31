@@ -210,7 +210,10 @@ const getDataFetch = async (req, res) => {
 
                 }else if(`Sheet${index+1}` === `Sheet6`){
                     const ProblemaConexionIndex = headers.indexOf('problema-conexion');
-                    const NumeroDocumento = headers.indexOf('DocumentoTitular');
+                    const NombreTitularOtroIndex = headers.indexOf('NombreTitularOtro');
+                    const DocumentoTirularOtroIndex = headers.indexOf('DocumentoTitularOtro');
+                    const MotivoProblemaConexionOtroIndex = headers.indexOf('MotivoProblemaConexionOtro');
+
                     if(idIndex !== -1 && NameIndex !== -1 && chatIndex !== -1 && messageIndex !== -1 && ProblemaConexionIndex !== -1){
                         rows.forEach(row => {
                             formattedData.push({
@@ -220,20 +223,22 @@ const getDataFetch = async (req, res) => {
                                 chatName: row[chatIndex],
                                 Message: row[messageIndex],
                                 ProblemaInt: row[ProblemaConexionIndex],
-                                numDocTitular: row[NumeroDocumento],
+                                NombreTitularOtro : row[NombreTitularOtroIndex],
+                                DocumentoTirularOtro : row[DocumentoTirularOtroIndex],
+                                MotivoProblemaConexionOtro: row[MotivoProblemaConexionOtroIndex],
                             })
                         })
                     }
 
                 }else if(`Sheet${index+1}` === `Sheet7`){
-                    const NombreTitular = headers.indexOf('NombreTitular');
-                    const DocumentoTitular = headers.indexOf('DocumentoTirular');
-                    const NumeroTelefono = headers.indexOf('DocumentoTirular');
-                    const Email = headers.indexOf('Email');
-                    const TipoServidor = headers.indexOf('TipoServicio');
-                    const MotivoSolicitud = headers.indexOf('MotivoSolicitud');
+                    const NombreTitularIndex = headers.indexOf('NombreTitular');
+                    const DocumentoTitularIndex = headers.indexOf('DocumentoTirular');
+                    const NumeroTelefonoIndex = headers.indexOf('DocumentoTirular');
+                    const EmailIndex = headers.indexOf('Email');
+                    const TipoServidorIndex = headers.indexOf('TipoServicio');
+                    const MotivoSolicitudIndex = headers.indexOf('MotivoSolicitud');
 
-                    if(idIndex !== -1 && NameIndex !== -1 && chatIndex !== -1 && messageIndex !== -1 && DescriptionUser !== -1){
+                    if(idIndex !== -1 && NameIndex !== -1 && chatIndex !== -1 && messageIndex !== -1 && NombreTitularIndex !== -1 && DocumentoTitularIndex!== -1 && NumeroTelefonoIndex!== -1 && EmailIndex!== -1 && TipoServidorIndex !== -1 && MotivoSolicitudIndex!== -1){
                         rows.forEach(row => {
                             formattedData.push({
                                 sheet: `Sheet7`,
@@ -241,12 +246,12 @@ const getDataFetch = async (req, res) => {
                                 Name: row[NameIndex],
                                 chatName: row[chatIndex],
                                 Message: row[messageIndex],
-                                nombreUser: row[NombreTitular],
-                                documento: row[DocumentoTitular],
-                                NumeroTelefono: row[NumeroTelefono],
-                                email: row[Email],
-                                TipoServidor: row[TipoServidor],
-                                Motivo: row[MotivoSolicitud],
+                                nombreUser: row[NombreTitularIndex],
+                                documento: row[DocumentoTitularIndex],
+                                NumeroTelefono: row[NumeroTelefonoIndex],
+                                email: row[EmailIndex],
+                                TipoServidor: row[TipoServidorIndex],
+                                Motivo: row[MotivoSolicitudIndex],
                             });
                         });
                     }
@@ -265,55 +270,25 @@ const getDataFetch = async (req, res) => {
                     }
 
                 }else if(`Sheet${index+1}` === `Sheet9`){
-                    const DuracionCambioDeplan = headers.indexOf('tiempoServicio')
-                    const DescriptionCambioDelPlan = headers.indexOf('DescripcionCambioDePlan');
+                    const CambioDeMegasIndex = headers.indexOf('CambioDeMegas');
+                    const ServicioActualIndex = headers.indexOf('TipoDeServicioActual');
+                    const PlanSolicitudIndex = headers.indexOf('PlanQueSolicita');
+                    const DuracionServicioIndex = headers.indexOf('DuracionConServicio');
+                    const CedulaTitularIndex = headers.indexOf('CedulaTitular');
+
                     if(idIndex !== -1 && NameIndex !== -1 && chatIndex !== -1 && messageIndex !== -1 && DescriptionCambioDelPlan !== -1){
                         rows.forEach(row => {
-                            let detalles = row[DescriptionCambioDelPlan] ? row[DescriptionCambioDelPlan].trim() : '';
-
-                            let descripcionData = {
-                                Nombre: null,
-                                Documento: null,
-                                Servicio: null,
-                                Motivo: null
-                            }
-
-                            if (detalles.includes(',')) {
-                                let partes = detalles.split(',').map(d => d.trim());
-
-                                descripcionData = {
-                                    Nombre: partes[0] || null,
-                                    Documento: partes[1] || null,
-                                    Servicio: partes[2] || null,
-                                    Motivo: partes.slice(3).join(' ') || null
-                                }
-
-                            } else {
-                                let partes = detalles.split(/\s+/);
-
-                                if (partes.length >= 3) {
-                                    let nombreFin = 2;
-                                    while (nombreFin < partes.length && isNaN(partes[nombreFin])) {
-                                        nombreFin++;
-                                    }
-
-                                    descripcionData.Nombre = partes.slice(0, nombreFin).join(' ').trim();
-                                    descripcionData.Documento = partes[nombreFin] || null;
-                                    descripcionData.Servicio = partes[nombreFin + 1] || null;
-                                    descripcionData.Motivo = partes.slice(nombreFin + 2).join(' ') || null;
-                                } else {
-                                    descripcionData.Motivo = detalles;
-                                }
-                            }
-
                             formattedData.push({
                                 sheet: `Sheet9`,
                                 id: row[idIndex],
                                 Name: row[NameIndex],
                                 chatName: row[chatIndex],
                                 Message: row[messageIndex],
-                                duracionServicio: row[DuracionCambioDeplan],
-                                descripcion: descripcionData
+                                CambioMegas: row[CambioDeMegasIndex],
+                                ServicioActual: row[ServicioActualIndex],
+                                PlanSolicitado: row[PlanSolicitudIndex],
+                                DuracionServicio: row[DuracionServicioIndex],
+                                CedulaTitular: row[CedulaTitularIndex],
                             });
                         });
                     }
@@ -331,56 +306,25 @@ const getDataFetch = async (req, res) => {
                         })
                     }
                 }else if(`Sheet${index+1}` === `Sheet12`){
-                    const DescriptionPQR = headers.indexOf('DescripcionPQR');
+                    const NombrePqrsIndex = headers.indexOf('NombrePQRS');
+                    const CedulaTitularIndex = headers.indexOf('DocumentoTiutar');
+                    const TipoPeticionIndex = headers.indexOf('TipoPeticion');
+                    const FechaPeticionIndex = headers.indexOf('FechaPeticion');
+                    const MotivoPeticionIndex = headers.indexOf('MotivoPeticion');
+
                     if(idIndex !== -1 && NameIndex !== -1 && chatIndex !== -1 && messageIndex !== -1 && DescriptionPQR !== -1){
                         rows.forEach(row => {
-                            let detalles = row[DescriptionPQR] ? row[DescriptionPQR].trim() : '';
-
-                            let descripcionData = {
-                                Nombre: null,
-                                Documento: null,
-                                TipoSolicitud: null,
-                                Fecha: null,
-                                DescripcionProblema: null,
-                            };
-
-                            if (detalles.includes(',')) {
-                                let partes = detalles.split(',').map(d => d.trim());
-
-                                descripcionData = {
-                                    Nombre: partes[0] || null,
-                                    Documento: partes[1] || null,
-                                    TipoSolicitud: partes[2] || null,
-                                    Fecha: partes[3] || null,
-                                    DescripcionProblema: partes.slice(4).join(' ') || null,
-                                };
-
-                            } else {
-                                let partes = detalles.split(/\s+/);
-                
-                                if (partes.length >= 4) {
-                                    let nombreFin = 2;
-                                    while (nombreFin < partes.length && isNaN(partes[nombreFin])) {
-                                        nombreFin++;
-                                    }
-
-                                    descripcionData.Nombre = partes.slice(0, nombreFin).join(' ').trim();
-                                    descripcionData.Documento = partes[nombreFin] || null;
-                                    descripcionData.TipoSolicitud = partes[nombreFin + 1] || null;
-                                    descripcionData.Fecha = partes[nombreFin + 2] || null;
-                                    descripcionData.DescripcionProblema = partes.slice(nombreFin + 3).join(' ') || null;
-                                } else {
-                                    descripcionData.DescripcionProblema = detalles;
-                                }
-                            }
-
                             formattedData.push({
                                 sheet: `Sheet12`,
                                 id: row[idIndex],
                                 Name: row[NameIndex],
                                 chatName: row[chatIndex],
                                 Message: row[messageIndex],
-                                descripcion: descripcionData
+                                NombrePqrs: row[NombrePqrsIndex],
+                                CedulaTitular: row[CedulaTitularIndex],
+                                TipoPeticion: row[TipoPeticionIndex],
+                                FechaPeticion: row[FechaPeticionIndex],
+                                MotivoPeticion: row[MotivoPeticionIndex],
                             });
                         });
                     }
@@ -424,53 +368,23 @@ const getDataFetch = async (req, res) => {
                 }
 
                 }else if(`Sheet${index+1}` === `Sheet15`){
-                    const descriptionOtro = headers.indexOf('DescripcionOtro');
+                    const NombreOtroIndex = headers.indexOf('NombreOtro');
+                    const DocumentoTirularIndex = headers.indexOf('DocumentoTitular');
+                    const TitularServicioIndex = headers.indexOf('TitularServicio');
+                    const MotivoOtroIndex = headers.indexOf('MotivoOtro');
 
                     if(idIndex !== -1 && NameIndex !== -1 && chatIndex !== -1 && messageIndex !== -1 && descriptionOtro !== -1){
                         rows.forEach(row => {
-                            let detalles = row[descriptionOtro] ? row[descriptionOtro].trim() : '';
-
-                            let descripcionData = {
-                                Nombre: null,
-                                Documento: null,
-                                ConfirmTitular: null,
-                                DescripcionProblema: null,
-                            };
-
-                            if (detalles.includes(',')) {
-                                let partes = detalles.split(',').map(d => d.trim());
-
-                                descripcionData = {
-                                    Nombre: partes[0] || null,
-                                    Documento: partes[1] || null,
-                                    ConfirmTitular: partes[2] || null,
-                                    DescripcionProblema: partes.slice(3).join('') || null,
-                                };
-                            } else {
-                                let partes = detalles.split(/\s+/);
-
-                                if (partes.length >= 3) {
-                                    let nombreFin = 2;
-                                    while (nombreFin < partes.length && isNaN(partes[nombreFin])) {
-                                        nombreFin++;
-                                    }
-
-                                    descripcionData.Nombre = partes.slice(0, nombreFin).join(' ').trim();
-                                    descripcionData.Documento = partes[nombreFin] || null;
-                                    descripcionData.ConfirmTitular = partes[nombreFin + 1] || null;
-                                    descripcionData.DescripcionProblema = partes.slice(nombreFin + 2).join(' ') || null;
-                                } else {
-                                    descripcionData.DescripcionProblema = detalles;
-                                }
-                            }
-
                             formattedData.push({
                                 sheet: `Sheet15`,
                                 id: row[idIndex],
                                 Name: row[NameIndex],
                                 chatName: row[chatIndex],
                                 Message: row[messageIndex],
-                                descripcion: descripcionData
+                                nombreOtro: row[NombreOtroIndex],
+                                DocumentoTitular: row[DocumentoTirularIndex],
+                                titularServicio: row[TitularServicioIndex],
+                                motivoOtro: row[MotivoOtroIndex]
                             });
                         });
                     }
