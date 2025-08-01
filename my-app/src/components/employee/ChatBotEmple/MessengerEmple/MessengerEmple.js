@@ -351,7 +351,8 @@ function MessengerEmple (){
                                       ...c,
                                       nombre: newContact.nombre || c.nombre,
                                       perfil: newContact.perfil,
-                                      estado: newContact.estado
+                                      estado: newContact.estado,
+                                      numDoc: c.numDoc 
                                     }
                                   : c
                               )

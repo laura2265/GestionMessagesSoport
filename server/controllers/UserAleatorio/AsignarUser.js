@@ -1,77 +1,90 @@
 import AsignarUser from "../../models/AsignarUser.js";
 
 function generarDescripcionPorSheet(cliente) {
-    const data = cliente.descripcion || {};
-    const sheet = cliente.sheet;
     const desc = [];
+    const sheet = cliente.sheet;
 
-    desc.push(`🗂 Motivo: ${cliente.Message || 'No disponible'}`);
-    if (cliente.ProblemaInt) desc.push(`📌 Detalle: ${cliente.ProblemaInt}`);
+    // 🗂 Motivo principal
+    if (cliente.Message) {
+        desc.push(`🗂 Motivo: ${cliente.Message}`);
+    }
 
-    switch (sheet) {
-        case 'Sheet1':
-            desc.push(`📡 Problema: No tengo internet`);
-            if (data.Dispositivo1) desc.push(`📱 Dispositivo: ${data.TipoDispositivoInternet}`);
-            if (data.bombilloLos) desc.push(`💡 Bombillo: ${data.bombilloLos}`);
-            if (data.cable) desc.push(`🔌 Estado del cable: ${data.cable}`);
-            if (cliente.funciono1) desc.push(`⚙️ Resultado final: ${cliente.funciono1}`);
-            break;
+    // 📌 Detalle (solo si es diferente del mensaje principal)
+    if (cliente.ProblemaInt && cliente.ProblemaInt !== cliente.Message) {
+        desc.push(`📌 Detalle: ${cliente.ProblemaInt}`);
+    }
 
-        case 'Sheet2':
-            desc.push(`🐢 Problema: Internet lento`);
-            if (data.testVel) desc.push(`📶 Velocidad subida: ${data.testVel}`);
-            if (cliente.result) desc.push(`⚙️ Resultado del test: ${cliente.result}`);
-            break;
+    // 📡 Sheet1 - No tengo internet
+    if (sheet === 'Sheet1') {
+        desc.push(`📡 Problema: No tengo internet`);
+        if (cliente.TipoDispositivoInternet) desc.push(`📱 Dispositivo: ${cliente.TipoDispositivoInternet}`);
+        if (cliente.bombilloLos) desc.push(`💡 Bombillo: ${cliente.bombilloLos}`);
+        if (cliente.cable) desc.push(`🔌 Estado del cable: ${cliente.cable}`);
+        if (cliente.funciono1) desc.push(`⚙️ Resultado final: ${cliente.funciono1}`);
+    }
 
-        case 'Sheet3':
-            desc.push(`🌐 Problema: No cargan las páginas`);
-            if (data.ProblemPage) desc.push(`🧭 Tipo de falla: ${data.ProblemPage}`);
-            if (cliente.funcionoVpn) desc.push(`⚙️ Resultado: ${cliente.funcionoVpn}`);
-            if(data.namePage) desc.push(`Pagina que no funciona ${data.namePage}`);
-            break;
+    // 🐢 Sheet2 - Internet lento
+    if (sheet === 'Sheet2') {
+        desc.push(`🐢 Problema: Internet lento`);
+        if (cliente.testVel) desc.push(`📶 Velocidad subida: ${cliente.testVel}`);
+        if (cliente.result) desc.push(`⚙️ Resultado del test: ${cliente.result}`);
+    }
 
-        case 'Sheet4':
-            desc.push(`📺 Problema: Señal de Televisión`);
-            if (data.TipoDeProblemaSeñal) desc.push(`🛰️ Tipo de problema: ${data.TipoDeProblemaSeñal}`);
-            if (cliente.FuncionoFinal) desc.push(`⚙️ Resultado: ${cliente.FuncionoFinal}`);
-            break;
+    // 🌐 Sheet3 - No cargan las páginas
+    if (sheet === 'Sheet3') {
+        desc.push(`🌐 Problema: No cargan las páginas`);
+        if (cliente.ProblemPage) desc.push(`🧭 Tipo de falla: ${cliente.ProblemPage}`);
+        if (cliente.namePage) desc.push(`📝 Página afectada: ${cliente.namePage}`);
+        if (cliente.funcionoVpn) desc.push(`⚙️ Resultado: ${cliente.funcionoVpn}`);
+    }
 
-        case 'Sheet5':
-            desc.push(`🔁 Problema: Internet se desconecta a ratos`);
-            if (data.ProblemaWifi) desc.push(`📡 Tipo conexión WiFi: ${data.ProblemaWifi}`);
-            if (cliente.resultadoFinal) desc.push(`⚙️ Resultado: ${cliente.resultadoFinal}`);
-            break;
+    // 📺 Sheet4 - Señal de Televisión
+    if (sheet === 'Sheet4') {
+        desc.push(`📺 Problema: Señal de Televisión`);
+        if (cliente.ProblemaSeñal) desc.push(`🛰️ Tipo de problema: ${cliente.ProblemaSeñal}`);
+        if (cliente.FuncionoFinal) desc.push(`⚙️ Resultado: ${cliente.FuncionoFinal}`);
+    }
 
-        case 'Sheet6':
-            desc.push(`🛠️ Otro problema técnico ingresado manualmente por el usuario`);
-            break;
+    // 🔁 Sheet5 - Internet intermitente
+    if (sheet === 'Sheet5') {
+        desc.push(`🔁 Problema: Internet se desconecta a ratos`);
+        if (cliente.TipoProblem) desc.push(`📡 Tipo conexión WiFi: ${cliente.TipoProblem}`);
+        if (cliente.resultadoFinal) desc.push(`⚙️ Resultado: ${cliente.resultadoFinal}`);
+    }
 
-        case 'Sheet7':
-            desc.push(`🔒 Cambio de contraseña solicitado`);
-            break;
+    // 🛠️ Sheet6 - Otro problema técnico
+    if (sheet === 'Sheet6') {
+        desc.push(`🛠️ Otro problema técnico ingresado manualmente por el usuario`);
+    }
 
-        case 'Sheet9':
-            desc.push(`📊 Solicitud de cambio de plan`);
-            if (cliente.message) desc.push(`📝 Detalle de plan: ${cliente.message}`);
-            break;
+    // 🔒 Sheet7 - Cambio de contraseña
+    if (sheet === 'Sheet7') {
+        desc.push(`🔒 Cambio de contraseña solicitado`);
+    }
 
-        case 'Sheet12':
-            desc.push(`📣 Queja o reclamo ingresado`);
-            break;
+    // 📊 Sheet9 - Cambio de plan
+    if (sheet === 'Sheet9') {
+        desc.push(`📊 Solicitud de cambio de plan`);
+        if (cliente.message) desc.push(`📝 Detalle de plan: ${cliente.message}`);
+    }
 
-        case 'Sheet15':
-            desc.push(`🆘 Otro tipo de solicitud (no clasificada)`);
-            break;
+    // 📣 Sheet12 - Queja o reclamo
+    if (sheet === 'Sheet12') {
+        desc.push(`📣 Queja o reclamo ingresado`);
+    }
 
-        // Puedes agregar más cases según sea necesario
+    // 🆘 Sheet15 - Otro tipo de solicitud
+    if (sheet === 'Sheet15') {
+        desc.push(`🆘 Otro tipo de solicitud (no clasificada)`);
+    }
 
-        default:
-            desc.push(`📄 Sheet sin descripción específica`);
+    // 📄 Otros casos
+    if (!sheet || desc.length <= 1) {
+        desc.push(`📄 Sheet sin descripción específica o sin detalles disponibles`);
     }
 
     return desc;
 }
-
 
 
 export const AsignarUserPost = async (req, res) => {
@@ -99,6 +112,7 @@ export const AsignarUserPost = async (req, res) => {
         const ClientData = await ClientResponse.json();
         let cliente = ClientData.find(client => client.id === id);
 
+
         // 3. Si no está en Sheets, buscar en Mongo
         if (!cliente) {
             const mongoRes = await fetch(`http://localhost:3001/conversacion-server`);
@@ -111,19 +125,27 @@ export const AsignarUserPost = async (req, res) => {
                 cliente.chatName = cliente.chat;
                 cliente.Message = cliente.Message || cliente.motivo || 'Mensaje no disponible';
                 cliente.ProblemaInt = null;
-                cliente.numDocTitular = null;
+                cliente.numDocTitular =
+                    cliente.numDocTitular ||
+                    cliente.CedulaTitular ||
+                    cliente.DocumentoTitular ||
+                    cliente.DocumentoTirular ||
+                    cliente.DocumentoTirularOtro ||
+                    cliente.documento ||
+                    cliente.usuario?.documento ||
+                    '';
             }
         }
 
-        // 4. Si no se encuentra en ninguna fuente
         if (!cliente) {
+            console.error(`❌ Cliente con id ${id} no encontrado al intentar asignar`);
             return res.status(404).json({
                 success: false,
                 message: `Cliente con id ${id} no encontrado en Sheets ni en Mongo`
             });
         }
 
-        // 5. Validar si ya está asignado
+
         const yaAsignado = await AsignarUser.findOne({ chatId: cliente.id });
         if (yaAsignado) {
             return res.status(200).json({
@@ -135,7 +157,7 @@ export const AsignarUserPost = async (req, res) => {
         // 6. Determinar categoría (solo aplica si viene de Sheets)
         let categoria = "Sin categoria";
 
-        if (cliente.sheet === 'Sheet1' && (cliente.funciono1 === "No funciona" || cliente.cable === "Cable dañado")) {
+        if (cliente.sheet === 'Sheet1' && (cliente.funciono1 === "No funciono" || cliente.cable === "Cable dañado")) {
             categoria = "No hay conexión";
         } else if (cliente.sheet === 'Sheet2' && cliente.result === "No funciono") {
             categoria = "Internet lento";
@@ -156,7 +178,7 @@ export const AsignarUserPost = async (req, res) => {
             nombreClient: cliente.Name,
             numDocTitular: cliente.numDocTitular || '',
             chatName: cliente.chatName,
-            Descripcion: [cliente.Message, cliente.ProblemaInt || null],
+            Descripcion: generarDescripcionPorSheet(cliente),
             idEmple: empleAsignado._id,
             nombreEmple: empleAsignado.name,
             categoriaTicket: categoria,

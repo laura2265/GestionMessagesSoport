@@ -21,17 +21,24 @@ connectDB();
 
 // Variables globales
 let processedUsers = [];
-const processedUserSet = new Set();
+const processedUserMap = new Map();
 
 // Cargar usuarios procesados desde JSON al iniciar
 (async () => {
     try {
         processedUsers = await loadProcessedUser();
         processedUsers.forEach(user => {
-            if (user.id) processedUserSet.add(user.id);
+            if (user.id) {
+                const clave = JSON.stringify({
+                    motivo: user.Motivo,
+                    message: user.message,
+                    numDoc: user.numDoc
+                });
+                processedUserMap.set(user.id, clave);
+            }
         });
 
-        console.log(`✅ Procesados cargados: ${processedUserSet.size}`);
+        console.log(`✅ Procesados cargados: ${processedUserMap.size}`);
 
     }catch (error){
         console.error('❌ Error al cargar usuarios procesados:', error);
@@ -85,7 +92,16 @@ async function fetchAndProcessUsers() {
                 numDoc: item.numDocTitular || null,
                 ServicioDuracion: item.duracionServicio,
                 descripcion: item.descripcion || {},
-                sheet: item.sheet
+                sheet: item.sheet,
+
+                //si funciono
+                funciono1: item.funciono1,
+                result: item.result,
+                funcionoVpn: item.funcionoVpn,
+                FuncionoFinal: item.FuncionoFinal,
+                resultadoFinal: item.resultadoFinal,
+                cable: item.cable,
+                TipoDeProblemaSeñal: item.TipoDeProblemaSeñal
             })),
             ...mongoMensajes.map(item => ({
                 tipo: 'mongo',
@@ -99,13 +115,20 @@ async function fetchAndProcessUsers() {
         for (const user of allUsers) {
             const { idUser, Motivo } = user;
 
-            if (processedUserSet.has(idUser)) {
-                console.log(`⚠️ Usuario ${idUser} ya procesado`);
+            const claveActual = JSON.stringify({
+                motivo: Motivo,
+                message: user.message,
+                numDoc: user.numDoc
+            });
+
+            if (processedUserMap.get(idUser) === claveActual) {
+                console.log(`⚠️ Usuario ${idUser} ya procesado sin cambios`);
                 continue;
             }
 
+
             // Registrar nuevo usuario procesado
-            processedUserSet.add(idUser);
+            processedUserMap.set(idUser, claveActual);
             processedUsers.push({
                 id: idUser,
                 Motivo: Motivo || null,
@@ -133,28 +156,33 @@ async function fetchAndProcessUsers() {
 
                 const asignacionDirecta = ['Sheet6', 'Sheet7', 'Sheet9', 'Sheet12', 'Sheet15'];
 
-                if(sheet === 'Sheet1' && cable === "Cable Dañado" ){
+                // Excepciones primero
+                if (sheet === 'Sheet1' && user.cable === 'Cable Dañado') {
                     console.log('🔌 Sheet1 - Cable dañado → Enviar a soporte');
                     EmpleAssigned(idUser);
-                    return;
+                    continue;
                 }
 
-                if (sheet === 'Sheet4' && user.ProblemaSeñal === 'Otro problema') {
+                if (sheet === 'Sheet4' && user.TipoDeProblemaSeñal === 'Otro problema') {
                     console.log('📺 Sheet4 - Otro problema → Enviar a soporte');
                     EmpleAssigned(idUser);
-                    return;
+                    continue;
                 }
 
+                // Luego validaciones estándar
                 if (Object.keys(HojasValidacion).includes(sheet)) {
                     const variable = HojasValidacion[sheet];
+                
                     if (user[variable] === 'No funciono') {
                         console.log(`📄 ${sheet} - Usuario indicó que no funcionó → Soporte`);
                         EmpleAssigned(idUser);
+                        continue;
                     } else {
                         console.log(`✅ ${sheet} - Problema aparentemente resuelto`);
+                        continue;
                     }
-                    return;
                 }
+
 
                 if (asignacionDirecta.includes(sheet)) {
                     console.log(`📄 ${sheet} - Hoja con datos sensibles → Enviar a soporte`);
