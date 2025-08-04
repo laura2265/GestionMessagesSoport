@@ -9,7 +9,6 @@ import { VscSend } from "react-icons/vsc";
 import MessageChat from "../../../MessageChat";
 import '../WhatsappEmple/whatsappEmple.css';
 import { CiImageOn } from "react-icons/ci";
-import { AiFillAudio } from "react-icons/ai";
 
 function MessengerEmple (){
     const {theme, toggleTheme} = useContext(ThemeContext);
@@ -122,6 +121,7 @@ function MessengerEmple (){
         await ensureConversationExists();
 
       if (!selectedImage || !activeContact) return;
+
       try {
         const formData = new FormData();
         formData.append('file', selectedImage);

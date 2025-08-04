@@ -118,9 +118,8 @@ function MessageChat() {
 
                             const descripcionText = Array.isArray(Descripcion) && Descripcion.length > 0 ? Descripcion[0] : null;
                             const descripcionExtra = Array.isArray(Descripcion) && Descripcion.length >1? Descripcion[1] : null;
-
                             const motivoTexto = descripcionText
-                              ? `📝 Motivo del contacto: ${categoriaTicket}, con la descripción: ${descripcionText} ` +(descripcionExtra? `detalle adicional: ${descripcionExtra}`: '')
+                              ? `📝 Motivo del contacto: ${categoriaTicket}, con la descripción: ${descripcionText} `+(descripcionExtra? `detalle adicional: ${descripcionExtra}`: '')
                               : `📝 Motivo del contacto: ${categoriaTicket}`;
 
                             const messageMotivo = {
@@ -190,7 +189,6 @@ function MessageChat() {
                                 });
                             }
                         }
-
                     
                     } catch (error) {
                         console.error(`🚫 Error procesando asignado ${user.nombreClient}:`, error.message);

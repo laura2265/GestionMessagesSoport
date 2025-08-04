@@ -779,25 +779,102 @@ function SoportChat (){
       } else if(option === "Cambio de plan"){
         setStateChat("CambioDePlan");
         setTimeout(() => addBotMessage(`Me podrías confirmar cuanto tiempo llevas con nuestro servicios`,
-          ['0 - 6 meses', '6 meses - 1 año', '1 año o más']
+          ['➡️ Aumentar Megas', '⬅️ Disminuir Megas']
         ), 1000);
         setWaitingForDocument(true);
 
-      }else if(option === "0 - 6 meses" && stateChat === 'CambioDePlan'){
-        setStateChat("CeroASeisMeses");
-        setEstado("esperando_datos_usuario");
-        setTimeout(() => addBotMessage(`📝 Para poder solicitar un cambio de plan, te vamos a solicitar unos datos, los cuales vas a enviar en un solo mensaje separado por *Comas*, *Tipo lista sin números ni caracteres especiales*, o tambien *De corrido pero con espacios*. 
+        //aumentar megas
+      }else if(option === "➡️ Aumentar Megas" && stateChat === 'CambioDePlan'){
+        setStateChat("AumentarMegas");
+        setTimeout(() => addBotMessage(`¿Cuál es tu plan actual?`, ["📶 Solo Internet", "📺 Internet + TV", "Otro"]), 1000);
+
+        //Solo Internet
+      }else if(option === "📶 Solo Internet" && stateChat === 'AumentarMegas'){
+        setStateChat("SoloInternet");
+        setTimeout(() => addBotMessage(`Claro que podemos ayudarte con el cambio de plan.
           \n
-          Los datos son:
+          Por favor nos podrías indicar cuales megas te gustaría tener o elige una opción. `,
+           ["📶100 MB→ $50.000", "📶200 MB→ $60.000", "📶300 MB→ $70.000", "📶400 MB→ $80.000", "📶500 MB→ $90.000", "📶700 MB→ $100.000", "📶900 MB→ $140.000"]), 1000);
+
+        //internet más tv
+      }else if(option === "📺 Internet + TV" && stateChat === 'AumentarMegas'){
+        setStateChat("Internet+Tv");
+        setTimeout(() => addBotMessage(`Claro que podemos ayudarte con el cambio de plan.
           \n
-          1️⃣ Nombre completo del titular del servicio.
+          Por favor nos podrías indicar cuales megas te gustaría tener o elige una opción. `,
+           ["📶100 MB+TV→ $60.000", "📶200 MB+TV→ $70.000", "📶300 MB+TV→ $80.000", "📶400 MB+TV→ $90.000", "📶500 MB+TV→ $100.000", "📶700 MB+TV→ $130.000", "📶900 MB+TV→ $160.000"]), 1000);
+
+      }else if(option === "Otro" && stateChat === 'AumentarMegas'){
+        setStateChat("Otro");
+
+        setTimeout(() => addBotMessage(`
+          ¡Gracias por tu paciencia! 🙌
           \n
-          2️⃣ Número de documento del titular.
+          En un momento uno de nuestros asesores te atenderá personalmente.
           \n
-          3️⃣ El servicio que desea cancelar *(Internet, TV, etc.)*.
+          ⏳ Por favor, mantente conectado.`,), 1000);
+
+        //Megas elegidas
+      }else if(["📶100 MB+TV→ $60.000", "📶200 MB+TV→ $70.000", "📶300 MB+TV→ $80.000", "📶400 MB+TV→ $90.000", "📶500 MB+TV→ $100.000", "📶700 MB+TV→ $130.000", "📶900 MB+TV→ $160.000"].includes(option) && stateChat === 'SoloInternet'){
+        setStateChat("Internet+Tv");
+
+        setTimeout(() => addBotMessage(`
+          ¡Gracias por tu paciencia! 🙌
           \n
-          6️⃣Motivo de la cancelación del servicio.
-        `), 1000);
+          En un momento uno de nuestros asesores te atenderá personalmente.
+          \n
+          ⏳ Por favor, mantente conectado.`,), 1000);
+
+        
+        //disminuir megas
+      }else if(["📶100 MB→ $50.000", "📶200 MB→ $60.000", "📶300 MB→ $70.000", "📶400 MB→ $80.000", "📶500 MB→ $90.000", "📶700 MB→ $100.000", "📶900 MB→ $140.000"].includes(option) && stateChat === 'SoloInternet'){
+        setStateChat("SoloInternet");
+
+        setTimeout(() => addBotMessage(`
+          ¡Gracias por tu paciencia! 🙌
+          \n
+          En un momento uno de nuestros asesores te atenderá personalmente.
+          \n
+          ⏳ Por favor, mantente conectado.`,), 1000);
+        
+        //disminuir megas
+      }else if(option === "⬅️ Disminuir Megas" && stateChat === 'CambioDePlan'){
+        setStateChat("DisminuirMegas");
+        setTimeout(() => addBotMessage(`
+          Para poder ayudarte a disminuir las Megas tenemos que saber:
+          \n
+          ¿Tienes más de un año con tu plan actual?`,
+          ["✅ Sí", "❌ No", "📞Hablar con un asesor"]), 1000);
+
+        //Si
+      }else if(option === "✅ Sí" && stateChat === 'DisminuirMegas'){
+        setStateChat("SiMasUnAno");
+        setTimeout(() => addBotMessage(`Listo, ¿ahora nos podrías indica si tu servicio actual incluye televisión o solo internet?`,
+          ["📺 Internet + TV", "🌐 Solo Internet"]), 1000);
+
+        //Internet mas tv un años
+      }else if(option === "📺 Internet + TV" && stateChat === 'SiMasUnAno'){
+        setStateChat("SiMasUnAno");
+        setTimeout(() => addBotMessage(`Listo, ¿ahora nos podrías indica si tu servicio actual incluye televisión o solo internet?`,
+          ["📺 Internet + TV", "🌐 Solo Internet"]), 1000);
+
+        //No
+      }else if(option === "❌ No" && stateChat === 'DisminuirMegas'){
+        setStateChat("DisminuirMegas");
+        setTimeout(() => addBotMessage(`
+          Para poder ayudarte a disminuir las Megas tenemos que saber: 
+          \n
+          ¿Tienes más de un año con tu plan actual?`, 
+          ["✅ Sí", "❌ No", "📞Hablar con un asesor"]), 1000);
+
+          //Hablar con un asesor
+      }else if(option === "📞Hablar con un asesor" && stateChat === 'DisminuirMegas'){
+        setStateChat("DisminuirMegas");
+        setTimeout(() => addBotMessage(`
+          Para poder ayudarte a disminuir las Megas tenemos que saber: 
+          \n
+          ¿Tienes más de un año con tu plan actual?`,
+          ["✅ Sí", "❌ No", "📞Hablar con un asesor"]), 1000);
       }else if(option === 'Traslado'){
         setTimeout(() => addBotMessage('Señor/a, para poder realizar esta acción puede pasar a la oficina más cercana con carta del traslado, copia del recibo del nuevo domicilio ya sea de la luz, del agua, etc.'), 1000);
         setWaitingForDocument(true);

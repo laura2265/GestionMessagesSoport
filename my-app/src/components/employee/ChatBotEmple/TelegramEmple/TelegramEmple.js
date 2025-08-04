@@ -22,7 +22,6 @@ function TelegramEmple (){
     const [currentMessage, setCurrentMessage] = useState('');
     const [ selectedImage, setSelectedImage] = useState(null);
     const fileInputRef = useRef(null);
-    const [nombreEmpleado, setNombreEmpleado]= useState("");
     
     //enviar mensaje
     const handleKeyPress = (e) =>{
