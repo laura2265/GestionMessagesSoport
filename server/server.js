@@ -103,13 +103,21 @@ async function fetchAndProcessUsers() {
                 cable: item.cable,
                 TipoDeProblemaSeñal: item.TipoDeProblemaSeñal
             })),
-            ...mongoMensajes.map(item => ({
-                tipo: 'mongo',
-                idUser: item.id,
-                nombreUser: item.usuario.nombre,
-                numDoc: item.usuario.documento,
-                Motivo: item.conversacion[1].mensaje
-            }))
+            ...mongoMensajes.map(item =>{
+                const mensajesUsuario = item.conversacion
+                    ?.filter(m => m.de === 'usuario')
+                    ?.sort((a, b) => new Date(b.timeStamp) - new Date(a.timeStamp));
+                        
+                const ultimoMensaje = mensajesUsuario?.[0]?.mensaje?.text || 'Sin mensaje';
+                        
+                return {
+                    tipo: 'mongo',
+                    idUser: item.id,
+                    nombreUser: item.usuario?.nombre || 'Sin nombre',
+                    numDoc: item.usuario?.documento || '',
+                    Motivo: ultimoMensaje
+                };
+            })
         ];
 
         for (const user of allUsers) {
@@ -125,7 +133,6 @@ async function fetchAndProcessUsers() {
                 console.log(`⚠️ Usuario ${idUser} ya procesado sin cambios`);
                 continue;
             }
-
 
             // Registrar nuevo usuario procesado
             processedUserMap.set(idUser, claveActual);
@@ -202,5 +209,5 @@ async function fetchAndProcessUsers() {
     }
 }
 
-// ⏲️ Solo un intervalo ahora
+//Solo un intervalo ahora
 setInterval(fetchAndProcessUsers, 10000);

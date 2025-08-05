@@ -55,5 +55,16 @@
     "numDoc": "19405841",
     "contactado": true,
     "processedAt": "2025-08-04T14:06:14.147Z"
+  },
+  {
+    "id": "eb9db103-c8d1-4dd3-8db5-5d572308a208",
+    "Motivo": {
+      "text": "Cambio de plan",
+      "buttons": []
+    },
+    "message": null,
+    "numDoc": "19405841",
+    "contactado": true,
+    "processedAt": "2025-08-05T13:27:56.922Z"
   }
 ]

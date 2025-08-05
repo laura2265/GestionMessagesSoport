@@ -11,7 +11,7 @@ function SoportChat (){
     const [serviceData, setServiceData] = useState([]);
     const [userId, setUserid] = useState("");
     const [chatHistory, setChatHistory] = useState([]);
-    const [message, setMessages] = useState([
+    const [messages, setMessages] = useState([
         {
           sender: 'bot', text: `Hola, bienvenido a tu chat de confianza 😊\n¿Como te llamas?`
         }
@@ -234,16 +234,28 @@ function SoportChat (){
       }
   };
   
+  const addUserMessage = (text) => {
+    setMessages(prev => [...prev, { sender: "usuario", text }]);
+  };
+
   useEffect(()=>{
     if(botomRef.current){
-        botomRef.current.scrollIntoView({
-          behavior:'smooth'
-        });
-      }
-  },[message]);
+          botomRef.current.scrollIntoView({
+            behavior:'smooth'
+          });
+        }
+    },[messages]);
 
     const sendMessage = async() => {
       if(userInput.trim() === "" ) return;
+      
+      if(stateChat === "soporteHumano"){
+        await enviarMensaje(chatIdUser, "usuario",{text: userInput});
+        addUserMessage(userInput);
+        setUserInput("");
+        return;
+      }
+
       setMessages((prevMessage) => [...prevMessage, {sender: "user", text: userInput}]);
       if (estado === "esperando_nombre") {
         setNombre(userInput);
@@ -257,7 +269,7 @@ function SoportChat (){
       if(estado === "esperando_email"){
         setEmail(userInput);
         setTimeout(()=>addBotMessage(`Por favor puedes ingresar el numero de documento del titular o del que va a solicitar el servicio para poder continuar`),1000);
-        setEstado("esperando_documento")
+        setEstado("esperando_documento");
         setUserInput("");
         return;
       }
@@ -274,9 +286,9 @@ function SoportChat (){
             usuario: {
               nombre: nombreTemporal,
               email: email,
-              documento: userInput, 
+              documento: userInput,
               navegador,
-              ip, 
+              ip,
             },
             fechaInicio: new Date().toISOString(),
           });
@@ -353,6 +365,7 @@ function SoportChat (){
 
        setUserInput("");
       }
+      
     }
 
     const handleUserInput = (e) => {
@@ -747,21 +760,18 @@ function SoportChat (){
         setWaitingForDocument(true);
 
       }else if(option === "✅ No funciono" && validStatesSinInternetBombilloLos.includes(stateChat)){
-        setStateChat("BombilloLosApagado");
         setTimeout(() => addBotMessage(`Ya te pasamos con un asesor😊.`
         ), 1000);
-        setWaitingForDocument(true);
-
+        setWaitingForDocument(false);
+        setStateChat("soporteHumano")
       }else if(option === "🔌 Cable Dañado" && stateChat === "CableDañadoOSeguir"){
-        setStateChat("BombilloLosApagado");
         setTimeout(() => addBotMessage(`Ya te pasamos con un asesor😊.`), 1000);
-        setWaitingForDocument(true);
+        setWaitingForDocument(false);
+        setStateChat("soporteHumano");
 
         //Otras opciones
       }else if (option === "Cambiar Contraseña") {
-        setStateChat("CambioDeContraseña");
-        setTimeout(() => addBotMessage(`Para poder solicitar el cambio de contraseña, te vamos a solicitar unos datos, los cuales vas a enviar en un solo mensaje separado por *Comas*, *Tipo lista sin números ni caracteres especiales*, o tambien *De corrido pero con espacios*. \n
-            Los datos son:
+        setTimeout(() => addBotMessage(`Para poder ayudarte con el cambio de contraseña, por favor envía los siguientes datos en un solo mensaje, separados por comas: \n
             \n1️⃣Nombre completo del titular del servicio.
             \n2️⃣Número de documento del titular.
             \n3️⃣Número de teléfono o contacto.
@@ -769,12 +779,13 @@ function SoportChat (){
             \n5️⃣Servicio por el cual solicita el cambio de contraseña.
             \n6️⃣Motivo de cambio de contraseña.
             \nsi no tiene correo registrado escriba *null*.`), 1000);
-        setWaitingForDocument(true);
+        setWaitingForDocument(false);
+        setStateChat("soporteHumano")
 
       } else if (option === "Cancelar Servicio") {
         setStateChat("CancelarServicio");
         setTimeout(() => addBotMessage(`Señor/a, para realizar esta acción puedes acercarte a la oficina más cercana con la fotocopia de la cedula y la carta con el motivo de porque va a cancelación el servicio.`), 1000);
-        setWaitingForDocument(true);
+        setWaitingForDocument(false);
 
       } else if(option === "Cambio de plan"){
         setStateChat("CambioDePlan");
@@ -787,6 +798,7 @@ function SoportChat (){
       }else if(option === "➡️ Aumentar Megas" && stateChat === 'CambioDePlan'){
         setStateChat("AumentarMegas");
         setTimeout(() => addBotMessage(`¿Cuál es tu plan actual?`, ["📶 Solo Internet", "📺 Internet + TV", "Otro"]), 1000);
+        setWaitingForDocument(true);
 
         //Solo Internet
       }else if(option === "📶 Solo Internet" && stateChat === 'AumentarMegas'){
@@ -795,47 +807,49 @@ function SoportChat (){
           \n
           Por favor nos podrías indicar cuales megas te gustaría tener o elige una opción. `,
            ["📶100 MB→ $50.000", "📶200 MB→ $60.000", "📶300 MB→ $70.000", "📶400 MB→ $80.000", "📶500 MB→ $90.000", "📶700 MB→ $100.000", "📶900 MB→ $140.000"]), 1000);
+           setWaitingForDocument(true)
 
         //internet más tv
       }else if(option === "📺 Internet + TV" && stateChat === 'AumentarMegas'){
-        setStateChat("Internet+Tv");
+        setStateChat("InternetMasTv");
         setTimeout(() => addBotMessage(`Claro que podemos ayudarte con el cambio de plan.
           \n
           Por favor nos podrías indicar cuales megas te gustaría tener o elige una opción. `,
            ["📶100 MB+TV→ $60.000", "📶200 MB+TV→ $70.000", "📶300 MB+TV→ $80.000", "📶400 MB+TV→ $90.000", "📶500 MB+TV→ $100.000", "📶700 MB+TV→ $130.000", "📶900 MB+TV→ $160.000"]), 1000);
+           setWaitingForDocument(true);
 
       }else if(option === "Otro" && stateChat === 'AumentarMegas'){
-        setStateChat("Otro");
-
         setTimeout(() => addBotMessage(`
           ¡Gracias por tu paciencia! 🙌
           \n
           En un momento uno de nuestros asesores te atenderá personalmente.
           \n
           ⏳ Por favor, mantente conectado.`,), 1000);
+          setWaitingForDocument(false);
+          setStateChat("soporteHumano");
 
         //Megas elegidas
-      }else if(["📶100 MB+TV→ $60.000", "📶200 MB+TV→ $70.000", "📶300 MB+TV→ $80.000", "📶400 MB+TV→ $90.000", "📶500 MB+TV→ $100.000", "📶700 MB+TV→ $130.000", "📶900 MB+TV→ $160.000"].includes(option) && stateChat === 'SoloInternet'){
-        setStateChat("Internet+Tv");
-
+      }else if(["📶100 MB+TV→ $60.000", "📶200 MB+TV→ $70.000", "📶300 MB+TV→ $80.000", "📶400 MB+TV→ $90.000", "📶500 MB+TV→ $100.000", "📶700 MB+TV→ $130.000", "📶900 MB+TV→ $160.000"].includes(option) && stateChat === 'InternetMasTv'){
         setTimeout(() => addBotMessage(`
           ¡Gracias por tu paciencia! 🙌
           \n
           En un momento uno de nuestros asesores te atenderá personalmente.
           \n
           ⏳ Por favor, mantente conectado.`,), 1000);
+          setWaitingForDocument(false);
+          setStateChat("soporteHumano")
 
-        
+
         //disminuir megas
       }else if(["📶100 MB→ $50.000", "📶200 MB→ $60.000", "📶300 MB→ $70.000", "📶400 MB→ $80.000", "📶500 MB→ $90.000", "📶700 MB→ $100.000", "📶900 MB→ $140.000"].includes(option) && stateChat === 'SoloInternet'){
-        setStateChat("SoloInternet");
-
         setTimeout(() => addBotMessage(`
           ¡Gracias por tu paciencia! 🙌
           \n
           En un momento uno de nuestros asesores te atenderá personalmente.
           \n
           ⏳ Por favor, mantente conectado.`,), 1000);
+          setWaitingForDocument(false);
+          setStateChat("soporteHumano");
         
         //disminuir megas
       }else if(option === "⬅️ Disminuir Megas" && stateChat === 'CambioDePlan'){
@@ -845,44 +859,84 @@ function SoportChat (){
           \n
           ¿Tienes más de un año con tu plan actual?`,
           ["✅ Sí", "❌ No", "📞Hablar con un asesor"]), 1000);
-
+          setWaitingForDocument(true)
         //Si
       }else if(option === "✅ Sí" && stateChat === 'DisminuirMegas'){
         setStateChat("SiMasUnAno");
-        setTimeout(() => addBotMessage(`Listo, ¿ahora nos podrías indica si tu servicio actual incluye televisión o solo internet?`,
-          ["📺 Internet + TV", "🌐 Solo Internet"]), 1000);
 
-        //Internet mas tv un años
-      }else if(option === "📺 Internet + TV" && stateChat === 'SiMasUnAno'){
-        setStateChat("SiMasUnAno");
         setTimeout(() => addBotMessage(`Listo, ¿ahora nos podrías indica si tu servicio actual incluye televisión o solo internet?`,
-          ["📺 Internet + TV", "🌐 Solo Internet"]), 1000);
+          ["📺 Internet + TV", "🌐 Solo Internet", "📋 Otro"]), 1000);
+          setWaitingForDocument(true)
+        //Si - Internet mas tv un años
+      }else if(option === "📺 Internet + TV" && stateChat === 'SiMasUnAno'){
+        setStateChat("InternetMasTvUnAno");
+        setTimeout(() => addBotMessage(`Claro que podemos ayudarte con el cambio de plan.
+          \n
+          Por favor nos podrías indicar cuales megas te gustaría tener o elige una opción. `,
+          ["📶25 MB+TV→ $40.000", "📶50 MB+TV→ $50.000", "📶100 MB+TV→ $60.000", "📶200 MB+TV→ $70.000", "📶300 MB+TV→ $80.000", "📶400 MB+TV→ $90.000", "📶500 MB+TV→ $100.000"]), 1000);
+          setWaitingForDocument(true);
+
+        //Si- solo internet un año
+      }else if(option === "🌐 Solo Internet" && stateChat === 'SiMasUnAno'){
+        setStateChat("SoloInternetUnAno");
+        setTimeout(() => addBotMessage(`Claro que podemos ayudarte con el cambio de plan.
+          \n
+          Por favor nos podrías indicar cuales megas te gustaría tener o elige una opción. `,
+          ["📶50 MB→ $40.000", "📶100 MB→ $50.000", "📶200 MB→ $60.000", "📶300 MB→ $70.000", "📶400 MB→ $80.000", "📶500 MB→ $90.000", "📶700 MB→ $100.000"]), 1000);
+          setWaitingForDocument(true);
+        //Fin de flujo
+      }else if(["📶25 MB+TV→ $40.000", "📶50 MB+TV→ $50.000", "📶100 MB+TV→ $60.000", "📶200 MB+TV→ $70.000", "📶300 MB+TV→ $80.000", "📶400 MB+TV→ $90.000", "📶500 MB+TV→ $100.000"].includes(option) && stateChat === 'InternetMasTvUnAno'){
+        setStateChat("MegasDismunuirFinalInternetMasTv");
+        setTimeout(() => addBotMessage(`¡Gracias por tu paciencia! 🙌
+          \n
+          En un momento uno de nuestros asesores te atenderá personalmente.
+          \n
+          ⏳ Por favor, mantente conectado. `), 1000);
+          setWaitingForDocument(false);
+          setStateChat("soporteHumano");
+
+        //Fin de flujo
+      }else if(["📶50 MB→ $40.000", "📶100 MB→ $50.000", "📶200 MB→ $60.000", "📶300 MB→ $70.000", "📶400 MB→ $80.000", "📶500 MB→ $90.000", "📶700 MB→ $100.000"].includes(option) && stateChat === 'SoloInternetUnAno'){
+        setStateChat("MegasDismunuirFinalSoloInternet");
+        setTimeout(() => addBotMessage(`¡Gracias por tu paciencia! 🙌
+          \n
+          En un momento uno de nuestros asesores te atenderá personalmente.
+          \n
+          ⏳ Por favor, mantente conectado.`), 1000);
+          setWaitingForDocument(false)
+          setStateChat("soporteHumano");
 
         //No
       }else if(option === "❌ No" && stateChat === 'DisminuirMegas'){
-        setStateChat("DisminuirMegas");
-        setTimeout(() => addBotMessage(`
-          Para poder ayudarte a disminuir las Megas tenemos que saber: 
+        setStateChat("MenosAnoDisminuir");
+        setTimeout(() => addBotMessage(`¡Gracias por tu paciencia! 🙌
           \n
-          ¿Tienes más de un año con tu plan actual?`, 
-          ["✅ Sí", "❌ No", "📞Hablar con un asesor"]), 1000);
+          En un momento uno de nuestros asesores te atenderá personalmente.
+          \n
+          ⏳ Por favor, mantente conectado.`), 1000);
+          setWaitingForDocument(false)
+          setStateChat("soporteHumano");
 
           //Hablar con un asesor
       }else if(option === "📞Hablar con un asesor" && stateChat === 'DisminuirMegas'){
         setStateChat("DisminuirMegas");
-        setTimeout(() => addBotMessage(`
-          Para poder ayudarte a disminuir las Megas tenemos que saber: 
+        setTimeout(() => addBotMessage(`¡Gracias por tu paciencia! 🙌
           \n
-          ¿Tienes más de un año con tu plan actual?`,
-          ["✅ Sí", "❌ No", "📞Hablar con un asesor"]), 1000);
+          En un momento uno de nuestros asesores te atenderá personalmente.
+          \n
+          ⏳ Por favor, mantente conectado.`), 1000);
+          setWaitingForDocument(false);
+          setStateChat("soporteHumano");
+
+
       }else if(option === 'Traslado'){
         setTimeout(() => addBotMessage('Señor/a, para poder realizar esta acción puede pasar a la oficina más cercana con carta del traslado, copia del recibo del nuevo domicilio ya sea de la luz, del agua, etc.'), 1000);
-        setWaitingForDocument(true);
+        setWaitingForDocument(false);
 
       }else if(option === 'Solicitar servicio'){
         setTimeout(() => addBotMessage(`Señor/a, para realizar esta acción puede acercarse a la oficina mas cercana y llevar la *Fotocopia del documento*.
           \nSi usted no es el dueño de la casa tiene que llevar la fotocopia del documento, con una carta firmada por el sueño de la casa dando el permiso para poder instalar el servicio y un recibo de la casa.`), 1000);
-          setWaitingForDocument(true);
+          setWaitingForDocument(false);
 
       }else if(option === 'PQR(Peticion, Queja, Reclamo)'){
         setTimeout(() => addBotMessage(`Para realizar la solicitud de un *PQR* te vamos a solicitar unos datos para poder pasarte con un asesor. Los datos que te solicitamos los vas a enviar en un solo mensaje donde pondrás los datos separados por *Comas*, *Tipo lista sin caracteres especiales* o *De corrido con Espacios*. 
@@ -893,7 +947,8 @@ function SoportChat (){
             \n📂 Tipo de solicitud *(Petición, Queja, Reclamo).
             \n📆 Fecha de cuando ocurrió.
             \n📝 Descripción del problema.`), 1000);
-            setWaitingForDocument(true);
+            setWaitingForDocument(false);
+            setStateChat("soporteHumano");
 
       }else if (option === 'Pagar Facturas') {
         setTimeout(() => addBotMessage(
@@ -901,13 +956,13 @@ function SoportChat (){
             `Si desea realizar el pago por otro medio, haga clic en el botón:`,
             ['https://clientes.portalinternet.net/saldo/super-tv/']
         ), 1000);
-        setWaitingForDocument(true);
+        setWaitingForDocument(false);
 
     }else if(option === 'Cambio de titular'){
         setTimeout(() => addBotMessage(`Señor/a, para realizar esta acción  te vamos a solicitar unos datos los cuales vas a llevar al punto más cercano para poder ayudarte con esta solicitud. Los datos son los siguientes: 
           \n1️⃣Copia de documento del *Titular anterior*
           \n2️⃣Copia del documento de la persona a la que se le va a realizar el servicio.`), 1000);
-          setWaitingForDocument(true);
+          setWaitingForDocument(false);
 
         //Otro problema 
       }else if(option === 'Otro'){
@@ -917,7 +972,8 @@ function SoportChat (){
           \n2️⃣ Numero de documento.
           \n3️⃣¿Es titular de algún servicio?
           \n4️⃣ Descripción del problema o duda que desea consultar.`),1000);
-        setWaitingForDocument(true);
+        setWaitingForDocument(false);
+        setStateChat("soporteHumano");
 
         //Apartado de no tengo internet
       }else if(option === "🐢 Internet lento." && stateChat === "Falla conexión"){
@@ -991,9 +1047,9 @@ function SoportChat (){
         setWaitingForDocument(true);
 
       }else if(option === "❎ No funciono" && validStatesTestVelocidad.includes(stateChat)){
-        setStateChat("NofuncionoTestVelocidad");
         setTimeout(() => addBotMessage(`Ya te pasamos con un asesor 😊.`),1000);
-        setWaitingForDocument(true);
+        setStateChat("soporteHumano");
+        setWaitingForDocument(false);
 
         //No cargan las paginas
       }else if(option === "🌐 No cargan páginas." && stateChat === "Falla conexión"){
@@ -1334,12 +1390,13 @@ function SoportChat (){
       }else if(option === "✅ Si funciono" && validStatePaginasNoCargaVpn.includes(stateChat)){
         setStateChat("SeguirVariosDispositivos");
         setTimeout(() => addBotMessage(`!Genial¡ si necesitas ayuda escribe seguir para volver iniciar 😊.`), 1000);
-        setWaitingForDocument(true);
+        setWaitingForDocument(false);
 
       }else if(option === "❎ No funciono" && validStatePaginasNoCargaVpn.includes(stateChat)){
-        setStateChat("SeguirVariosDispositivos");
         setTimeout(() => addBotMessage(`!Para poder ayudarte por favor escribe el nombre de la pagina la cual no carga para poder ayudarte`), 1000);
-        setWaitingForDocument(true);
+        setStateChat("soporteHumano");
+        setWaitingForDocument(false);
+
 
         //Señal de television.
       }else if(option === "📺 Señal de Televisión." && stateChat === "Falla conexión"){
@@ -1371,9 +1428,10 @@ function SoportChat (){
 
         //problema y mensaje especifico
       }else if(option === "➡️ Otro problema."){
-        setStateChat("OtroProblemaSeñalTelevision");
         setTimeout(() => addBotMessage(`Ya te pasamos con un asesor 😊`), 1000);
-        setWaitingForDocument(true);
+        setWaitingForDocument(false);
+        setStateChat("soporteHumano");
+
 
         //problema y mensaje especifico
       }else if(option === "📺 En ningún canal"){
@@ -1458,11 +1516,12 @@ function SoportChat (){
         //Si funciono final
       }else if(option === "✅ Si funciono" && validStateSinSeñalFinal.includes(stateChat)){
         setTimeout(() => addBotMessage(`!Genial¡ si necesitas ayuda escribe seguir para volver iniciar 😊.`), 1000);
-        setWaitingForDocument(true);
+        setWaitingForDocument(false);
 
       }else if(option === "❎ No funciono" && validStateSinSeñalFinal.includes(stateChat)){
         setTimeout(() => addBotMessage(`Ya te pasamos con un asesor 😊. `), 1000);
-        setWaitingForDocument(true);
+        setStateChat("soporteHumano")
+        setWaitingForDocument(false);
 
         //Internet inestable
       }else if(option === "⚡ Internet inestable." && stateChat === "Falla conexión"){
@@ -1559,7 +1618,7 @@ function SoportChat (){
         setStateChat("CelularOTabletNoseDispositivo");
         setTimeout(() => addBotMessage(`Para verificar que red *WIFI* tienes, ve a configuraciones, has clic en *WIFI*, mira la red a la que estas conectado. Si estas conectado a la 5G intenta conectarte a la 2.4G ya que la 5G es mas rápida pero tiene menos alcance.`), 1000);
         setTimeout(() => addBotMessage(`Podrías confirmarnos con las siguientes opciones si funciono con la opción *Si funciono*, si esto no funciono escoge la opción *No funciono*. `,
-          ["✅ Si funciono", "❎ No funciono"]  
+          ["✅ Si funciono", "❎ No funciono"]
         ), 1000);
         setWaitingForDocument(true);
 
@@ -1625,9 +1684,9 @@ function SoportChat (){
         setWaitingForDocument(true);
 
       }else if(option === "❎ No funciono" && validStateRedInestableFinal.includes(stateChat)){
-        setStateChat("cablePcNoSabe");
         setTimeout(() => addBotMessage(`Ya te pasamos con un asesor 😊`), 1000)
-        setWaitingForDocument(true);
+        setStateChat("soporteHumano");
+        setWaitingForDocument(false);
 
         //Otro problema
       }else if(option === "🔘Otro problema" && stateChat === "Falla conexión"){
@@ -1637,7 +1696,8 @@ function SoportChat (){
           \n2️⃣Número de documento del titular del servicio.
           \n3️⃣Descripción del problema.`),
         1000);
-        setWaitingForDocument(true);
+        setStateChat("soporteHumano");
+        setWaitingForDocument(false);
       }
   };
 
@@ -1666,7 +1726,7 @@ function SoportChat (){
 
                 <button className='close-btn' onClick={closeChat}>X</button>
                 <div className='content-messages'>
-                   {message.map((message, index) => (
+                   {messages.map((message, index) => (
                      <div key={index} className={`message ${message.sender}`}>
                        {message.text.split("\n").map((line, i) => (
                          <p key={i}>{line}</p>
