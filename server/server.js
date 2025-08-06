@@ -5,6 +5,7 @@ import cors from 'cors';
 import { manyChatToken } from "./config/config.js";
 import { loadProcessedUser, saveProcessedUser } from "./controllers/ProcesarUser.js";
 import { BuscarCedulaInstagram, BuscarCedulaMessenger, BuscarCedulaTelegram } from "./controllers/BuscarCedula/BuscarCedulaUser.js";
+import { todo } from "node:test";
 
 const app = express();
 const port = 3001;
@@ -149,6 +150,42 @@ async function fetchAndProcessUsers() {
 
             if (user.tipo === 'mongo') {
                 console.log(`📩 Nuevo mensaje MongoDB: ${idUser} - "${Motivo}"`);
+
+                const mensajeUsuario = mongoMensajes.find(m => m.id === idUser)?.conversacion || [];
+
+                const todosLosMensajes = mensajeUsuario.map(m => {
+                    if(typeof m.mensaje === 'string' ){
+                        return m.mensaje.toLowerCase();
+                    }
+
+                    if(typeof m.mensaje?.text === 'string'){
+                        return m.mensaje.text.toLowerCase()
+                    }
+
+                    return '';
+                });
+
+                const frasesClaves = [
+                    'no funciono',
+                    'no funcionó',
+                    'cable dañado',
+                    'ya te pasamos con un asesor',
+                    'te pasamos con un asesor',
+                    'cambio de plan',
+                    'cambio de contraseña',
+                    'pqr',
+                    'otro problema',
+                    'otro'
+                ]
+
+                const requireSoport = todosLosMensajes.some(msj => frasesClaves.some(frase => msj.includes(frase)))
+
+                if(requireSoport){
+                    console.log(`Mongo mensaje indica que requiere soporte → Asignar`)
+                    EmpleAssigned(idUser);
+                }else{
+                    console.log(`Mongo: mensaje sin señales de soporte → No asignar`)
+                }
 
             } else if (user.tipo === 'sheets') {
                 const { sheet, chat } = user;

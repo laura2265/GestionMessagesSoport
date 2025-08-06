@@ -1,33 +1,11 @@
 [
   {
-    "id": "eb9db103-c8d1-4dd3-8db5-5d572308a208",
-    "Motivo": {
-      "text": "Cambio de plan",
-      "buttons": []
-    },
-    "message": null,
-    "numDoc": "19405841",
-    "contactado": true,
-    "processedAt": "2025-08-01T13:44:43.191Z"
-  },
-  {
     "id": "7950419098379258",
     "Motivo": "Falla de conexión",
     "message": "No tengo internet",
     "numDoc": "1031122610",
     "contactado": true,
     "processedAt": "2025-08-01T19:33:28.364Z"
-  },
-  {
-    "id": "eb9db103-c8d1-4dd3-8db5-5d572308a208",
-    "Motivo": {
-      "text": "Cambio de plan",
-      "buttons": []
-    },
-    "message": null,
-    "numDoc": "19405841",
-    "contactado": true,
-    "processedAt": "2025-08-01T19:33:28.372Z"
   },
   {
     "id": "1138345911",
@@ -38,33 +16,19 @@
     "processedAt": "2025-08-01T21:06:32.494Z"
   },
   {
+    "id": "eb9db103-c8d1-4dd3-8db5-5d572308a208",
+    "Motivo": "❎ No funciono",
+    "message": null,
+    "numDoc": "79256692",
+    "contactado": true,
+    "processedAt": "2025-08-06T20:56:41.702Z"
+  },
+  {
     "id": "8486345801395814",
     "Motivo": "Falla de conexión",
     "message": "No cargan las páginas",
     "numDoc": "1071914720",
     "contactado": true,
-    "processedAt": "2025-08-04T14:06:14.144Z"
-  },
-  {
-    "id": "eb9db103-c8d1-4dd3-8db5-5d572308a208",
-    "Motivo": {
-      "text": "Cambio de plan",
-      "buttons": []
-    },
-    "message": null,
-    "numDoc": "19405841",
-    "contactado": true,
-    "processedAt": "2025-08-04T14:06:14.147Z"
-  },
-  {
-    "id": "eb9db103-c8d1-4dd3-8db5-5d572308a208",
-    "Motivo": {
-      "text": "Cambio de plan",
-      "buttons": []
-    },
-    "message": null,
-    "numDoc": "19405841",
-    "contactado": true,
-    "processedAt": "2025-08-05T13:27:56.922Z"
+    "processedAt": "2025-08-06T20:58:07.647Z"
   }
 ]

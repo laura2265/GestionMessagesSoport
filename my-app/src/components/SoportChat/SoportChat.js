@@ -730,7 +730,8 @@ function SoportChat (){
         setTimeout(() => addBotMessage(`Vamos a solucionar tu problema. A continuación te daremos una serie de soluciones que puedes utilizar para solucionar tu problema.
           \n1️⃣ Apaga el *Modem* y después de 30 segundos vuélvelo a encender.
           \n2️⃣ Revisa que los cables que estén bien conectados.
-          \n3️⃣Revisa si hay un corte del servicio en la zona.`
+          \n3️⃣Revisa si hay un corte del servicio en la zona.`,
+          ["✅ Si funciono", "❎ No funciono"]
         ), 1000);
         setWaitingForDocument(true);
 

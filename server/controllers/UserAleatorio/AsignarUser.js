@@ -88,6 +88,7 @@ function generarDescripcionPorSheet(cliente) {
 
 
 export const AsignarUserPost = async (req, res) => {
+    console.log("Entro al asignar empleado")
     try {
         const { id } = req.params;
 
@@ -99,6 +100,7 @@ export const AsignarUserPost = async (req, res) => {
         const EmpleadoData = await EmpleResponse.json();
         const empleados = EmpleadoData?.data?.docs || [];
         const empleadosRol2 = empleados.filter(e => e.rol === 2);
+        console.log('Empleados consultados')
 
         if (empleadosRol2.length === 0) {
             return res.status(400).json({
@@ -107,11 +109,12 @@ export const AsignarUserPost = async (req, res) => {
             });
         }
 
+        console.log("El id antes de pasarlo es: ", id)
         // 2. Buscar cliente en Sheets
         const ClientResponse = await fetch(`http://localhost:3001/api`);
         const ClientData = await ClientResponse.json();
         let cliente = ClientData.find(client => client.id === id);
-
+        console.log("[DEBUG] Resultado búsqueda en Google Sheets:", cliente);
 
         // 3. Si no está en Sheets, buscar en Mongo
         if (!cliente) {
@@ -120,11 +123,11 @@ export const AsignarUserPost = async (req, res) => {
             cliente = mongoData.data.docs.find(c => c.id === id);
 
             if (cliente) {
-                cliente.Name = cliente.name || 'Cliente sin nombre';
+                cliente.id = cliente.id || id;  // Usa el id recibido si no viene definido
+                cliente.Name = cliente.Name || cliente.name || 'Cliente sin nombre';
                 cliente.sheet = null;
-                cliente.chatName = cliente.chat;
+                cliente.chatName = 'ChatLocal';
                 cliente.Message = cliente.Message || cliente.motivo || 'Mensaje no disponible';
-                cliente.ProblemaInt = null;
                 cliente.numDocTitular =
                     cliente.numDocTitular ||
                     cliente.CedulaTitular ||
@@ -134,25 +137,30 @@ export const AsignarUserPost = async (req, res) => {
                     cliente.documento ||
                     cliente.usuario?.documento ||
                     '';
+
+                if(cliente.conversacion && Array.isArray(cliente.conversacion)){
+                    const mensajeUsuario = cliente.conversacion
+                    .filter(m => m.de === 'usuario')
+                    .sort((a,b) => new Date(b.timeStamp) - new Date(a.timeStamp));
+
+                    const ultimoMensajeUsuario = mensajeUsuario[0];
+                    if(ultimoMensajeUsuario?.mensaje?.text){
+                        cliente.Message = ultimoMensajeUsuario.mensaje.text;
+                    }else{
+                        cliente.Message = 'Mensaje no disponible'
+                    }
+                }else{
+                    cliente.Message = 'Mensaje no disponible :('
+                }
             }
         }
 
-        if (!cliente) {
-            console.error(`❌ Cliente con id ${id} no encontrado al intentar asignar`);
-            return res.status(404).json({
-                success: false,
-                message: `Cliente con id ${id} no encontrado en Sheets ni en Mongo`
-            });
-        }
+        console.log("[DEBUG] Buscando asignación previa para ID:", cliente.id);
 
 
         const yaAsignado = await AsignarUser.findOne({ chatId: cliente.id });
-        if (yaAsignado) {
-            return res.status(200).json({
-                success: false,
-                message: `El cliente ${cliente.id} ya tiene una asignación.`
-            });
-        }
+        console.log("[DEBUG] Resultado de búsqueda:", yaAsignado);
+
 
         // 6. Determinar categoría (solo aplica si viene de Sheets)
         let categoria = "Sin categoria";
