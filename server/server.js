@@ -150,9 +150,7 @@ async function fetchAndProcessUsers() {
 
             if (user.tipo === 'mongo') {
                 console.log(`📩 Nuevo mensaje MongoDB: ${idUser} - "${Motivo}"`);
-
                 const mensajeUsuario = mongoMensajes.find(m => m.id === idUser)?.conversacion || [];
-
                 const todosLosMensajes = mensajeUsuario.map(m => {
                     if(typeof m.mensaje === 'string' ){
                         return m.mensaje.toLowerCase();
@@ -161,7 +159,6 @@ async function fetchAndProcessUsers() {
                     if(typeof m.mensaje?.text === 'string'){
                         return m.mensaje.text.toLowerCase()
                     }
-
                     return '';
                 });
 

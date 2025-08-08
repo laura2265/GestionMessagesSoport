@@ -123,8 +123,8 @@ export const AsignarUserPost = async (req, res) => {
             cliente = mongoData.data.docs.find(c => c.id === id);
 
             if (cliente) {
-                cliente.id = cliente.id || id;  // Usa el id recibido si no viene definido
-                cliente.Name = cliente.Name || cliente.name || 'Cliente sin nombre';
+                cliente.id = cliente.id || id;
+                cliente.Name = cliente.usuario.nombre || 'Cliente sin nombre';
                 cliente.sheet = null;
                 cliente.chatName = 'ChatLocal';
                 cliente.Message = cliente.Message || cliente.motivo || 'Mensaje no disponible';
