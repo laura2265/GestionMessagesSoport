@@ -205,7 +205,7 @@ function MessageChat() {
                             }
 
                             if (messageText && messageId && !messageExists && !notifiedSet.has(messageId)) {
-                                await saveMessage({
+                                await saveMessage({ 
                                     chatId,
                                     nombreClient,
                                     chatuser,
@@ -226,7 +226,7 @@ function MessageChat() {
                                 });
                             }
                         }
-                    
+
                     } catch (error) {
                         console.error(`🚫 Error procesando asignado ${user.nombreClient}:`, error.message);
                     }
