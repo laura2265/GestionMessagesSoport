@@ -17,93 +17,76 @@ function buildMessageId(subscribed, messageText) {
         ? `${subscribed}-${messageText.split('/').pop().split('?')[0]}`
         : `${subscribed}-${messageText.slice(-10)}`;
 }
-
+// ✅ FIX: función para agregar mensajes normales
 async function saveMessage({ chatId, nombreClient, chatuser, sender, message, messageId, numDocTitular }) {
-    const body = {
-        contactId: chatId,
-        usuario: { nombre: nombreClient, documento: numDocTitular },
-        messages: [{ sender, message, idMessageClient: messageId }],
-        chat: chatuser,
-    };
+  const body = {
+    contactId: chatId,
+    usuario: { nombre: nombreClient, documento: numDocTitular },
+    messages: [{ sender, message, idMessageClient: messageId }],
+    chat: chatuser,
+  };
 
-    let url = `http://localhost:3001/message/?contactId=${chatId}&chat=${chatuser}`;
-    const getResponse = await fetch(url);
-    const data = await getResponse.json();
-    const docs = data?.data?.docs || [];
+  const getResponse = await fetch(
+    `http://localhost:3001/message/?contactId=${encodeURIComponent(chatId)}&chat=${encodeURIComponent(chatuser || '')}`
+  );
+  const data = await getResponse.json();
+  const docs = data?.data?.docs || [];
 
-    let existingId = docs.find(d => String(d.contactId) === String(chatId) && (d.chat === chatuser || !d.chat && !chatuser))
+  let existingDoc = docs.find(d =>
+    String(d.contactId) === String(chatId) &&
+    (d.chat === chatuser || (!d.chat && !chatuser))
+  );
 
-    if(!existingId){
-        const createRes =await fetch(`http://localhost:3001/message/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(body)
-        })
-        
-        if(!createRes.ok){
-            const err = createRes.text();
-            throw new Error('Error al crear la conversacion: ', err);
-        }
+  if (!existingDoc) {
+    const createRes = await fetch('http://localhost:3001/message/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!createRes.ok) {
+      throw new Error(`Error al crear la conversación: ${await createRes.text()}`);
+    }
+    const createdJson = await createRes.json();
+    existingDoc = createdJson?.data || createdJson; // debe traer _id
+    console.log('Conversación creada (POST)', existingDoc._id);
+  }
 
-        const created = createRes.json();
-        const createdDoc = created?.data || created;
+  try {
+    const response = await fetch(`http://localhost:3001/message/${existingDoc._id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: [{ sender, message, idMessageClient: messageId }] }),
+    });
 
-        if(String(createdDoc.contactId) !== String(chatId)){
-            const checkRes = await fetch(`http://localhost:3001/message/?contactId=${chatId}&chat=${chatuser}`);
-            const data = await checkRes.json();
-            const existing = data?.data?.docs?.[0];
-                    
-            if (existing) {
-                await fetch(`http://localhost:3001/message/${chatId}?chat=${chatuser}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ messages: [ message ] })
-                });
-            } else {
-                await fetch(`http://localhost:3001/message/`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        chatId,
-                        chatuser,
-                        usuario: { nombre: nombreClient, documento: numDocTitular }, 
-                        messages: [ message ]
-                    })
-                });
-            }
-
-        }else{
-            console.log('Conversacion creada correctamente (POST)');
-            return;
-        }
+    if (!response.ok) {
+      throw new Error(`Error al subir el mensaje (PUT): ${await response.text()}`);
     }
 
-    try{
-        const requestUrl = `http://localhost:3001/message/${existingId.id}`;
-        const response = await fetch(requestUrl,{
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                messages: [{sender, message, idMessageClient: messageId}]
-            }),
-        });
-
-        if(!response.ok){
-            let errText = response.text();
-            throw new Error('Error al subir el mensaje a la conversación (PUT): ', errText); 
-        }
-
-        const result = await response.json();
-        console.log('Mensaje guardado en conversacion existente: ', existingId.id);
-
-    }catch(err){
-        throw new err
-    }
+    const result = await response.json();
+    console.log('Mensaje guardado en conversación:', existingDoc._id, result);
+  } catch (err) {
+    throw err;
+  }
 }
+
+// ✅ FIX: función para agregar mensajes del sistema evitando duplicados
+async function appendIfNotExists({ chatId, chatuser, sender = 'Sistema', message, idMessageClient }) {
+  
+    // Antes (mal): /message/${chatId}
+    const q = await fetch(`http://localhost:3001/message/?contactId=${chatId}&chat=${chatuser}`);
+    const data = await q.json();
+    const doc = data?.data?.docs?.[0];
+    if (!doc) throw new Error('No existe conversación');
+
+    const docId = doc._id || doc.id; // preferiblemente _id
+    await fetch(`http://localhost:3001/message/${docId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: [{ sender, message, idMessageClient: messageId }] }),
+    });
+    return true;
+}
+
 
 function MessageChat() {
     const notifiedMessagesRef = useRef(new Map());
@@ -151,11 +134,19 @@ function MessageChat() {
                                     idMessageClient: `${chatId}-inicio`,
                                 };
 
-                                const descripcionText = Array.isArray(Descripcion) && Descripcion.length > 0 ? Descripcion[0] : null;
-                                const descripcionExtra = Array.isArray(Descripcion) && Descripcion.length >1? Descripcion[1] : null;
+                                
+                                // Construye los textos de sistema igual que en el POST inicial
+                                const descripcionText  = Array.isArray(Descripcion) && Descripcion.length > 0 ? Descripcion[0] : null;
+                                const descripcionExtra = Array.isArray(Descripcion) && Descripcion.length > 1 ? Descripcion[1] : null;
+                                                            
                                 const motivoTexto = descripcionText
-                                ? `📝 Motivo del contacto: ${categoriaTicket}, con la descripción: ${descripcionText} `+(descripcionExtra? `detalle adicional: ${descripcionExtra}`: '')
-                                : `📝 Motivo del contacto: ${categoriaTicket}`;
+                                  ? `📝 Motivo del contacto: ${categoriaTicket}, con la descripción: ${descripcionText}` + (descripcionExtra ? `  Detalle adicional: ${descripcionExtra}` : '')
+                                  : `📝 Motivo del contacto: ${categoriaTicket}`;
+                     
+                                // Opcional: “Inicio de conversación” 1 vez por día
+                                const today = new Date().toISOString().slice(0,10);
+                                await appendIfNotExists({ chatId, chatuser, sender:'Sistema', message:'🟢 Inicio de conversación', idMessageClient:`${chatId}-inicio-${today}` });
+                                await appendIfNotExists({ chatId, chatuser, sender:'Sistema', message: motivoTexto, idMessageClient:`${chatId}-motivo-${today}` });
 
                                 const messageMotivo = {
                                 sender: 'Sistema',
@@ -237,7 +228,10 @@ function MessageChat() {
                     try {
                         const check = await fetch(`http://localhost:3001/message/?contactId=${encodeURIComponent(convData.contactId)}&chat=${encodeURIComponent(convData.chat || '')}`)
                         const checkData = await check.json();
-                        const existsNow = (checkData?.data?.docs || []).some(d => String(d.contactId) === String(convData.contactId))
+                       const existsNow = (checkData?.data?.docs || []).some(d =>
+                          String(d.contactId) === String(convData.contactId) &&
+                          (d.chat === convData.chat || (!d.chat && !convData.chat))
+                        );
                         
                         if(existsNow){
                             console.log(`Conversacion para ${convData.contactId} ya existe(race), omitiendo (POST)`);

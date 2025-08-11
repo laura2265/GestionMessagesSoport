@@ -5,7 +5,15 @@
     "message": "No tengo internet",
     "numDoc": "1031122610",
     "contactado": true,
-    "processedAt": "2025-08-01T19:33:28.364Z"
+    "processedAt": "2025-08-11T18:19:18.271Z"
+  },
+  {
+    "id": "eb9db103-c8d1-4dd3-8db5-5d572308a208",
+    "Motivo": "❎ No funciono",
+    "message": null,
+    "numDoc": "79256692",
+    "contactado": true,
+    "processedAt": "2025-08-11T18:19:18.278Z"
   },
   {
     "id": "8486345801395814",
@@ -13,7 +21,7 @@
     "message": "No cargan las páginas",
     "numDoc": "1071914720",
     "contactado": true,
-    "processedAt": "2025-08-08T16:24:32.498Z"
+    "processedAt": "2025-08-11T18:36:07.899Z"
   },
   {
     "id": "1138345911",
@@ -21,7 +29,7 @@
     "message": "Señal de Televisión",
     "numDoc": "1021663933",
     "contactado": true,
-    "processedAt": "2025-08-08T16:24:32.504Z"
+    "processedAt": "2025-08-11T18:36:07.905Z"
   },
   {
     "id": "eb9db103-c8d1-4dd3-8db5-5d572308a208",
@@ -29,14 +37,6 @@
     "message": null,
     "numDoc": "79256692",
     "contactado": true,
-    "processedAt": "2025-08-08T16:24:32.530Z"
-  },
-  {
-    "id": "eb9db103-c8d1-4dd3-8db5-5d572308a208",
-    "Motivo": "❎ No funciono",
-    "message": null,
-    "numDoc": "79256692",
-    "contactado": true,
-    "processedAt": "2025-08-09T12:08:05.798Z"
+    "processedAt": "2025-08-11T18:36:07.940Z"
   }
 ]
