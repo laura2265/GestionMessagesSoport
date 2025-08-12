@@ -1,309 +1,245 @@
+// MessageChat.js
 import { useEffect, useRef, useState } from "react";
 import Notificacion from '../assets/sounds/Notificacion.mp3';
 
 function getChatUserType(name) {
-    if (name === 'ChatBotMessenger') return 'messenger';
-    if (name === 'ChatBotTelegram') return 'telegram';
-    if (name === 'ChatBotInstagram') return 'instagram';
-    if (name === 'ChatBotLocal') return 'local'
-    return 'desconocido';
+  if (name === 'ChatBotMessenger') return 'messenger';
+  if (name === 'ChatBotTelegram') return 'telegram';
+  if (name === 'ChatBotInstagram') return 'instagram';
+  if (name === 'ChatBotLocal') return 'local';
+  return 'desconocido';
 }
 
 function buildMessageId(subscribed, messageText) {
-    if (!messageText) return null;
-    const isImage = messageText.includes('scontent.xx.fbcdn.net');
-    const isAudio = messageText.includes('cdn.fbsbx.com');
-    return isImage || isAudio
-        ? `${subscribed}-${messageText.split('/').pop().split('?')[0]}`
-        : `${subscribed}-${messageText.slice(-10)}`;
+  if (!messageText) return null;
+  const isImage = messageText.includes('scontent.xx.fbcdn.net');
+  const isAudio = messageText.includes('cdn.fbsbx.com');
+  return isImage || isAudio
+    ? `${subscribed}-${messageText.split('/').pop().split('?')[0]}`
+    : `${subscribed}-${messageText.slice(-10)}`;
 }
-// ✅ FIX: función para agregar mensajes normales
-async function saveMessage({ chatId, nombreClient, chatuser, sender, message, messageId, numDocTitular }) {
-  const body = {
-    contactId: chatId,
-    usuario: { nombre: nombreClient, documento: numDocTitular },
-    messages: [{ sender, message, idMessageClient: messageId }],
-    chat: chatuser,
-  };
 
-  const getResponse = await fetch(
-    `http://localhost:3001/message/?contactId=${encodeURIComponent(chatId)}&chat=${encodeURIComponent(chatuser || '')}`
+// --- API helpers alineados con Message.js ---
+
+async function apiGetConversation(contactId, chatuser) {
+  const r = await fetch(
+    `http://localhost:3001/message/?contactId=${encodeURIComponent(contactId)}&chat=${encodeURIComponent(chatuser || '')}`
   );
-  const data = await getResponse.json();
-  const docs = data?.data?.docs || [];
+  const j = await r.json();
+  // Message.js -> getDataMessageId devuelve { success, message: [docs] }
+  const docs = Array.isArray(j?.message) ? j.message : [];
+  // normalmente habrá 1 doc por (contactId, chat)
+  return docs[0] || null;
+}
 
-  let existingDoc = docs.find(d =>
-    String(d.contactId) === String(chatId) &&
-    (d.chat === chatuser || (!d.chat && !chatuser))
-  );
+async function apiPostConversation({ contactId, usuario, chat, messages }) {
+  const r = await fetch(`http://localhost:3001/message/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ contactId, usuario, chat, messages }),
+  });
+  if (!r.ok) throw new Error(`POST /message/ -> ${await r.text()}`);
+  return r.json(); // { success, data }
+}
 
-  if (!existingDoc) {
-    const createRes = await fetch('http://localhost:3001/message/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-    if (!createRes.ok) {
-      throw new Error(`Error al crear la conversación: ${await createRes.text()}`);
-    }
-    const createdJson = await createRes.json();
-    existingDoc = createdJson?.data || createdJson; // debe traer _id
-    console.log('Conversación creada (POST)', existingDoc._id);
-  }
-
-  try {
-    const response = await fetch(`http://localhost:3001/message/${existingDoc._id}`, {
+async function apiPushMessage(contactId, chatuser, { sender, message, idMessageClient }) {
+  // Usa tu addMessageToConversation(contactId, chat) que hace $push
+  const r = await fetch(
+    `http://localhost:3001/message/${encodeURIComponent(contactId)}?chat=${encodeURIComponent(chatuser || '')}`,
+    {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: [{ sender, message, idMessageClient: messageId }] }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Error al subir el mensaje (PUT): ${await response.text()}`);
+      body: JSON.stringify({ messages: [{ sender, message, idMessageClient }] }),
     }
-
-    const result = await response.json();
-    console.log('Mensaje guardado en conversación:', existingDoc._id, result);
-  } catch (err) {
-    throw err;
-  }
+  );
+  if (!r.ok) throw new Error(`PUT /message/:contactId -> ${await r.text()}`);
+  return r.json(); // { success, data }
 }
-
-// ✅ FIX: función para agregar mensajes del sistema evitando duplicados
-async function appendIfNotExists({ chatId, chatuser, sender = 'Sistema', message, idMessageClient }) {
-  
-    // Antes (mal): /message/${chatId}
-    const q = await fetch(`http://localhost:3001/message/?contactId=${chatId}&chat=${chatuser}`);
-    const data = await q.json();
-    const doc = data?.data?.docs?.[0];
-    if (!doc) throw new Error('No existe conversación');
-
-    const docId = doc._id || doc.id; // preferiblemente _id
-    await fetch(`http://localhost:3001/message/${docId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: [{ sender, message, idMessageClient: messageId }] }),
-    });
-    return true;
-}
-
 
 function MessageChat() {
-    const notifiedMessagesRef = useRef(new Map());
-    const audioRef = useRef(new Audio(Notificacion));
-    const [notificacions, setNotificacions] = useState([]);
-    const [audioEnabled, setAudioEnabled] = useState(true);
-    const pendienteConversacion =  useRef(new Map())
+  const notifiedMessagesRef = useRef(new Map());      // Map<convKey, Set<messageId>>
+  const audioRef = useRef(new Audio(Notificacion));
+  const [notificacions, setNotificacions] = useState([]);
+  const [audioEnabled, setAudioEnabled] = useState(true);
+  const pendienteConversacion = useRef(new Map());    // Map<convKey, payload POST>
 
-    useEffect(() => {
-        const intervalId = setInterval(async () => {
-            try {
-                const EmpleId = localStorage.getItem('UserId');
+  useEffect(() => {
+    const intervalId = setInterval(async () => {
+      try {
+        const EmpleId = localStorage.getItem('UserId');
 
-                const responseEmple = await fetch(`http://localhost:3001/asignaciones/`);
-                if (!responseEmple.ok) throw new Error('Error al consultar asignaciones');
+        const responseEmple = await fetch(`http://localhost:3001/asignaciones/`);
+        if (!responseEmple.ok) throw new Error('Error al consultar asignaciones');
 
-                const dataEmple = (await responseEmple.json()).data.docs;
-                const assignedEmple = dataEmple.filter((emple) => emple.idEmple === EmpleId);
-                if (!assignedEmple.length) return;
-                let newNotifications = [];
-                for (let user of assignedEmple) {
-                    try {
-                        const { chatId, nombreClient, numDocTitular, categoriaTicket, Descripcion, chatName } = user;
-                        if (!chatId) continue;
-                        const chatuser = getChatUserType(chatName);
-                        const convKey = `${chatId}|${chatuser}`;
+        const dataEmple = (await responseEmple.json()).data.docs;
+        const assignedEmple = dataEmple.filter((emple) => emple.idEmple === EmpleId);
+        if (!assignedEmple.length) return;
 
-                        // Verificar si ya existe conversación
-                        const getConv = await fetch(`http://localhost:3001/message/?contactId=${chatId}&chat=${chatuser}`);
-                        const getData = await getConv.json();
-                        const existeConversacion = getData?.data?.docs?.length > 0;
+        const newNotifications = [];
 
-                            if (!existeConversacion) {
-                                // Nueva conversación: crear
-                                const responseMany = await fetch(`http://localhost:3001/manychat/${chatId}`);
-                                if (!responseMany.ok) throw new Error('Error al consultar Manychat');
+        for (let user of assignedEmple) {
+          try {
+            const {
+              chatId,
+              nombreClient,
+              numDocTitular,
+              categoriaTicket,
+              Descripcion,
+              chatName,
+            } = user;
+            if (!chatId) continue;
 
-                                const dataMany = (await responseMany.json()).cliente.data;
-                                const messageText = dataMany.last_input_text;
-                                const messageId = buildMessageId(dataMany.subscribed, messageText);
+            const chatuser = getChatUserType(chatName);
+            const convKey = `${chatId}|${chatuser}`;
+            const today = new Date().toISOString().slice(0, 10);
 
-                                const messageInit = {
-                                    sender: 'Sistema',
-                                    message: '🟢 Inicio de conversación',
-                                    idMessageClient: `${chatId}-inicio`,
-                                };
+            // Obtener último input del cliente desde ManyChat
+            const responseMany = await fetch(`http://localhost:3001/manychat/${chatId}`);
+            if (!responseMany.ok) throw new Error('Error al consultar Manychat');
 
-                                
-                                // Construye los textos de sistema igual que en el POST inicial
-                                const descripcionText  = Array.isArray(Descripcion) && Descripcion.length > 0 ? Descripcion[0] : null;
-                                const descripcionExtra = Array.isArray(Descripcion) && Descripcion.length > 1 ? Descripcion[1] : null;
-                                                            
-                                const motivoTexto = descripcionText
-                                  ? `📝 Motivo del contacto: ${categoriaTicket}, con la descripción: ${descripcionText}` + (descripcionExtra ? `  Detalle adicional: ${descripcionExtra}` : '')
-                                  : `📝 Motivo del contacto: ${categoriaTicket}`;
-                     
-                                // Opcional: “Inicio de conversación” 1 vez por día
-                                const today = new Date().toISOString().slice(0,10);
-                                await appendIfNotExists({ chatId, chatuser, sender:'Sistema', message:'🟢 Inicio de conversación', idMessageClient:`${chatId}-inicio-${today}` });
-                                await appendIfNotExists({ chatId, chatuser, sender:'Sistema', message: motivoTexto, idMessageClient:`${chatId}-motivo-${today}` });
+            const dataMany = (await responseMany.json()).cliente.data;
+            const messageText = (dataMany?.last_input_text || '').trim();
+            const messageId = buildMessageId(dataMany.subscribed, messageText);
 
-                                const messageMotivo = {
-                                sender: 'Sistema',
-                                message: motivoTexto,
-                                idMessageClient: `${chatId}-motivo`,
-                                };
+            // Omite si no hay texto (o si ManyChat no trae nada nuevo)
+            if (!messageText || !messageId) continue;
 
-                                const messageReal = {
-                                    sender: 'Cliente',
-                                    message: messageText,
-                                    idMessageClient: messageId,
-                                };
+            // ¿Ya existe esta conversación?
+            const convDoc = await apiGetConversation(chatId, chatuser);
+            const allMessages = Array.isArray(convDoc?.messages) ? convDoc.messages : [];
+            const alreadyExists = allMessages.some(m => m.idMessageClient === messageId);
 
-                                if (!pendienteConversacion.current.has(convKey)) {
-                                    const mensajeInicial = [messageInit, messageMotivo, messageReal]
-                                    console.log('💬 Acumulando conversación:', {
-                                    contactId: chatId,
-                                    motivo: motivoTexto,
-                                    messages: mensajeInicial,
-                                    });
-
-                                    pendienteConversacion.current.set(convKey, {
-                                        contactId: chatId,
-                                        usuario: { nombre: nombreClient, documento: numDocTitular },
-                                        chat: chatuser,
-                                        motivo: motivoTexto,
-                                        messages: mensajeInicial,
-                                    });
-                                }
-                            } else {
-                            const responseMany = await fetch(`http://localhost:3001/manychat/${chatId}`);
-                            if (!responseMany.ok) throw new Error('Error al consultar Manychat');
-
-                            const dataMany = (await responseMany.json()).cliente.data;
-                            const messageText = dataMany.last_input_text;
-                            const messageId = buildMessageId(dataMany.subscribed, messageText);
-
-                            const refreshConv = await fetch(`http://localhost:3001/message/?contactId=${chatId}&chat=${chatuser}`);
-                            const refreshData = await refreshConv.json();
-                            const allMessages = refreshData?.data?.docs?.flatMap(doc => doc.messages || []) || [];
-
-                            const messageExists = allMessages.some(msg => msg.idMessageClient === messageId);
-                            const notifiedSet = notifiedMessagesRef.current.get(chatId) || new Set();
-
-                            if (!notifiedMessagesRef.current.has(chatId)) {
-                                notifiedMessagesRef.current.set(chatId, notifiedSet);
-                            }
-
-                            if (messageText && messageId && !messageExists && !notifiedSet.has(messageId)) {
-                                await saveMessage({ 
-                                    chatId,
-                                    nombreClient,
-                                    chatuser,
-                                    sender: 'Cliente',
-                                    message: messageText.trim(),
-                                    messageId,
-                                    numDocTitular
-                                });
-
-                                notifiedSet.add(messageId);
-
-                                newNotifications.push({
-                                    contactId: chatId,
-                                    message: messageText.trim(),
-                                    sender: 'Cliente',
-                                    chat: chatuser,
-                                    nombre: nombreClient,
-                                });
-                            }
-                        }
-
-                    } catch (error) {
-                        console.error(`🚫 Error procesando asignado ${user.nombreClient}:`, error.message);
-                    }
-                }
-
-                // Al final del interval, guardar todas las conversaciones pendientes
-                for (const [key, convData] of pendienteConversacion.current.entries()) {
-                    try {
-                        const check = await fetch(`http://localhost:3001/message/?contactId=${encodeURIComponent(convData.contactId)}&chat=${encodeURIComponent(convData.chat || '')}`)
-                        const checkData = await check.json();
-                       const existsNow = (checkData?.data?.docs || []).some(d =>
-                          String(d.contactId) === String(convData.contactId) &&
-                          (d.chat === convData.chat || (!d.chat && !convData.chat))
-                        );
-                        
-                        if(existsNow){
-                            console.log(`Conversacion para ${convData.contactId} ya existe(race), omitiendo (POST)`);
-                            pendienteConversacion.current.delete(key);
-                            continue;
-                        }
-
-                        const response = await fetch(`http://localhost:3001/message/`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify(convData),
-                        });
-
-                        if(response.ok){
-                            console.log('Conversacion creada para ', convData.contactId)
-                            pendienteConversacion.current.delete(key);
-                        }else{
-                            let err = await response.text();
-                            console.log(`Error guardando conversacion (${convData.contactId}): `, err)
-                        }
-
-                    } catch (error) {
-                        console.error(`❌ Fallo al guardar conversación (${convData.contactId}):`, error.message);
-                    }
-                }
-
-                if (newNotifications.length > 0) {
-                    setNotificacions(prev => [...prev, ...newNotifications]);
-
-                    if (audioEnabled) {
-                        audioRef.current.play().catch(err => {
-                            console.warn("🔇 No se pudo reproducir el sonido:", err);
-                        });
-                    }
-
-                    setTimeout(() => {
-                        setNotificacions(prev => prev.slice(newNotifications.length));
-                    }, 3000);
-                }
-
-            } catch (error) {
-                console.error(`❌ Error en interval: ${error.message}`);
+            // notificaciones únicas por conversación+canal
+            const notifiedSet = notifiedMessagesRef.current.get(convKey) || new Set();
+            if (!notifiedMessagesRef.current.has(convKey)) {
+              notifiedMessagesRef.current.set(convKey, notifiedSet);
             }
-        }, 3000);
 
-        return () => clearInterval(intervalId);
-    }, [audioEnabled]);
+            // Textos de Sistema (una vez por día)
+            const descripcionText  = Array.isArray(Descripcion) && Descripcion.length > 0 ? Descripcion[0] : null;
+            const descripcionExtra = Array.isArray(Descripcion) && Descripcion.length > 1 ? Descripcion[1] : null;
 
-    return (
-        <div className="notificacion-container">
-            {notificacions.map((notif, index) => {
-                const key = `${notif.contactId}-${notif.message}-${index}`;
-                const isImage = notif.message.includes('scontent.xx.fbcdn.net');
-                const isAudio = notif.message.includes('cdn.fbsbx.com');
+            const motivoTexto = descripcionText
+              ? `📝 Motivo del contacto: ${categoriaTicket}, con la descripción: ${descripcionText}` +
+                (descripcionExtra ? `  Detalle adicional: ${descripcionExtra}` : '')
+              : `📝 Motivo del contacto: ${categoriaTicket}`;
 
-                return (
-                    <div key={key} className="notificacion">
-                        <p>📩 {notif.nombre}:</p>
-                        {isImage ? (
-                            <img src={notif.message} alt="Imagen" />
-                        ) : isAudio ? (
-                            <audio controls src={notif.message}></audio>
-                        ) : (
-                            <p>{notif.message}</p>
-                        )}
-                    </div>
-                );
-            })}
-        </div>
-    );
+            const sysInicio = {
+              sender: 'Sistema',
+              message: '🟢 Inicio de conversación',
+              idMessageClient: `${chatId}-inicio-${today}`,
+            };
+            const sysMotivo = {
+              sender: 'Sistema',
+              message: motivoTexto,
+              idMessageClient: `${chatId}-motivo-${today}`,
+            };
+            const msgCliente = {
+              sender: 'Cliente',
+              message: messageText,
+              idMessageClient: messageId,
+            };
+
+            if (!convDoc) {
+              // --- No existe: crear conversación con estructura completa ---
+              if (!pendienteConversacion.current.has(convKey)) {
+                const payload = {
+                  contactId: chatId,
+                  usuario: { nombre: nombreClient, documento: numDocTitular },
+                  chat: chatuser,
+                  messages: [sysInicio, sysMotivo, msgCliente],
+                };
+                pendienteConversacion.current.set(convKey, payload);
+              }
+            } else {
+              // --- Existe: asegurar Sistema del día y luego push del cliente ---
+              const hasInicio = allMessages.some(m => m.idMessageClient === sysInicio.idMessageClient);
+              const hasMotivo = allMessages.some(m => m.idMessageClient === sysMotivo.idMessageClient);
+
+              if (!hasInicio) await apiPushMessage(chatId, chatuser, sysInicio);
+              if (!hasMotivo) await apiPushMessage(chatId, chatuser, sysMotivo);
+
+              if (!alreadyExists && !notifiedSet.has(messageId)) {
+                await apiPushMessage(chatId, chatuser, msgCliente);
+                notifiedSet.add(messageId);
+
+                newNotifications.push({
+                  contactId: chatId,
+                  message: messageText,
+                  sender: 'Cliente',
+                  chat: chatuser,
+                  nombre: nombreClient,
+                });
+              }
+            }
+          } catch (error) {
+            console.error(`🚫 Error procesando asignado ${user?.nombreClient || ''}:`, error.message);
+          }
+        }
+
+        // Guardar conversaciones pendientes (creación inicial)
+        for (const [key, convData] of pendienteConversacion.current.entries()) {
+          try {
+            const exists = await apiGetConversation(convData.contactId, convData.chat);
+            if (exists) {
+              pendienteConversacion.current.delete(key);
+              continue;
+            }
+            const r = await apiPostConversation(convData);
+            if (r?.success) {
+              pendienteConversacion.current.delete(key);
+            } else {
+              console.warn('POST conversación sin success:', r);
+            }
+          } catch (e) {
+            console.error(`❌ Fallo al guardar conversación (${convData.contactId}):`, e.message);
+          }
+        }
+
+        // Notificaciones y audio
+        if (newNotifications.length > 0) {
+          setNotificacions(prev => [...prev, ...newNotifications]);
+
+          if (audioEnabled) {
+            audioRef.current.play().catch(err => {
+              console.warn("🔇 No se pudo reproducir el sonido:", err);
+            });
+          }
+
+          setTimeout(() => {
+            setNotificacions(prev => prev.slice(newNotifications.length));
+          }, 3000);
+        }
+      } catch (error) {
+        console.error(`❌ Error en interval: ${error.message}`);
+      }
+    }, 3000);
+
+    return () => clearInterval(intervalId);
+  }, [audioEnabled]);
+
+  return (
+    <div className="notificacion-container">
+      {notificacions.map((notif, index) => {
+        const key = `${notif.contactId}-${notif.message}-${index}`;
+        const isImage = notif.message.includes('scontent.xx.fbcdn.net');
+        const isAudio = notif.message.includes('cdn.fbsbx.com');
+
+        return (
+          <div key={key} className="notificacion">
+            <p>📩 {notif.nombre}:</p>
+            {isImage ? (
+              <img src={notif.message} alt="Imagen" />
+            ) : isAudio ? (
+              <audio controls src={notif.message}></audio>
+            ) : (
+              <p>{notif.message}</p>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 export default MessageChat;
