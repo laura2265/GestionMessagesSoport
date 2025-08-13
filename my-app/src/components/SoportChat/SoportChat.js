@@ -5,6 +5,27 @@ import Jose from '../../assets/img/empleado-de-oficina1.png';
 import Enviar from '../../assets/img/enviar.png';
 import Notificacion from '../../assets/sounds/Notificacion.mp3';
 
+
+// Devuelve el texto del mensaje, venga como string u objeto
+const getTextFromMensaje = (msg) => {
+  if (!msg) return '';
+  if (typeof msg === 'string') return msg;
+
+  // Si es objeto, prioriza PRESENCIA de campos (no truthy/falsy)
+  if (typeof msg === 'object') {
+    if ('text' in msg)   return msg.text ?? '';
+    if ('texto' in msg)  return msg.texto ?? '';
+    if ('message' in msg) return msg.message ?? '';
+    if ('mensaje' in msg) return msg.mensaje ?? '';
+  }
+  return '';
+};
+
+// Devuelve botones solo si hay al menos uno
+const getButtonsFromMensaje = (msg) =>
+  (msg && Array.isArray(msg.buttons) && msg.buttons.length > 0) ? msg.buttons : null;
+
+
 function SoportChat (){
     const [isChatVisible, setIsChatVisible] = useState(false);
     const [waitingForDocument, setWaitingForDocument] = useState(false);
@@ -199,10 +220,9 @@ function SoportChat (){
           if(data.success && data.data){
             const mensajeGuardados = data.data.conversacion.map(m => ({
               sender: m.de === 'bot' ? 'bot' : 'user',
-              text: typeof m.mensaje === 'string' ? m.mensaje : m.mensaje.text || JSON.stringify(m.mensaje),
-              buttons: m.mensaje.buttons?.length ? m.mensaje.buttons : null,
+              text: getTextFromMensaje(m.mensaje),
+              buttons: getButtonsFromMensaje(m.mensaje),
             }));
-
 
             setMessages(mensajeGuardados);
             setNombre(data.data.usuario.nombre);
@@ -216,23 +236,28 @@ function SoportChat (){
           console.error('No se pudo consultar los datos de la api: ', error);
         }
       }
-
       iniciarConversacion();
     },[]);
 
     const addBotMessage = (text, buttons) => {
-      setMessages((prev) => [...prev, { sender: 'bot', text, buttons }]);
-      if (buttons){
-        enviarMensaje(chatIdUser, "bot", { text, buttons });
-      }else{
-        enviarMensaje(chatIdUser, "bot", text);
-      }
+      const cleanButtons = Array.isArray(buttons) && buttons.length ? buttons : null;
+
+      // pinta en UI
+      setMessages(prev => [...prev, { sender: 'bot', text: text ?? '', buttons: cleanButtons }]);
+
+      // guarda en Mongo
+      const payload = cleanButtons
+        ? { text: text ?? '', buttons: cleanButtons }
+        : (text ?? ''); // si no hay botones, manda string plano
+
+      enviarMensaje(chatIdUser, "bot", payload);
 
       if (isChatVisible) {
-          setHandleNewMessage(true);
-          playNotificacionSound();
+        setHandleNewMessage(true);
+        playNotificacionSound();
       }
-  };
+    };
+
   
   const addUserMessage = (text) => {
     setMessages(prev => [...prev, { sender: "usuario", text }]);

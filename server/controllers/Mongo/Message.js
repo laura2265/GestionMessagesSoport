@@ -102,7 +102,7 @@ export const postDataMessage = async (req, res) => {
 export const addMessageToConversation = async (req, res) => {
     try {
         const { contactId } = req.params;
-        const { chat } = req.query;
+        const { chat = 'local' } = req.query;
         const { messages } = req.body;
 
         if (!messages || !Array.isArray(messages) || messages.length === 0) {
@@ -129,7 +129,7 @@ export const addMessageToConversation = async (req, res) => {
         };
 
         const UploadNewConversation = await MessageScheme.findOneAndUpdate(
-            { contactId, chat },
+            { contactId, chat }, 
             { $push: { messages: newMessage } },
             { new: true, upsert: true, setDefaultsOnInsert: true }
         );

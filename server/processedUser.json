@@ -24,19 +24,19 @@
     "processedAt": "2025-08-12T18:22:19.996Z"
   },
   {
-    "id": "eb9db103-c8d1-4dd3-8db5-5d572308a208",
-    "Motivo": "❎ No funciono",
-    "message": null,
-    "numDoc": "79256692",
-    "contactado": true,
-    "processedAt": "2025-08-12T18:22:20.002Z"
-  },
-  {
     "id": "8185321031556733",
     "Motivo": "Falla de conexión",
     "message": "Internet lento",
     "numDoc": "1023372330",
     "contactado": true,
     "processedAt": "2025-08-12T18:32:40.058Z"
+  },
+  {
+    "id": "eb9db103-c8d1-4dd3-8db5-5d572308a208",
+    "Motivo": "❎ No funciono",
+    "message": null,
+    "numDoc": "79256692",
+    "contactado": true,
+    "processedAt": "2025-08-13T19:06:14.862Z"
   }
 ]
