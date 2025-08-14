@@ -1,30 +1,121 @@
 import './soportChat.css';
 import chat from '../../assets/img/chat-en-vivo.png';
-import { useEffect, useRef, useState } from 'react';
+import { isValidElement, useEffect, useRef, useState } from 'react';
 import Jose from '../../assets/img/empleado-de-oficina1.png';
 import Enviar from '../../assets/img/enviar.png';
 import Notificacion from '../../assets/sounds/Notificacion.mp3';
 
-
-// Devuelve el texto del mensaje, venga como string u objeto
 const getTextFromMensaje = (msg) => {
   if (!msg) return '';
   if (typeof msg === 'string') return msg;
-
-  // Si es objeto, prioriza PRESENCIA de campos (no truthy/falsy)
   if (typeof msg === 'object') {
-    if ('text' in msg)   return msg.text ?? '';
-    if ('texto' in msg)  return msg.texto ?? '';
+    if ('text' in msg) return msg.text ?? '';
+    if ('texto' in msg) return msg.texto ?? '';
     if ('message' in msg) return msg.message ?? '';
     if ('mensaje' in msg) return msg.mensaje ?? '';
   }
   return '';
 };
 
-// Devuelve botones solo si hay al menos uno
 const getButtonsFromMensaje = (msg) =>
   (msg && Array.isArray(msg.buttons) && msg.buttons.length > 0) ? msg.buttons : null;
 
+const isBlank = (s) => !s || String(s).trim() === '';
+
+async function ensureMessageDoc (contactId) {
+  const response = await fetch(
+    `http://localhost:3001/message/?contactId=${encodeURIComponent(contactId)}&chat=local`
+  );
+  const j = await response.json();
+
+  const list = Array.isArray(j?.message)
+    ? j.message
+    : Array.isArray(j?.data?.docs)
+    ? j.data.docs
+    : j?.message
+    ? [j.message]
+    : j?.data
+    ? [j.data]
+    : [];
+
+  const exists = list.some(d => d?.contactId === contactId && (d?.chat === 'local' || !d?.chat));
+  if (!exists) {
+    await fetch('http://localhost:3001/message', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contactId, usuario: { nombre: 'Visitante' }, chat: 'local', messages: [] })
+    });
+  }
+}
+
+// guarda SIEMPRE en colección "message"
+async function saveToMessage(contactId, sender, text) {
+  const idClient = `${sender}-${Date.now()}-${text.length}`;
+  await ensureMessageDoc(contactId);
+  await fetch(`http://localhost:3001/message/${encodeURIComponent(contactId)}?chat=local`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ messages: [{ sender, message: text, idMessageClient: idClient }] })
+  });
+}
+
+async function postConversacion(contactId, usuario = {}) {
+  return fetch('http://localhost:3001/conversacion-server', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      id: contactId,
+      usuario: {
+        nombre: usuario?.nombre || 'Visitante',
+        email: usuario?.email || '',
+        documento: usuario?.documento || '',
+      },
+      fechaInicio: new Date().toISOString(),
+    })
+  });
+}
+
+async function putConversacionMensaje(contactId, de, mensaje) {
+  return fetch(`http://localhost:3001/conversacion-server/${encodeURIComponent(contactId)}/mensaje`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ de, mensaje })
+  });
+}
+
+async function saveToConversacion(contactId, de, payload, usuarioHint) {
+  let mensaje = typeof payload === 'object' ? (payload.text ?? '') : String(payload ?? '');
+  if (de !== 'usuario' && typeof payload === 'object' && Array.isArray(payload.buttons) && payload.buttons.length) {
+    mensaje = { text: mensaje, buttons: payload.buttons.filter(Boolean) };
+  }
+  if (!mensaje || (typeof mensaje === 'string' && !mensaje.trim())) return;
+
+  let res = await putConversacionMensaje(contactId, de, mensaje);
+  if (res.status === 404) { await postConversacion(contactId, usuarioHint); await putConversacionMensaje(contactId, de, mensaje); }
+}
+
+async function SaveToBot(contactId, from, payload, usuarioHint) {
+  if (!contactId) return;
+  
+  const text = typeof payload === 'object'
+  ? (payload.text ?? payload.texto ?? payload.message ?? payload.mensaje ?? '')
+  : String(payload ?? '');
+
+
+  if (from === 'usuario') {
+    if (!text.trim()) return;
+    await Promise.all([
+      saveToConversacion(contactId, 'usuario', text, usuarioHint),
+      saveToMessage(contactId, 'Cliente', text)
+    ]);
+  } else {
+    if (!text.trim() && !(payload?.buttons?.length)) return;
+    await Promise.all([
+      saveToConversacion(contactId, 'bot', payload, usuarioHint),
+      saveToMessage(contactId, 'Empleado', text || ' ')
+    ]);
+  }
+}
 
 function SoportChat (){
     const [isChatVisible, setIsChatVisible] = useState(false);
@@ -55,10 +146,11 @@ function SoportChat (){
     const [handleNewMessage, setHandleNewMessage] = useState(false);
     const [userInput, setUserInput] = useState("");
     const audioRef = useRef(new Audio(Notificacion));
-    const toggleChat=()=>{
-        setIsChatVisible(!isChatVisible);
-        setHandleNewMessage(false);
-    }
+    const toggleChat = () => { 
+      setIsChatVisible(!isChatVisible); 
+      setHandleNewMessage(false); 
+    };
+
 
     //variables de confirmacion 
     const validStatesSinInternet = [
@@ -135,52 +227,107 @@ function SoportChat (){
       "cablePcNoSabe"
     ];
 
-    //metodo de actuali zar los mensajes guardadosF
-    const enviarMensaje = async (idConversacion, de, mensaje) => {
-      try{
-        console.log('Enviando mensaje al backEnd: ', {idConversacion, de, mensaje})
-        const response = await  fetch(`http://localhost:3001/conversacion-server/${idConversacion}/mensaje`,{
-          method: 'PUT',
-          headers:{
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            de,
-            mensaje
-          })
-        });
+    const mapApiToMessages = (conv = []) =>
+    conv.map(m => {
+      const text = getTextFromMensaje(m.mensaje);
+      const buttons = getButtonsFromMensaje(m.mensaje);
+      if (isBlank(text) && !buttons) return null;
+      const sender = (m.de === 'bot' || m.de === 'Empleado') ? 'bot' : 'user';
+      return { sender, text, buttons, timeStamp: m.timeStamp };
+    }).filter(Boolean);
+    
+    useEffect(() => {
+      const id = localStorage.getItem('chatUserId');
+      if (!id) return;
 
-        const data = await response.json();
-        console.log("Mensaje guardado: ", data);
+      let stopped = false;
+      let lastLen = 0;
+      let lastTs = 0;
 
-      }catch(error){
-        console.error(`Error al guardar el mensaje: ${error}`);
-      }
-    }
+      const tick = async () => {
+        try {
+          const res = await fetch(`http://localhost:3001/conversacion-server/${encodeURIComponent(id)}`, {
+            headers: { 'Content-Type': 'application/json' }
+          });
+          const data = await res.json();
+          const conv = data?.data?.conversacion || [];
+          const mapped = mapApiToMessages(conv);
+          const latest = mapped.length ? new Date(mapped[mapped.length - 1].timeStamp || 0).getTime() : 0;
+          if (mapped.length !== lastLen || latest !== lastTs) {
+            lastLen = mapped.length;
+            lastTs = latest;
+            setMessages(mapped);
+          }
+        } catch (e) {
+          console.error('Polling conversacion-server falló:', e);
+        }
+      };
 
+      tick();
+      const h = setInterval(() => !stopped && tick(), 4000);
+      return () => { stopped = true; clearInterval(h); };
+    }, []);
+
+
+    //HandleSendMessage
     const handleSendMessage = async(texto) => {
-      console.log('handleSendMessage() ejecutado con exito: ', texto);
-      if (!texto || typeof texto !== 'string') {
-        console.warn('Texto del usuario inválido: ', texto);
-        return;
-      }
+      const text = typeof texto === 'string' ? texto : (userInput || '').trim();
+      if (!text) return;
 
-      setMessages((prev) => [...prev, { sender: "user", text: texto }]);
+      setMessages(prev => [...prev, { sender: "user", text }]);
+      setUserInput('');
 
-      if(!chatIdUser){
-        console.error('No hay chat id definido para guardar el mensaje');
-        return;
-      }
+      const chatId = localStorage.getItem('chatUserId');
 
-      try{
-        await enviarMensaje(chatIdUser, "usuario", {text: texto})
+      // pista de usuario para auto‑upsert
+      const usuarioHint = { nombre: nombreTemporal || nombre, email, documento: documentTitular };
 
-      }catch(error){
-        console.error('Error al guardar el mensaje del usuario: ', error);
+      try {
+        await SaveToBot(chatId, 'usuario', text, usuarioHint);
+      } catch (err) {
+        console.error('Error guardando mensaje usuario:', err);
       }
 
       setUserInput("");
+    };
+
+    async function enviarMensaje(id, de, payload) {
+      let mensaje;
+
+      if (de === 'bot') {
+        if (payload && typeof payload === 'object') {
+          const text = payload.text ?? '';
+          const buttons = Array.isArray(payload.buttons) ? payload.buttons.filter(Boolean) : [];
+          if (isBlank(text) && buttons.length === 0) return;
+          mensaje = buttons.length ? { text, buttons } : text;
+        } else {
+          if (isBlank(payload)) return;
+          mensaje = String(payload);
+        }
+      } else {
+        if (isBlank(payload)) return;      
+        mensaje = String(payload);
+      }
+    
+      const responsePut = await fetch(`http://localhost:3001/conversacion-server/${id}/mensaje`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          de, 
+          mensaje:{
+            text: mensaje
+          } }),
+      });
+
+      if(!responsePut.ok){
+        throw new Error('Error al momento de actualizar los mensajes')
+      }
+
+      const data = await responsePut.json();
+      console.log('Los datos son: ', data)
     }
+
+    
 
     const getPublicIp = async () => {
       try{
@@ -218,11 +365,16 @@ function SoportChat (){
           const data = await res.json();
 
           if(data.success && data.data){
-            const mensajeGuardados = data.data.conversacion.map(m => ({
-              sender: m.de === 'bot' ? 'bot' : 'user',
-              text: getTextFromMensaje(m.mensaje),
-              buttons: getButtonsFromMensaje(m.mensaje),
-            }));
+            const mensajeGuardados = data.data.conversacion
+            .map(m => {
+                const text = getTextFromMensaje(m.mensaje);
+                const buttons = getButtonsFromMensaje(m.mensaje);
+                if (isBlank(text) && !buttons) return null;
+
+                const sender = (m.de === 'bot' || m.de === 'Empleado') ? 'bot' : 'user';
+                return { sender, text, buttons };
+              })
+              .filter(Boolean);
 
             setMessages(mensajeGuardados);
             setNombre(data.data.usuario.nombre);
@@ -239,227 +391,131 @@ function SoportChat (){
       iniciarConversacion();
     },[]);
 
-    const addBotMessage = (text, buttons) => {
+    const lastBotRef = useRef({ text: '', at: 0 });
+
+    const addBotMessage = async (text, buttons) => {
+      const cleanText = (text ?? '').trim();
       const cleanButtons = Array.isArray(buttons) && buttons.length ? buttons : null;
-
-      // pinta en UI
-      setMessages(prev => [...prev, { sender: 'bot', text: text ?? '', buttons: cleanButtons }]);
-
-      // guarda en Mongo
-      const payload = cleanButtons
-        ? { text: text ?? '', buttons: cleanButtons }
-        : (text ?? ''); // si no hay botones, manda string plano
-
-      enviarMensaje(chatIdUser, "bot", payload);
-
-      if (isChatVisible) {
-        setHandleNewMessage(true);
-        playNotificacionSound();
-      }
+      if (isBlank(cleanText) && !cleanButtons) return;         
+      setMessages(prev => [...prev, { sender: 'bot', text: cleanText, buttons: cleanButtons }]);
+      await SaveToBot(localStorage.getItem('chatUserId'), 'bot',
+        cleanButtons ? { text: cleanText, buttons: cleanButtons } : cleanText
+      );
     };
 
-  
-  const addUserMessage = (text) => {
-    setMessages(prev => [...prev, { sender: "usuario", text }]);
-  };
+    // SoportChat.js
+  const sendMessage = async () => {
+    try {
+      // 1) tomar y sanear el input
+      const text = (userInput || '').trim();
+      if (isBlank(text)) return;
 
-  useEffect(()=>{
-    if(botomRef.current){
-          botomRef.current.scrollIntoView({
-            behavior:'smooth'
-          });
-        }
-    },[messages]);
+      // 2) pintar en la UI y limpiar el input
+      setMessages(prev => [...prev, { sender: 'user', text }]);
+      setUserInput('');
 
-    const sendMessage = async() => {
-      if(userInput.trim() === "" ) return;
-      
-      if(stateChat === "soporteHumano"){
-        await enviarMensaje(chatIdUser, "usuario",{text: userInput});
-        addUserMessage(userInput);
-        setUserInput("");
+      // 3) guardar SIEMPRE en ambas colecciones (conversacion-server + message)
+      const chatId = localStorage.getItem('chatUserId');
+      await SaveToBot(chatId, 'usuario', text);
+
+      // 4) si está en soporte humano, no corremos más lógica del bot
+      if (stateChat === 'soporteHumano') return;
+
+      // 5) flujo guiado por estados
+      if (estado === 'esperando_nombre') {
+        setNombre(text);
+        setNombreTemporal(text);
+        setEstado('esperando_email');
+        setTimeout(() => {
+          addBotMessage(`¡Gracias ${text}! ¿Cuál es tu correo electrónico?`);
+        }, 400);
         return;
       }
 
-      setMessages((prevMessage) => [...prevMessage, {sender: "user", text: userInput}]);
-      if (estado === "esperando_nombre") {
-        setNombre(userInput);
-        setNombreTemporal(userInput);
-        setTimeout(() => addBotMessage(`¡Gracias ${userInput}! ¿Cual es tu correo electronico?`), 1000);
-        setEstado("esperando_email");
-        setUserInput("");
+      if (estado === 'esperando_email') {
+        setEmail(text);
+        setEstado('esperando_documento');
+        setTimeout(() => {
+          addBotMessage('Por favor ingresa el número de documento del titular (o quien solicita el servicio) para continuar.');
+        }, 400);
         return;
       }
 
-      if(estado === "esperando_email"){
-        setEmail(userInput);
-        setTimeout(()=>addBotMessage(`Por favor puedes ingresar el numero de documento del titular o del que va a solicitar el servicio para poder continuar`),1000);
-        setEstado("esperando_documento");
-        setUserInput("");
-        return;
-      }
+      if (!conversacionState && estado === 'esperando_documento') {
+        // 5.1 crear/asegurar la conversación local
+        setDocumentTitular(text);
+        const ip = await getPublicIp();
+        const navegador = navigator.userAgent;
 
-      if (!conversacionState) {
-        if (estado === "esperando_documento") {
-          setDocumentTitular(userInput);
-
-          const ip = await getPublicIp();
-          const navegador = navigator.userAgent;
-        
-          console.log("Datos enviados:", {
-            id: localStorage.getItem("chatUserId"),
+        await fetch('http://localhost:3001/conversacion-server', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: chatId,
             usuario: {
               nombre: nombreTemporal,
               email: email,
-              documento: userInput,
+              documento: text,
               navegador,
               ip,
             },
             fechaInicio: new Date().toISOString(),
-          });
-        
-          await fetch('http://localhost:3001/conversacion-server', {
-            method: 'POST',
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              id: localStorage.getItem("chatUserId"),
-              usuario: {
-                nombre: nombreTemporal,
-                email: email,
-                documento: userInput,
-                navegador,
-                ip,
-              },
-              fechaInicio: new Date().toISOString() 
-            })
-          });
-        
-          setTimeout(() => addBotMessage(
-            `¡Perfecto, ${nombreTemporal}! Ya puedes comenzar a chatear con nosotros\n ¿En qué podemos ayudarte?`,
-            [
-              "Falla conexión", "Cambiar Contraseña", "Cancelar Servicio", "Cambio de plan",
-              "Traslado", "Solicitar servicio", "PQR(Peticion, Queja, Reclamo)",
-              "Pagar Facturas", "Cambio de titular", "Otro"
-            ]), 1000);
-
-          setEstado("conversacion");
-          setConversacionState(true);
-          setUserInput("");
-          return;
-        }
-
-        if(estado === "esperando_datos_usuario"){
-          const datos = extraerDatosUsuario(userInput);
-          if(datos.nombre && datos.documento && datos.servicio && datos.motivo){
-            console.log('Datos capturados correctamene: ', datos);
-
-            await enviarMensaje(chatIdUser, 'usuario',{
-              text: `Datos capturados: ${JSON.stringify(datos)}`
-            });
-
-            setTimeout(()=> addBotMessage(`Gracias ${datos.nombre}. Estamos procesando tu solucitud para ${datos.servicio}...`), 1000);
-
-            setEstado("conversacion");
-            setWaitingForDocument(false);
-          }else{
-            setTimeout(()=>addBotMessage(
-              `Parece que no entendi bien los datos. Por favor envíalos así: \n\n`+
-              `Ejemplo: Laura, 12345, Internet, Me voy de viaje y ya no usare el servicio`
-            ),1000);
-          }
-          setUserInput("");
-          return;
-        }
-      }
-
-      if(estado === "conversacion"){
-        handleSendMessage(userInput);
-        if (waitingForDocument) {
-          wisphub(userInput);
-          setWaitingForDocument(false);
-       }else if (userInput.toLowerCase().includes('seguir')){
-          setTimeout(()=> addBotMessage('Hola, bienvenido a tu chat 😊\n¿En que puedo ayudarte?',
-            ["Falla conexión", "Cambiar Contraseña", "Cancelar Servicio", "Cambio de plan", "Traslado", "Solicitar servicio", "PQR(Peticion, Queja, Reclamo)", "Pagar Facturas", "Cambio de titular", "Otro"]
-          ),1000);
-          setWaitingForDocument(true);
-       }else if(["CambioDePlan", "CambioDeContraseña", "Pqr", "Otro"].includes(stateChat)){
-            handleSendMessage(userInput)
-       }
-
-       setUserInput("");
-      }
-      
-    }
-
-    const handleUserInput = (e) => {
-        setUserInput(e.target.value);
-    }
-
-    const closeChat = () => {
-        setIsChatVisible(false);
-    }
-
-    const wisphub = async (cedula) => {
-      try {
-        const response = await fetch(`http://localhost:3001/wisphub-data/${cedula}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json'
-          }
+          })
         });
 
-        if(!response.ok){
-          throw new Error(`Error al momento de consultar los datos da la cedula: ${cedula}`); 
-        };
+        setConversacionState(true);
+        setEstado('conversacion');
 
-        const data = await response.json();
-        const result = data.data;
-        console.log('datos: ', result)
-        if(response && result.length > 0){
-          setServiceData(result)
-            setTimeout(() => addBotMessage(`se encontraron los siguientes servicios, si desea consultar uno has clic en el servicio a consultar. `,
-                result.map(item => item.usuario) ), 1000);
-        }else{
-            setMessages((prevMessage) => [
-                ...prevMessage, { sender: 'bot', text: `No se encontro servicios asociados con la cedual ${cedula} 😢`}
-            ])
+        setTimeout(() => {
+          addBotMessage(
+            `¡Perfecto, ${nombreTemporal}! Ya puedes comenzar a chatear con nosotros.\n¿En qué podemos ayudarte?`,
+            [
+              'Falla conexión','Cambiar Contraseña','Cancelar Servicio','Cambio de plan',
+              'Traslado','Solicitar servicio','PQR(Peticion, Queja, Reclamo)',
+              'Pagar Facturas','Cambio de titular','Otro'
+            ]
+          );
+        }, 400);
+        return;
+      }
+      if (estado === 'conversacion') {
+        // Ya guardamos arriba con saveToBoth, aquí solo lógica adicional
+        if (waitingForDocument) {
+          setWaitingForDocument(false);
+          return;
         }
-      } catch (error) {
-        console.error('Error al momento de consutlar los datos de la api: ', error)
-      }
-    }
-    
-    const extraerDatosUsuario = (mensaje) => {
-      const datos = {
-        nombre: null,
-        documento: null,
-        servicio: null,
-        motivo: null,
-      };
-    
-      const partes = mensaje.includes(",") ? mensaje.split(",") : mensaje.split(" ");
-    
-      if (partes.length >= 4) {
-        datos.nombre = partes[0].trim();
-        datos.documento = partes[1].trim();
-        datos.servicio = partes[2].trim();
-        datos.motivo = partes.slice(3).join(" ").trim();
-      }
-    
-      return datos;
-    };
 
+        // Ejemplos de ramificaciones (ajusta a tu flujo):
+        if (text.toLowerCase().includes('seguir')) {
+          addBotMessage('Perfecto, continuemos. ¿Cuál es el siguiente dato?');
+          return;
+        }
+
+        if (['CambioDePlan', 'CambioDeContraseña', 'Pqr', 'Otro'].includes(stateChat)) {
+          // Respuestas específicas de estos flujos
+          // (ya queda persistido por saveToBoth)
+          return;
+        }
+      }
+    } catch (err) {
+      console.error('sendMessage() error:', err);
+    }
+  };
+
+
+    const handleUserInput = (e) => setUserInput(e.target.value);
+
+    const closeChat = () => setIsChatVisible(false);
 
     const botomRef = useRef(null);
+    useEffect(()=>{ botomRef.current?.scrollIntoView({ behavior:'smooth' }); },[messages]);
 
     const handleButtonClick = async (option) => {
       setOption(option);
       setIsDisabled(true);
 
-      setMessages(prev => [...prev, {sender:"user", text: option}])
-      await enviarMensaje(chatIdUser, "usuario", {text:option});
+      setMessages(prev => [...prev, { sender: "user", text: option }]);
+      await SaveToBot(chatIdUser, 'usuario', option);
 
       if (option === "Falla conexión"){
         setStateChat("Falla conexión");
@@ -1356,7 +1412,7 @@ function SoportChat (){
         setWaitingForDocument(true);
 
         //Continuamos con Vpn
-      }else if(option === "✅ SI" && stateChat("NoFuncionoSolucionContinua")){
+      }else if(option === "✅ SI" && stateChat === "NoFuncionoSolucionContinua"){
         setStateChat("ConfirmacionVPN");
         setTimeout(() => addBotMessage(`Ya que tiene una *VPN* activa, lo que vas a realizar es ir a configuraciones y desactivar la *VPN*, al momento de hacer eso recargue la pagina.`
         ), 1000);
@@ -1365,7 +1421,7 @@ function SoportChat (){
         ), 1000);
         setWaitingForDocument(true);
 
-      }else if(option === "❌ NO" && stateChat("NoFuncionoSolucionContinua")){
+      }else if(option === "❌ NO" && stateChat === "NoFuncionoSolucionContinua"){
         setStateChat("NoTieneVPN");
         setTimeout(() => addBotMessage(`Vamos a solucionar tu problema. A continuación te vamos a dar una serie de soluciones que puedes utilizar para solucionar tu problema:
           \n1️⃣ Borra cache o cookies del navegador.
@@ -1377,7 +1433,7 @@ function SoportChat (){
         ), 5000);
         setWaitingForDocument(true);
 
-      }else if(option === "⏺️ No sé" && stateChat("NoFuncionoSolucionContinua")){
+      }else if(option === "⏺️ No sé" && stateChat === "NoFuncionoSolucionContinua"){
         setStateChat("NoSabeVpn");
         setTimeout(() => addBotMessage(`Para saber si tienes una *VPN*, me puedes indicar que tipo de dispositivo estas utilizando, si es computador puedes escoge la opción *Computador*, pero si el dispositivo es un celular escoge la opción *Celular*.`,
           ["🎩 Computador", "📱Celular"]
@@ -1726,99 +1782,75 @@ function SoportChat (){
         setWaitingForDocument(false);
       }
   };
-
     //notificacion
     const playNotificacionSound = () =>{
         audioRef.current.play().catch((error)=>{
             console.error('Error al reproducir el sonido: ', error)
         })
     }
+return (
+    <div className="Schats">
+      <div className="chat-icon-container" onClick={toggleChat}>
+        <img src={chat} className='chat-icon' alt='Chat De Soporte' />
+        {handleNewMessage && <span className="notification-circle"></span>}
+      </div>
 
-    return(
-        <div className="Schats">
-            <div className="chat-icon-container" onClick={toggleChat}>
-
-              <img src={chat} className='chat-icon' alt='Chat De Soporte' />
-              {handleNewMessage && <span className="notification-circle"></span>}
-            </div>
-
-            <div className={`chat-box ${isChatVisible ? 'visible': ''}`}>
-                <div className='contentTitleJ'>
-                    <img src={Jose} alt='Soporte En Linea' />
-                    <p>Jose</p>
-                    <span className='noti'></span>
-                    <p className='linea'>En Linea</p>
-                </div>
-
-                <button className='close-btn' onClick={closeChat}>X</button>
-                <div className='content-messages'>
-                   {messages.map((message, index) => (
-                     <div key={index} className={`message ${message.sender}`}>
-                       {message.text.split("\n").map((line, i) => (
-                         <p key={i}>{line}</p>
-                       ))}
-                       {message.buttons && (
-                         <div className="buttons-container">
-                           {message.buttons.map((buttonText, btnIndex) =>{
-                            if(buttonText.includes('https://clientes.portalinternet.net/saldo/super-tv/')){
-                              return(
-                                <a
-                                  key={btnIndex}
-                                  href={buttonText}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                >
-                                  <button className="service-button">
-                                    🔗 Metodo de Pago
-                                  </button>
-                                </a>
-                              )
-                            }else if(buttonText.includes('https://www.speedtest.net/es')){
-                              return(
-                                  <a
-                                    key={btnIndex} 
-                                    href={buttonText}
-                                    target="_blank" 
-                                    rel="noopener noreferrer" 
-                                  >
-                                    <button className="service-button">
-                                      🔗 Test de velocidad
-                                    </button>
-                                  </a>
-                              )
-                          }else{
-                              return(
-                                <button
-                                  key={btnIndex}
-                                  onClick={() => handleButtonClick(buttonText)}
-                                  className="service-button"
-                                >
-                                  {buttonText}
-                                </button>
-                              )
-                            }
-                           })}
-                         </div>
-                       )}
-                     </div>
-                   ))}
-                   <div ref={botomRef}></div>
-                 </div>
-
-                <div className='content-input'>
-                    <input
-                        type='text'
-                        placeholder='Escribe tu respuesta...'
-                        className='chat-input'
-                        value={userInput}
-                        onChange={handleUserInput}
-                        onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-                    />
-                    <button className='send-btn' onClick={sendMessage}><img src={Enviar}/> </button>
-                </div>
-            </div>
+      <div className={`chat-box ${isChatVisible ? 'visible': ''}`}>
+        <div className='contentTitleJ'>
+          <img src={Jose} alt='Soporte En Linea' />
+          <p>Jose</p>
+          <span className='noti'></span>
+          <p className='linea'>En Linea</p>
         </div>
-    )
-}
 
-export default SoportChat
+        <button className='close-btn' onClick={closeChat}>X</button>
+        <div className='content-messages'>
+          {messages.map((message, index) => (
+            <div key={index} className={`message ${message.sender}`}>
+              {(message?.text || '').split("\n").map((line, i) => (<p key={i}>{line}</p>))}
+              {message.buttons && (
+                <div className="buttons-container">
+                  {message.buttons.map((buttonText, btnIndex) => {
+                    if (buttonText.includes('https://clientes.portalinternet.net/saldo/super-tv/')) {
+                      return (
+                        <a key={btnIndex} href={buttonText} target="_blank" rel="noopener noreferrer">
+                          <button className="service-button">🔗 Metodo de Pago</button>
+                        </a>
+                      );
+                    } else if (buttonText.includes('https://www.speedtest.net/es')) {
+                      return (
+                        <a key={btnIndex} href={buttonText} target="_blank" rel="noopener noreferrer">
+                          <button className="service-button">🔗 Test de velocidad</button>
+                        </a>
+                      );
+                    } else {
+                      return (
+                        <button key={btnIndex} onClick={() => handleButtonClick(buttonText)} className="service-button">
+                          {buttonText}
+                        </button>
+                      );
+                    }
+                  })}
+                </div>
+              )}
+            </div>
+          ))}
+          <div ref={botomRef}></div>
+        </div>
+
+        <div className='content-input'>
+          <input
+            type='text'
+            placeholder='Escribe tu respuesta...'
+            className='chat-input'
+            value={userInput}
+            onChange={handleUserInput}
+            onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+          />
+          <button className='send-btn' onClick={() => handleSendMessage()}><img src={Enviar} alt="Enviar" /></button>
+        </div>
+      </div>
+    </div>
+  );
+}
+export default SoportChat;

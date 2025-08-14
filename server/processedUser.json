@@ -38,5 +38,21 @@
     "numDoc": "79256692",
     "contactado": true,
     "processedAt": "2025-08-13T19:06:14.862Z"
+  },
+  {
+    "id": "eb9db103-c8d1-4dd3-8db5-5d572308a208",
+    "Motivo": "❎ No funciono",
+    "message": null,
+    "numDoc": "79256692",
+    "contactado": true,
+    "processedAt": "2025-08-14T13:04:46.033Z"
+  },
+  {
+    "id": "eb9db103-c8d1-4dd3-8db5-5d572308a208",
+    "Motivo": "Sin mensaje",
+    "message": null,
+    "numDoc": "79256692",
+    "contactado": true,
+    "processedAt": "2025-08-14T14:13:17.986Z"
   }
 ]

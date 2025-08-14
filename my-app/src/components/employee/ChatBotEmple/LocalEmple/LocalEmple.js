@@ -1,4 +1,3 @@
-// LocalEmple.js
 import { useContext, useEffect, useRef, useState } from "react";
 import ThemeContext from "../../../ThemeContext";
 import Navbar from "../../../navbar/Navbar";
@@ -9,6 +8,19 @@ import Usuario from '../../../../assets/img/usuario.png';
 import { VscSend } from "react-icons/vsc";
 import '../WhatsappEmple/whatsappEmple.css';
 import { CiImageOn } from "react-icons/ci";
+
+// CAMBIO: función para normalizar cualquier tipo de payload a texto plano
+function normalizeMessagePayload(payload) {
+  if (payload == null) return '';
+  if (typeof payload === 'string') return payload.trim();
+  if (typeof payload === 'object') {
+    if (payload.text) return String(payload.text).trim();
+    if (payload.texto) return String(payload.texto).trim();
+    if (payload.message) return String(payload.message).trim();
+    if (payload.mensaje) return String(payload.mensaje).trim();
+  }
+  return String(payload).trim();
+}
 
 function LocalEmple (){
   const {theme, toggleTheme} = useContext(ThemeContext);
@@ -42,19 +54,49 @@ function LocalEmple (){
       return acc;
     }, {});
 
-  // ---------- API: contactos (conversacion-server) ----------
+  // ---------- API conversacion-server ----------
+  async function postConversacion(contact) {
+    const payload = {
+      id: contact.id,
+      usuario: {
+        nombre: contact.nombre || 'Visitante',
+        email: '',
+        documento: contact.numDoc || '',
+        navegador: navigator.userAgent,
+        ip: ''
+      },
+      fechaInicio: new Date().toISOString()
+    };
+    await fetch('http://localhost:3001/conversacion-server', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+  }
+
+  // CAMBIO: normalizar texto antes de enviar a conversacion-server
+  async function putConversacionMensaje(contact, texto) {
+    const cleanText = normalizeMessagePayload(texto);
+    return fetch(`http://localhost:3001/conversacion-server/${encodeURIComponent(contact.id)}/mensaje`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ de: 'Empleado', mensaje: cleanText })
+    });
+  }
+
   const fetchConversacionContacts = async () => {
     try {
       const r = await fetch('http://localhost:3001/conversacion-server?page=1&limit=500', {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
+        method: 'GET', headers: { 'Content-Type': 'application/json' }
       });
       const j = await r.json();
       const docs = j?.data?.docs || [];
       return docs.map(d => {
         const conv = safeArray(d?.conversacion);
         const last = conv.length ? conv[conv.length - 1] : null;
-        const lastSender = last?.de === 'bot' ? 'Empleado' : (last?.de ? 'Cliente' : null);
+        const lastSender =    
+           last?.de === 'bot' ? 'Empleado' :
+           last?.de === 'Empleado' ? 'Empleado' :
+           last?.de ? 'Cliente'  : null;
         return {
           id: d?.id || d?._id,
           nombre: d?.usuario?.nombre || 'Visitante',
@@ -64,6 +106,7 @@ function LocalEmple (){
           lastSender
         };
       });
+
     } catch (e) {
       console.error('Error listando conversacion-server:', e);
       return [];
@@ -88,21 +131,29 @@ function LocalEmple (){
     }
   };
 
-  // ---------- API: mensajes (colección message) ----------
-  const ensureConversationExists = async () => {
-    if (!activeContact) return;
+  // ---------- API mensajes ----------
+  const ensureConversationExists = async (contact) => {
+    if (!contact?.id) return;
     try {
-      const res = await fetch(`http://localhost:3001/message/?contactId=${encodeURIComponent(activeContact.id)}&chat=local`);
-      const result = await res.json();
-      const list = result?.message || result?.data?.docs || [];
-      const exists = Array.isArray(list) && list.length > 0;
+      const res = await fetch(`http://localhost:3001/message/?contactId=${encodeURIComponent(contact.id)}&chat=local`);
+      const j = await res.json();
+      const list = Array.isArray(j?.message)
+        ? j.message
+        : Array.isArray(j?.data?.docs)
+        ? j.data.docs
+        : j?.message
+        ? [j.message]
+        : j?.data
+        ? [j.data]
+        : [];
+      const exists = list.some(d => d?.contactId === contact.id && (d?.chat === 'local' || !d?.chat));
       if (!exists) {
         const createRes = await fetch('http://localhost:3001/message', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            contactId: activeContact.id,
-            usuario: { nombre: activeContact.nombre || 'Visitante' },
+            contactId: contact.id,
+            usuario: { nombre: contact.nombre || 'Visitante' },
             chat: 'local',
             messages: []
           })
@@ -115,14 +166,15 @@ function LocalEmple (){
   };
 
   const fetchLocalMessages = async (contact) => {
-    if (!contact) return;
+    const c = contact || activeContact;
+    if (!c?.id) return;
     try {
-      const r = await fetch(`http://localhost:3001/message/?contactId=${encodeURIComponent(contact.id)}&chat=local`);
+      const r = await fetch(`http://localhost:3001/message/?contactId=${encodeURIComponent(c.id)}&chat=local`);
       const j = await r.json();
-      const docs = j?.message || j?.data?.docs || [];
-      if (!Array.isArray(docs) || docs.length === 0) { setMessages([]); return; }
+      const docs = Array.isArray(j?.data?.docs) ? j.data.docs : [];
+      if (!docs.length) { setMessages([]); return; }
 
-      const doc = docs.find(d => d?.contactId === contact.id) || docs[0];
+      const doc = docs.find(d => d?.contactId === c.id && (d?.chat === 'local' || !d?.chat)) || docs[0];
       const arr = safeArray(doc?.messages).map(m => ({
         ...m,
         message: extractMessageText(m.message),
@@ -130,69 +182,61 @@ function LocalEmple (){
       }));
       arr.sort((a, b) => new Date(a.updatedAt) - new Date(b.updatedAt));
       setMessages(arr);
-
-      const last = arr[arr.length - 1];
-      const lastSender = last?.sender === 'Cliente' ? 'Cliente' : 'Empleado';
-      setContacts(prev =>
-        prev.map(c => c.id === contact.id ? { ...c, lastMessage: { message: last?.message }, lastSender } : c)
-      );
-      setUnreadMessages(prev => ({ ...prev, [contact.id]: false }));
     } catch (e) {
       console.error('Error obteniendo mensajes local:', e);
     }
   };
 
-  // ---------- envío ----------
+  // CAMBIO: normalizar texto antes de guardar en ambas colecciones
   const handleSendMessage = async () => {
     if (isSending) return;
+    if (!currentMessage.trim() || !activeContact) return;
+
     setIsSending(true);
-    await ensureConversationExists();
-    if (!currentMessage.trim() || !activeContact){
-        setIsSending(false);
-        return;
-    } 
-
-    const idClient = `msg_${Date.now()}-${currentMessage.length}`;
-    const bodyMessage = {
-      messages: [{ sender: 'Empleado', message: currentMessage, idMessageClient: idClient }]
-    };
-    const rawLocal = { de: 'Empleado', mensaje: currentMessage };
-
     try {
-      // 1) conversacion-server (historial local)
-      const r1 = await fetch(`http://localhost:3001/conversacion-server/${encodeURIComponent(activeContact.id)}/mensaje`, {
-        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(rawLocal)
-      });
+      await ensureConversationExists(activeContact);
+
+      const idClient = `msg_${Date.now()}-${currentMessage.length}`;
+      const texto = normalizeMessagePayload(currentMessage);
+
+      let r1 = await putConversacionMensaje(activeContact, texto);
+      if (r1.status === 404) {
+        await postConversacion(activeContact);
+        r1 = await putConversacionMensaje(activeContact, texto);
+      }
       if (!r1.ok) throw new Error('Error al registrar en conversacion-server');
 
-      // 2) colección message (normalizada)
-      const r2 = await fetch(`http://localhost:3001/message/${encodeURIComponent(activeContact.id)}`, {
-        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(bodyMessage)
+      const r2 = await fetch(`http://localhost:3001/message/${encodeURIComponent(activeContact.id)}?chat=local`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [{ sender: 'Empleado', message: texto, idMessageClient: idClient }]
+        })
       });
       if (!r2.ok) throw new Error('Error al guardar en message');
 
-      // UI
-      setMessages(prev => [...prev, { sender: 'Empleado', message: currentMessage, idMessageClient: idClient, updatedAt: new Date().toISOString() }]);
+      setMessages(prev => [...prev, {
+        sender: 'Empleado', message: texto, idMessageClient: idClient,
+        updatedAt: new Date().toISOString()
+      }]);
       setCurrentMessage("");
       await fetchLocalMessages(activeContact);
     } catch (e) {
       console.error('Error enviando mensaje local:', e);
+    } finally {
+      setIsSending(false);
     }
-
-    finally { setIsSending(false); }
   };
 
-
-  const handleFileChange = (e) => {
-    if (e.target.files?.[0]) setSelectedImage(e.target.files[0]);
-  };
-
+  const handleFileChange = (e) => { if (e.target.files?.[0]) setSelectedImage(e.target.files[0]); };
 
   const imageUploadNube = async () => {
-    await ensureConversationExists();
-    if (!selectedImage || !activeContact) return;
+    const c = activeContact;
+    if (!selectedImage || !c?.id) return;
 
     try {
+      await ensureConversationExists(c);
+
       const formData = new FormData();
       formData.append('file', selectedImage);
       const up = await fetch('http://localhost:3001/image-post-message', { method: 'POST', body: formData });
@@ -203,19 +247,15 @@ function LocalEmple (){
 
       const idClient = `msg_imageWithText_${Date.now()}`;
 
-      // message normalizada
-      await fetch(`http://localhost:3001/message/${encodeURIComponent(activeContact.id)}`, {
+      await fetch(`http://localhost:3001/message/${encodeURIComponent(c.id)}?chat=local`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages: [{ sender: 'Empleado', message: image, contexto: currentMessage, idMessageClient: idClient }] })
       });
 
-      // conversacion-server
-      await fetch(`http://localhost:3001/conversacion-server/${encodeURIComponent(activeContact.id)}/mensaje`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ de: 'Empleado', mensaje: image, contexto: currentMessage })
-      });
+      // auto‑upsert conversacion-server para imagen
+      let r = await putConversacionMensaje(c, image);
+      if (r.status === 404) { await postConversacion(c); await putConversacionMensaje(c, image); }
 
       setMessages(prev => [...prev, { sender: 'Empleado', message: image, contexto: currentMessage, idMessageClient: idClient, updatedAt: new Date().toISOString() }]);
       setSelectedImage(null);
@@ -224,7 +264,8 @@ function LocalEmple (){
       console.error('Error enviando imagen local:', e);
     }
   };
- 
+
+  // ---------- efectos ----------
   useEffect(() => {
     const userId = localStorage.getItem('UserId');
     const rolUser = localStorage.getItem('rol-user');
@@ -236,7 +277,6 @@ function LocalEmple (){
       try {
         const EmpleId = localStorage.getItem('UserId');
 
-        // asignaciones (si existieran para Chat Local)
         const resA = await fetch('http://localhost:3001/asignaciones/');
         const jA = await resA.json();
         const assigned = safeArray(jA?.data?.docs).filter(x => x.idEmple === EmpleId && x.chatName === 'ChatBotLocal')
@@ -249,10 +289,8 @@ function LocalEmple (){
             numDoc: u.numDocTitular
           }));
 
-        // conversacion-server (base de contactos local)
         const localList = await fetchConversacionContacts();
 
-        // merge por id (prioriza datos de conversacion-server)
         const map = new Map();
         [...localList, ...assigned].forEach(c => {
           const prev = map.get(c.id) || {};
@@ -261,13 +299,12 @@ function LocalEmple (){
         const finalContacts = [...map.values()];
         setContacts(finalContacts);
 
-        // enriquecer nombre/numDoc por id (opcional)
         await Promise.all(finalContacts.map(async c => {
           const extra = await fetchConversacionById(c.id);
+          
           if (extra) {
             setContacts(prev => prev.map(x => x.id === c.id ? { ...x, nombre: extra.nombre || x.nombre, numDoc: extra.numDoc || x.numDoc } : x));
           }
-          console.log('daticos del chat ', contacts)
         }));
       } catch (e) {
         console.error('Error cargando contactos Local:', e);
@@ -279,15 +316,13 @@ function LocalEmple (){
 
   useEffect(() => {
     if (!activeContact) return;
-
     const updateMessages = async () => { await fetchLocalMessages(activeContact); };
 
     const fetchWisphubInfo = async () => {
       if (!activeContact?.numDoc) return;
       try {
         const r = await fetch(`http://localhost:3001/wisphub-data/${encodeURIComponent(activeContact.numDoc)}/`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' }
+          method: 'GET', headers: { 'Content-Type': 'application/json' }
         });
         const data = await r.json();
         const client = data?.data[0];
@@ -320,7 +355,7 @@ function LocalEmple (){
     return () => clearInterval(id);
   }, [activeContact]);
 
-  // ---------- UI (mismo diseño que MessengerEmple) ----------
+  // ---------- UI ----------
   const grouped = groupMessagesByDate(messages);
   const handleKeyPress = (e) => { if (e.key === 'Enter') handleSendMessage(); };
 
@@ -329,9 +364,7 @@ function LocalEmple (){
       <div className={theme === 'light' ? 'app light' : 'app dark'}>
         <div className="slider">
           <Navbar/>
-          <div className="flex">
-            <SliderEmploye />
-          </div>
+          <div className="flex"><SliderEmploye /></div>
         </div>
 
         <div className="BarraSuperior">
@@ -342,23 +375,18 @@ function LocalEmple (){
         </div>
 
         <div className="contentChatW">
-          {/* Contactos */}
           <div className="contentContact">
-            <div className="barrasuperiorContacts">
-              <p>Contactos</p>
-            </div>
-
+            <div className="barrasuperiorContacts"><p>Contactos</p></div>
             <div className="listContactContent">
               {contacts.length > 0 ? (
                 contacts.map(contact => (
-                
                   <div
                     key={contact.id}
                     className={`contactContent ${activeContact?.id === contact.id ? 'active' : ''}`}
                     onClick={async () => {
                       setMessages([]);
                       setActiveContact(contact);
-                      await ensureConversationExists();
+                      await ensureConversationExists(contact);
                       await fetchLocalMessages(contact);
                       setUnreadMessages(prev => ({ ...prev, [contact.id]: false }));
                     }}
@@ -386,7 +414,6 @@ function LocalEmple (){
             </div>
           </div>
 
-          {/* Chat */}
           <div className="contentChat">
             <div className="contentTitle">
               {activeContact ? (
@@ -394,9 +421,7 @@ function LocalEmple (){
                   <img src={activeContact.perfil || Usuario} alt="avatar" className="contactAvatar" />
                   <p>{activeContact.nombre}</p>
                 </>
-              ) : (
-                <p>Chat Local</p>
-              )}
+              ) : <p>Chat Local</p>}
             </div>
 
             {activeContact ? (
@@ -409,25 +434,14 @@ function LocalEmple (){
                         {msgs.map((m, i) => {
                           const texto = extractMessageText(m.message);
                           const isImg = typeof texto === 'string' &&
-                            (texto.includes('res.cloudinary.com') || texto.endsWith('.jpg') || texto.endsWith('.jpeg') || texto.endsWith('.png'));
+                            (texto.includes('res.cloudinary.com') || /\.(jpg|jpeg|png)$/i.test(texto));
                           const isAudio = typeof texto === 'string' && texto.includes('cdn.fbsbx.com');
 
                           return (
                             <div key={m.idMessageClient || `${date}-${i}`} className={`message ${m.sender === 'Empleado' ? 'sent' : 'received'}`}>
-                              {isImg ? (
-                                <>
-                                  <img src={texto} style={{ maxWidth: '200px', borderRadius: '10px' }} alt="img" /><br/>
-                                </>
-                              ) : isAudio ? (
-                                <>
-                                  <audio controls>
-                                    <source src={texto} type="audio/mpeg" />
-                                  </audio>
-                                  <br/>
-                                </>
-                              ) : (
-                                <p>{texto}</p>
-                              )}
+                              {isImg ? (<><img src={texto} style={{ maxWidth: '200px', borderRadius: '10px' }} alt="img" /><br/></>) :
+                               isAudio ? (<><audio controls><source src={texto} type="audio/mpeg" /></audio><br/></>) :
+                               (<p>{texto}</p>)}
                               <span className="timestamp">
                                 {new Date(m.timeStamp || m.updatedAt).toLocaleString([], { hour: '2-digit', minute: '2-digit' })}
                               </span>
@@ -455,12 +469,9 @@ function LocalEmple (){
                     placeholder="Escribir..."
                     value={currentMessage}
                     onChange={(e) => setCurrentMessage(e.target.value)}
-                    onKeyPress={handleKeyPress}
+                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                   />
-
-                  <button onClick={handleSendMessage}>
-                    <VscSend className="icon1"/>
-                  </button>
+                  <button onClick={handleSendMessage}><VscSend className="icon1"/></button>
                 </div>
               </>
             ) : (
@@ -470,9 +481,7 @@ function LocalEmple (){
 
           {wisphubInfo && (
             <div className="extraPanel">
-              <div className="contentTitle">
-                <p>Detalles del cliente</p>
-              </div>
+              <div className="contentTitle"><p>Detalles del cliente</p></div>
               <div className="ContentInfoWisphub">
                 <p><strong>Nombre: </strong> {wisphubInfo.nombreUser}</p>
                 <p><strong>Documento: </strong> {wisphubInfo.documento || 'No disponible'}</p>
@@ -493,6 +502,5 @@ function LocalEmple (){
       </div>
     </>
   );
-}
-
+} 
 export default LocalEmple;
