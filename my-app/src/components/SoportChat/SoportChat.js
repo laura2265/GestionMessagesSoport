@@ -79,43 +79,61 @@ async function putConversacionMensaje(contactId, de, mensaje) {
   return fetch(`http://localhost:3001/conversacion-server/${encodeURIComponent(contactId)}/mensaje`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ de, mensaje })
+    body: JSON.stringify({ de, mensaje }) 
   });
 }
 
-async function saveToConversacion(contactId, de, payload, usuarioHint) {
-  let mensaje = typeof payload === 'object' ? (payload.text ?? '') : String(payload ?? '');
-  if (de !== 'usuario' && typeof payload === 'object' && Array.isArray(payload.buttons) && payload.buttons.length) {
-    mensaje = { text: mensaje, buttons: payload.buttons.filter(Boolean) };
+async function saveToConversacion(contactId, de, mensaje, usuarioHint) {
+  try {
+    // 1. Verificar si la conversación existe
+    const check = await fetch(`http://localhost:3001/conversacion-server/${contactId}`);
+    if (check.status === 404) {
+      // 2. Crear la conversación si no existe
+      await fetch(`http://localhost:3001/conversacion-server`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contactId,
+          de,
+          mensaje: typeof mensaje === 'string' ? { text: mensaje } : mensaje,
+          usuarioHint
+        })
+      });
+    } else {
+      // 3. Agregar mensaje a conversación existente
+      await putConversacionMensaje(contactId, de, mensaje, usuarioHint);
+    }
+  } catch (error) {
+    console.error('Error guardando conversación:', error);
   }
-  if (!mensaje || (typeof mensaje === 'string' && !mensaje.trim())) return;
-
-  let res = await putConversacionMensaje(contactId, de, mensaje);
-  if (res.status === 404) { await postConversacion(contactId, usuarioHint); await putConversacionMensaje(contactId, de, mensaje); }
 }
+
 
 async function SaveToBot(contactId, from, payload, usuarioHint) {
   if (!contactId) return;
-  
-  const text = typeof payload === 'object'
-  ? (payload.text ?? payload.texto ?? payload.message ?? payload.mensaje ?? '')
-  : String(payload ?? '');
 
+  const text = typeof payload === 'object'
+    ? (payload.text ?? payload.texto ?? payload.message ?? payload.mensaje ?? '')
+    : String(payload ?? '');
+
+  const buttons = Array.isArray(payload?.buttons) ? payload.buttons.filter(Boolean) : [];
+  if (!text.trim() && buttons.length === 0) return;
+
+  const mensaje = buttons.length ? { text, buttons } : text;
 
   if (from === 'usuario') {
-    if (!text.trim()) return;
     await Promise.all([
-      saveToConversacion(contactId, 'usuario', text, usuarioHint),
+      saveToConversacion(contactId, 'usuario', mensaje, usuarioHint), 
       saveToMessage(contactId, 'Cliente', text)
     ]);
   } else {
-    if (!text.trim() && !(payload?.buttons?.length)) return;
     await Promise.all([
-      saveToConversacion(contactId, 'bot', payload, usuarioHint),
+      saveToConversacion(contactId, 'bot', mensaje, usuarioHint),
       saveToMessage(contactId, 'Empleado', text || ' ')
     ]);
   }
 }
+
 
 function SoportChat (){
     const [isChatVisible, setIsChatVisible] = useState(false);
@@ -393,114 +411,192 @@ function SoportChat (){
 
     const lastBotRef = useRef({ text: '', at: 0 });
 
-    const addBotMessage = async (text, buttons) => {
-      const cleanText = (text ?? '').trim();
-      const cleanButtons = Array.isArray(buttons) && buttons.length ? buttons : null;
-      if (isBlank(cleanText) && !cleanButtons) return;         
-      setMessages(prev => [...prev, { sender: 'bot', text: cleanText, buttons: cleanButtons }]);
-      await SaveToBot(localStorage.getItem('chatUserId'), 'bot',
-        cleanButtons ? { text: cleanText, buttons: cleanButtons } : cleanText
-      );
+    const addBotMessage = async (text, buttons = []) => {
+      setMessages(prev => [...prev, { sender: 'bot', text, buttons }]);
+      const chatId = localStorage.getItem('chatUserId');
+      const payload = buttons.length ? { text, buttons } : text;
+      if (conversacionState) {
+        await SaveToBot(chatId, 'bot', payload);
+      } else {
+        await saveToMessage(chatId, 'Empleado', text || ' ');
+      }
     };
 
+    const addUserMessage = (text) => {
+      setMessages(prev => [...prev, { sender: "usuario", text }]);
+    };
+
+     const extraerDatosUsuario = (mensaje) => {
+      const datos = {
+        nombre: null,
+        documento: null,
+        servicio: null,
+        motivo: null,
+      };
+      const partes = mensaje.includes(",") ? mensaje.split(",") : mensaje.split(" ");
+
+      if (partes.length >= 4) {
+        datos.nombre = partes[0].trim();
+        datos.documento = partes[1].trim();
+        datos.servicio = partes[2].trim();
+        datos.motivo = partes.slice(3).join(" ").trim();
+      }
+
+      return datos;
+    }
+
+    const wisphub = async (cedula) => {
+      try {
+        const response = await fetch(`http://localhost:3001/wisphub-data/${cedula}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if(!response.ok){
+          throw new Error(`Error al momento de consultar los datos da la cedula: ${cedula}`); 
+        };
+
+        const data = await response.json();
+        const result = data.data;
+        console.log('datos: ', result)
+        if(response && result.length > 0){
+          setServiceData(result)
+            setTimeout(() => addBotMessage(`se encontraron los siguientes servicios, si desea consultar uno has clic en el servicio a consultar. `,
+                result.map(item => item.usuario) ), 1000);
+        }else{
+            setMessages((prevMessage) => [
+                ...prevMessage, { sender: 'bot', text: `No se encontro servicios asociados con la cedual ${cedula} 😢`}
+            ])
+        }
+      } catch (error) {
+        console.error('Error al momento de consutlar los datos de la api: ', error)
+      }
+    }
     // SoportChat.js
-  const sendMessage = async () => {
-    try {
-      // 1) tomar y sanear el input
-      const text = (userInput || '').trim();
-      if (isBlank(text)) return;
+      const sendMessage = async() => {
+      if(userInput.trim() === "" ) return;
 
-      // 2) pintar en la UI y limpiar el input
-      setMessages(prev => [...prev, { sender: 'user', text }]);
-      setUserInput('');
-
-      // 3) guardar SIEMPRE en ambas colecciones (conversacion-server + message)
-      const chatId = localStorage.getItem('chatUserId');
-      await SaveToBot(chatId, 'usuario', text);
-
-      // 4) si está en soporte humano, no corremos más lógica del bot
-      if (stateChat === 'soporteHumano') return;
-
-      // 5) flujo guiado por estados
-      if (estado === 'esperando_nombre') {
-        setNombre(text);
-        setNombreTemporal(text);
-        setEstado('esperando_email');
-        setTimeout(() => {
-          addBotMessage(`¡Gracias ${text}! ¿Cuál es tu correo electrónico?`);
-        }, 400);
+      if(stateChat === "soporteHumano"){
+        await enviarMensaje(chatIdUser, "usuario",{text: userInput});
+        addUserMessage(userInput);
+        setUserInput("");
         return;
       }
 
-      if (estado === 'esperando_email') {
-        setEmail(text);
-        setEstado('esperando_documento');
-        setTimeout(() => {
-          addBotMessage('Por favor ingresa el número de documento del titular (o quien solicita el servicio) para continuar.');
-        }, 400);
+      setMessages((prevMessage) => [...prevMessage, {sender: "user", text: userInput}]);
+      if (estado === "esperando_nombre") {
+        setNombre(userInput);
+        setNombreTemporal(userInput);
+        setTimeout(() => addBotMessage(`¡Gracias ${userInput}! ¿Cual es tu correo electronico?`), 1000);
+        setEstado("esperando_email");
+        setUserInput("");
         return;
       }
 
-      if (!conversacionState && estado === 'esperando_documento') {
-        // 5.1 crear/asegurar la conversación local
-        setDocumentTitular(text);
-        const ip = await getPublicIp();
-        const navegador = navigator.userAgent;
+      if(estado === "esperando_email"){
+        setEmail(userInput);
+        setTimeout(()=>addBotMessage(`Por favor puedes ingresar el numero de documento del titular o del que va a solicitar el servicio para poder continuar`),1000);
+        setEstado("esperando_documento");
+        setUserInput("");
+        return;
+      }
 
-        await fetch('http://localhost:3001/conversacion-server', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            id: chatId,
+      if (!conversacionState) {
+        if (estado === "esperando_documento") {
+          setDocumentTitular(userInput);
+
+          const ip = await getPublicIp();
+          const navegador = navigator.userAgent;
+
+          console.log("Datos enviados:", {
+            id: localStorage.getItem("chatUserId"),
             usuario: {
               nombre: nombreTemporal,
               email: email,
-              documento: text,
+              documento: userInput,
               navegador,
               ip,
             },
             fechaInicio: new Date().toISOString(),
-          })
-        });
+          });
 
-        setConversacionState(true);
-        setEstado('conversacion');
+          await fetch('http://localhost:3001/conversacion-server', {
+            method: 'POST',
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              id: localStorage.getItem("chatUserId"),
+              usuario: {
+                nombre: nombreTemporal,
+                email: email,
+                documento: userInput,
+                navegador,
+                ip,
+              },
+              fechaInicio: new Date().toISOString() 
+            })
+          });
 
-        setTimeout(() => {
-          addBotMessage(
-            `¡Perfecto, ${nombreTemporal}! Ya puedes comenzar a chatear con nosotros.\n¿En qué podemos ayudarte?`,
+          setTimeout(() => addBotMessage(
+            `¡Perfecto, ${nombreTemporal}! Ya puedes comenzar a chatear con nosotros\n ¿En qué podemos ayudarte?`,
             [
-              'Falla conexión','Cambiar Contraseña','Cancelar Servicio','Cambio de plan',
-              'Traslado','Solicitar servicio','PQR(Peticion, Queja, Reclamo)',
-              'Pagar Facturas','Cambio de titular','Otro'
-            ]
-          );
-        }, 400);
-        return;
+              "Falla conexión", "Cambiar Contraseña", "Cancelar Servicio", "Cambio de plan",
+              "Traslado", "Solicitar servicio", "PQR(Peticion, Queja, Reclamo)",
+              "Pagar Facturas", "Cambio de titular", "Otro"
+            ]), 1000);
+
+          setEstado("conversacion");
+          setConversacionState(true);
+          setUserInput("");
+          return;
+        }
+
+        if(estado === "esperando_datos_usuario"){
+          const datos = extraerDatosUsuario(userInput);
+          if(datos.nombre && datos.documento && datos.servicio && datos.motivo){
+            console.log('Datos capturados correctamene: ', datos);
+
+            await enviarMensaje(chatIdUser, 'usuario',{
+              text: `Datos capturados: ${JSON.stringify(datos)}`
+            });
+
+            setTimeout(()=> addBotMessage(`Gracias ${datos.nombre}. Estamos procesando tu solucitud para ${datos.servicio}...`), 1000);
+
+            setEstado("conversacion");
+            setWaitingForDocument(false);
+          }else{
+            setTimeout(()=>addBotMessage(
+              `Parece que no entendi bien los datos. Por favor envíalos así: \n\n`+
+              `Ejemplo: Laura, 12345, Internet, Me voy de viaje y ya no usare el servicio`
+            ),1000);
+          }
+          setUserInput("");
+          return;
+        }
       }
-      if (estado === 'conversacion') {
-        // Ya guardamos arriba con saveToBoth, aquí solo lógica adicional
+
+      if(estado === "conversacion"){
+        handleSendMessage(userInput);
         if (waitingForDocument) {
+          wisphub(userInput);
           setWaitingForDocument(false);
-          return;
-        }
+       }else if (userInput.toLowerCase().includes('seguir')){
+          setTimeout(()=> addBotMessage('Hola, bienvenido a tu chat 😊\n¿En que puedo ayudarte?',
+            ["Falla conexión", "Cambiar Contraseña", "Cancelar Servicio", "Cambio de plan", "Traslado", "Solicitar servicio", "PQR(Peticion, Queja, Reclamo)", "Pagar Facturas", "Cambio de titular", "Otro"]
+          ),1000);
+          setWaitingForDocument(true);
+       }else if(["CambioDePlan", "CambioDeContraseña", "Pqr", "Otro"].includes(stateChat)){
+            handleSendMessage(userInput)
+       }
 
-        // Ejemplos de ramificaciones (ajusta a tu flujo):
-        if (text.toLowerCase().includes('seguir')) {
-          addBotMessage('Perfecto, continuemos. ¿Cuál es el siguiente dato?');
-          return;
-        }
-
-        if (['CambioDePlan', 'CambioDeContraseña', 'Pqr', 'Otro'].includes(stateChat)) {
-          // Respuestas específicas de estos flujos
-          // (ya queda persistido por saveToBoth)
-          return;
-        }
+       setUserInput("");
       }
-    } catch (err) {
-      console.error('sendMessage() error:', err);
+
     }
-  };
+
 
 
     const handleUserInput = (e) => setUserInput(e.target.value);
@@ -511,6 +607,7 @@ function SoportChat (){
     useEffect(()=>{ botomRef.current?.scrollIntoView({ behavior:'smooth' }); },[messages]);
 
     const handleButtonClick = async (option) => {
+       await sendMessage(); 
       setOption(option);
       setIsDisabled(true);
 
@@ -1807,7 +1904,11 @@ return (
         <div className='content-messages'>
           {messages.map((message, index) => (
             <div key={index} className={`message ${message.sender}`}>
-              {(message?.text || '').split("\n").map((line, i) => (<p key={i}>{line}</p>))}
+              {String(message.text ?? message.mensaje?.text ?? '')
+                .split('\n')
+                .map((line, i) => (<p key={i}>{line}</p>))}
+
+
               {message.buttons && (
                 <div className="buttons-container">
                   {message.buttons.map((buttonText, btnIndex) => {
@@ -1845,9 +1946,9 @@ return (
             className='chat-input'
             value={userInput}
             onChange={handleUserInput}
-            onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+            onKeyDown={(e) => e.key === "Enter" && sendMessage()}
           />
-          <button className='send-btn' onClick={() => handleSendMessage()}><img src={Enviar} alt="Enviar" /></button>
+          <button className='send-btn' onClick={() => sendMessage()}><img src={Enviar} alt="Enviar" /></button>
         </div>
       </div>
     </div>

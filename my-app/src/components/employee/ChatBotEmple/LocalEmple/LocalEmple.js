@@ -79,7 +79,12 @@ function LocalEmple (){
     return fetch(`http://localhost:3001/conversacion-server/${encodeURIComponent(contact.id)}/mensaje`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ de: 'Empleado', mensaje: cleanText })
+      body: JSON.stringify({ 
+        de: 'Empleado', 
+        mensaje: {
+          text: texto
+        }
+      })
     });
   }
 
@@ -93,7 +98,7 @@ function LocalEmple (){
       return docs.map(d => {
         const conv = safeArray(d?.conversacion);
         const last = conv.length ? conv[conv.length - 1] : null;
-        const lastSender =    
+        const lastSender = 
            last?.de === 'bot' ? 'Empleado' :
            last?.de === 'Empleado' ? 'Empleado' :
            last?.de ? 'Cliente'  : null;

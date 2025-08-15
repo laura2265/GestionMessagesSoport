@@ -109,8 +109,8 @@ async function fetchAndProcessUsers() {
                     ?.filter(m => m.de === 'usuario')
                     ?.sort((a, b) => new Date(b.timeStamp) - new Date(a.timeStamp));
                         
-                const ultimoMensaje = mensajesUsuario?.[0]?.mensaje?.text || 'Sin mensaje';
-                        
+                const ultimoMensaje = mensajesUsuario?.[0]?.mensaje || 'Sin mensaje';
+
                 return {
                     tipo: 'mongo',
                     idUser: item.id,

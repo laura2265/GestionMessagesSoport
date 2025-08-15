@@ -82,15 +82,11 @@ async function apiGetMessageConv(contactId, chatuser) {
 async function apiPostMessageConv({ contactId, usuario, chat, messages }) {
   const r = await fetch(`http://localhost:3001/message/`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ contactId, usuario, chat, messages }),
   });
-  const body = await r.json().catch(() => ({}));
-  if (!r.ok) {
-    throw new Error(`POST /message -> status ${r.status}: ${JSON.stringify(body)}`);
-  }
-
-  return {ok: true, body}
+  if (!r.ok) throw new Error(`POST /message/ -> ${await r.text()}`);
+  return r.json();
 }
 
 async function apiPushMessage(contactId, chatuser, { sender, message, idMessageClient }) {
@@ -315,14 +311,10 @@ function MessageChat() {
 
               const conversacion = Array.isArray(localDoc?.conversacion) ? localDoc.conversacion : [];
 
-              // sistema en conversacion-server 
-              const hasInicioHoy = all.some(m => m.idMessageClient === `${chatId}-inicio-${today}`);
-              if (!hasInicioHoy) {
-                try { await apiPushMessage(chatId, chatuser, sysInicio); }
-                catch (e) { console.error('❌ No pude insertar Inicio de conversación:', e.message); }
-              }
-
+              // sistema en conversacion-server
+              const hasInicio = conversacion.some(x => x?.mensaje === '🟢 Inicio de conversación');
               const hasMotivo = conversacion.some(x => typeof x?.mensaje === 'string' && x.mensaje.startsWith('📝 Motivo del contacto:'));
+              if (!hasInicio) await apiLocalPushMsg(localId, { de: 'bot', mensaje: '🟢 Inicio de conversación' });
               if (!hasMotivo) await apiLocalPushMsg(localId, { de: 'bot', mensaje: motivo });
 
               // último mensaje del usuario
@@ -338,7 +330,7 @@ function MessageChat() {
               const convDoc = await apiGetMessageConv(localId, 'local');
               const all = Array.isArray(convDoc?.messages) ? convDoc.messages : [];
 
-              const sysInicio = { sender: 'Sistema', message: '🟢 Inicio de conversación', idMessageClient: `${chatId}-inicio-${today}` };
+              const sysInicio = { sender: 'Sistema', message: '🟢 Inicio de conversación', idMessageClient: `${localId}-inicio-${today}` };
               const sysMotivo = { sender: 'Sistema', message: motivo, idMessageClient: `${localId}-motivo-${today}` };
 
               if (!convDoc) {
@@ -452,26 +444,22 @@ function MessageChat() {
           }catch (err) {
             console.error('🚫 Error canal local:', err.message);
           }
-        }
-        
+        } // for user
+        // guardar pendientes (creación inicial en "message")
         for (const [key, convData] of pendienteConversacion.current.entries()) {
           try {
             const exists = await apiGetMessageConv(convData.contactId, convData.chat);
-            if (exists) {
-              pendienteConversacion.current.delete(key);
-              continue;
-            }
+            if (exists) { pendienteConversacion.current.delete(key); continue; }
             const r = await apiPostMessageConv(convData);
-            if (r?.ok) {
+            if (r?.success) {
               pendienteConversacion.current.delete(key);
             } else {
-              console.warn('⚠️ POST conversación no confirmó ok:', r);
+              console.warn('POST conversación (message) sin success:', r);
             }
           } catch (e) {
-            console.error(`❌ Reintento POST conversación (${convData.contactId}) falló:`, e.message);
+            console.error(`❌ Fallo al guardar conversación (message:${convData.contactId}):`, e.message);
           }
         }
-
 
         // notificaciones + sonido
         if (newNotifications.length > 0) {
