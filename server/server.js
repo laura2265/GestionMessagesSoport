@@ -150,38 +150,40 @@ async function fetchAndProcessUsers() {
 
             if (user.tipo === 'mongo') {
                 console.log(`📩 Nuevo mensaje MongoDB: ${idUser} - "${Motivo}"`);
-                const mensajeUsuario = mongoMensajes.find(m => m.id === idUser)?.conversacion || [];
-                const todosLosMensajes = mensajeUsuario.map(m => {
-                    if(typeof m.mensaje === 'string' ){
-                        return m.mensaje.toLowerCase();
-                    }
+                const conv = (mongoMensajes.find(m => m.id === idUser)?.conversacion || [])
+                .filter(m => m.de === 'usuario')
+                .map(m => {
+                  const raw = typeof m.mensaje === 'string'
+                    ? m.mensaje
+                    : (m.mensaje?.text || m.mensaje?.texto || m.mensaje?.message || m.mensaje?.mensaje || '');
+                  // normalización: minúsculas + sin tildes
+                  const text = String(raw)
+                    .toLowerCase()
+                    .normalize('NFD').replace(/\p{Diacritic}/gu, '');
+                  const ts = new Date(m.timeStamp || m.createdAt || 0).getTime();
+                  return { ts, text };
+                })
+                .sort((a, b) => a.ts - b.ts);
 
-                    if(typeof m.mensaje?.text === 'string'){
-                        return m.mensaje.text.toLowerCase()
-                    }
-                    return '';
-                });
+                if (!conv.length) {
+                  console.log(`Mongo: sin mensajes del usuario → No asignar`);
+                  continue;
+                }
 
-                const frasesClaves = [
-                    'no funciono',
-                    'no funcionó',
-                    'cable dañado',
-                    'ya te pasamos con un asesor',
-                    'te pasamos con un asesor',
-                    'cambio de plan',
-                    'cambio de contraseña',
-                    'pqr',
-                    'otro problema',
-                    'otro'
-                ]
+                const NO_RE = /\b(no\s*funciono|no\s*funciona|no\s*sirvio|no\s*carga|sigue\s*igual)\b/;
+                const SI_RE = /\b(si\s*funciono|si\s*funciona|quedo\s*listo|solucionado)\b/;
 
-                const requireSoport = todosLosMensajes.some(msj => frasesClaves.some(frase => msj.includes(frase)))
+                let lastStatus = null;
+                for (const m of conv) {
+                  if (NO_RE.test(m.text)) lastStatus = 'NO';
+                  else if (SI_RE.test(m.text)) lastStatus = 'SI';
+                }
 
-                if(requireSoport){
-                    console.log(`Mongo mensaje indica que requiere soporte → Asignar`)
+                if (lastStatus === 'NO') {
+                    console.log(`Mongo: último estado = NO → Requiere soporte → Asignar`);
                     EmpleAssigned(idUser);
-                }else{
-                    console.log(`Mongo: mensaje sin señales de soporte → No asignar`)
+                } else {
+                    console.log(`Mongo: último estado = ${lastStatus ?? 'ninguno'} → No asignar`);
                 }
 
             } else if (user.tipo === 'sheets') {

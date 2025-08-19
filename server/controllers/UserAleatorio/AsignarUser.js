@@ -110,7 +110,6 @@ function generarDescripcionPorSheet(cliente) {
   return desc;
 }
 
-/* ---------------- NUEVO: Descripción para Local (conversacion-server) ---------------- */
 
 function generarDescripcionPorConversacionLocal(cliente) {
   const desc = [];
@@ -131,11 +130,9 @@ function generarDescripcionPorConversacionLocal(cliente) {
     .map(m => textFromMensaje(m?.mensaje))
     .filter(Boolean);
 
-  // 🗂 Motivo
   const motivo = usuarioMsgs[0] || botMsgs[0] || '';
   if (motivo) desc.push(`🗂 Motivo: ${motivo}`);
 
-  // 📌 Detalle (PRIORIDAD: índice 3 que pediste → luego segundo mensaje de usuario → último del usuario)
   const detallePorIndice3 = textFromMensaje(pick(conv, 3)?.mensaje);
   const detalle =
     (detallePorIndice3 && detallePorIndice3 !== motivo && detallePorIndice3) ||
@@ -144,11 +141,9 @@ function generarDescripcionPorConversacionLocal(cliente) {
 
   if (detalle) desc.push(`📌 Detalle: ${detalle}`);
 
-  // Extras opcionales: si hay más aportes del usuario distintos
   const extras = usuarioMsgs.slice(2, 4).filter(t => t && t !== motivo && t !== detalle);
   extras.forEach((t, i) => desc.push(`📝 Aporte ${i + 1}: ${t}`));
 
-  // Fallback por si quedó muy corta
   if (desc.length === 1) {
     const otraLinea = botMsgs.find(t => t !== motivo);
     if (otraLinea) desc.push(`📝 Info: ${otraLinea}`);
@@ -157,14 +152,21 @@ function generarDescripcionPorConversacionLocal(cliente) {
   return desc.length ? desc : ['📄 Conversación local sin detalles identificables'];
 }
 
-/* ---------------- Controlador ---------------- */
 
 export const AsignarUserPost = async (req, res) => {
   console.log("Entro al asignar empleado");
   try {
     const { id } = req.params;
 
-    // 1. Obtener empleados disponibles
+    const existente = await AsignarUser.findOne({ chatId: id });
+    if (existente) {
+      return res.status(200).json({
+        success: true,
+        message: 'La asignación ya existe',
+        asignacion: existente
+      });
+    }
+
     const EmpleResponse = await fetch('http://localhost:3001/user', {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' }
@@ -198,11 +200,10 @@ export const AsignarUserPost = async (req, res) => {
 
       if (cliente) {
         esLocal = true;
-        // Normaliza campos esperados por abajo
         cliente.id = cliente.id || id;
         cliente.Name = cliente.usuario?.nombre || 'Cliente sin nombre';
         cliente.sheet = null;
-        cliente.chatName = 'ChatBotLocal'; // <- importante para que la UI lo detecte como Local
+        cliente.chatName = 'ChatBotLocal'; 
         // Documento
         cliente.numDocTitular =
           cliente.numDocTitular ||

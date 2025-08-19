@@ -370,26 +370,6 @@ function MessengerEmple (){
                             msg.messages?.some(m => m.message === user.Descripcion)
                           );
 
-                          if (!exists) {
-                            const newMessage = {
-                              contactId: chatId,
-                              usuario: { nombre: user.nombreClient },
-                              messages: [{
-                                sender: 'Cliente',
-                                message: user.Descripcion,
-                                idMessageClient: `msg_MessageProblem-${user.Descripcion.length}`,
-                              }],
-                              chat: 'messenger',
-                            };
-                        
-                            const messageResponse = await fetch(`http://localhost:3001/message/${chatId}`, {
-                              method: 'PUT',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify(newMessage),
-                            });
-                        
-                            if (!messageResponse.ok) throw new Error('Error al guardar el mensaje');
-                          }
                         })
                     );
 
@@ -645,7 +625,7 @@ function MessengerEmple (){
                 )}
                 </div>
 
-                {isLoggedIn && <MessageChat/>}
+                {isLoggedIn && <MessageChat />}
             </div>
         </>
     )

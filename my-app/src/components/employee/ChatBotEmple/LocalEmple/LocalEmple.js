@@ -38,6 +38,9 @@ function LocalEmple (){
   const safeArray = (v) => Array.isArray(v) ? v : [];
   const prefer = (...opts) => opts.find(x => x !== undefined && x !== null);
 
+  const keyId = v => String(v ?? '').trim();
+  const uniqById = (arr = []) => Array.from(new Map(arr.map(x => [keyId(x.id), x])).values());
+
   const extractMessageText = (raw) => {
     if (raw == null) return '';
     if (typeof raw === 'string') return raw;
@@ -73,20 +76,18 @@ function LocalEmple (){
     });
   }
 
-  // CAMBIO: normalizar texto antes de enviar a conversacion-server
   async function putConversacionMensaje(contact, texto) {
     const cleanText = normalizeMessagePayload(texto);
     return fetch(`http://localhost:3001/conversacion-server/${encodeURIComponent(contact.id)}/mensaje`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        de: 'Empleado', 
-        mensaje: {
-          text: texto
-        }
+      body: JSON.stringify({
+        de: 'Empleado',
+        mensaje: { text: cleanText }
       })
     });
   }
+
 
   const fetchConversacionContacts = async () => {
     try {
@@ -95,13 +96,14 @@ function LocalEmple (){
       });
       const j = await r.json();
       const docs = j?.data?.docs || [];
-      return docs.map(d => {
+      const mapped = docs.map(d => {
         const conv = safeArray(d?.conversacion);
         const last = conv.length ? conv[conv.length - 1] : null;
-        const lastSender = 
-           last?.de === 'bot' ? 'Empleado' :
-           last?.de === 'Empleado' ? 'Empleado' :
-           last?.de ? 'Cliente'  : null;
+        const lastSender =
+          last?.de === 'bot' ? 'Empleado' :
+          last?.de === 'Empleado' ? 'Empleado' :
+          last?.de ? 'Cliente' : null;
+
         return {
           id: d?.id || d?._id,
           nombre: d?.usuario?.nombre || 'Visitante',
@@ -111,12 +113,13 @@ function LocalEmple (){
           lastSender
         };
       });
-
+      return uniqById(mapped);              // <<— DEDUPE AQUÍ
     } catch (e) {
       console.error('Error listando conversacion-server:', e);
       return [];
     }
   };
+
 
   const fetchConversacionById = async (id) => {
     try {
@@ -192,7 +195,6 @@ function LocalEmple (){
     }
   };
 
-  // CAMBIO: normalizar texto antes de guardar en ambas colecciones
   const handleSendMessage = async () => {
     if (isSending) return;
     if (!currentMessage.trim() || !activeContact) return;
@@ -205,12 +207,13 @@ function LocalEmple (){
       const texto = normalizeMessagePayload(currentMessage);
 
       let r1 = await putConversacionMensaje(activeContact, texto);
-      if (r1.status === 404) {
-        await postConversacion(activeContact);
-        r1 = await putConversacionMensaje(activeContact, texto);
+      if (!r1.ok) {
+        if (r1.status === 404) {
+          alert('Este chat aún no tiene conversación iniciada por el cliente o no está asignado a ti.');
+          return;
+        }
+        throw new Error('Error al registrar en conversacion-server');
       }
-      if (!r1.ok) throw new Error('Error al registrar en conversacion-server');
-
       const r2 = await fetch(`http://localhost:3001/message/${encodeURIComponent(activeContact.id)}?chat=local`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -258,7 +261,6 @@ function LocalEmple (){
         body: JSON.stringify({ messages: [{ sender: 'Empleado', message: image, contexto: currentMessage, idMessageClient: idClient }] })
       });
 
-      // auto‑upsert conversacion-server para imagen
       let r = await putConversacionMensaje(c, image);
       if (r.status === 404) { await postConversacion(c); await putConversacionMensaje(c, image); }
 
@@ -270,7 +272,6 @@ function LocalEmple (){
     }
   };
 
-  // ---------- efectos ----------
   useEffect(() => {
     const userId = localStorage.getItem('UserId');
     const rolUser = localStorage.getItem('rol-user');
@@ -284,7 +285,8 @@ function LocalEmple (){
 
         const resA = await fetch('http://localhost:3001/asignaciones/');
         const jA = await resA.json();
-        const assigned = safeArray(jA?.data?.docs).filter(x => x.idEmple === EmpleId && x.chatName === 'ChatBotLocal')
+        const assigned = safeArray(jA?.data?.docs)
+          .filter(x => x.idEmple === EmpleId && x.chatName === 'ChatBotLocal')
           .map(u => ({
             id: u.chatId,
             nombre: u.nombreClient,
@@ -294,21 +296,27 @@ function LocalEmple (){
             numDoc: u.numDocTitular
           }));
 
-        const localList = await fetchConversacionContacts();
+        const assignedIds = new Set(assigned.map(a => a.id));
+        const allLocal = await fetchConversacionContacts();            // trae todas…
+        const localOnlyAssigned = allLocal.filter(c => assignedIds.has(c.id)); // …filtramos aquí
 
-        const map = new Map();
-        [...localList, ...assigned].forEach(c => {
-          const prev = map.get(c.id) || {};
-          map.set(c.id, { ...prev, ...c });
-        });
-        const finalContacts = [...map.values()];
+        const finalContacts = uniqById(
+          assigned.map(a => ({ 
+            ...a, 
+            ...(localOnlyAssigned.find(l => l.id === a.id) || {}) 
+          }))
+        );
+
         setContacts(finalContacts);
 
+        // 4) Completa datos faltantes por id (nombre/numDoc) — opcional
         await Promise.all(finalContacts.map(async c => {
           const extra = await fetchConversacionById(c.id);
-          
           if (extra) {
-            setContacts(prev => prev.map(x => x.id === c.id ? { ...x, nombre: extra.nombre || x.nombre, numDoc: extra.numDoc || x.numDoc } : x));
+            setContacts(prev => prev.map(x => x.id === c.id
+              ? { ...x, nombre: extra.nombre || x.nombre, numDoc: extra.numDoc || x.numDoc }
+              : x
+            ));
           }
         }));
       } catch (e) {
@@ -318,6 +326,7 @@ function LocalEmple (){
     };
     fetchContacts();
   }, []);
+
 
   useEffect(() => {
     if (!activeContact) return;
@@ -391,10 +400,11 @@ function LocalEmple (){
                     onClick={async () => {
                       setMessages([]);
                       setActiveContact(contact);
-                      await ensureConversationExists(contact);
+                      // NO llames ensureConversationExists aquí — solo cargamos si ya existe el doc en /message
                       await fetchLocalMessages(contact);
                       setUnreadMessages(prev => ({ ...prev, [contact.id]: false }));
                     }}
+
                   >
                     <img src={contact.perfil || Usuario} alt="perfil"/>
                     <div className="contact-in2fo">

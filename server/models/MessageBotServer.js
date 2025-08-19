@@ -21,9 +21,9 @@ const ConversacionSchema = new mongoose.Schema({
   fechaInicio: { type: Date, default: Date.now },
   fechaUltimoMensaje: { type: Date, default: Date.now },
   estadoActual: String,
-  conversacion: [MessageServerSchema],
+  conversacion: [MessageServerSchema],  
   finalizacion: Boolean,
-});
+}); 
 
 ConversacionSchema.plugin(mongoosePaginate);
 

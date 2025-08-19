@@ -64,7 +64,6 @@ export const postDataMessage = async (req, res) => {
 
         const existingConversation = await MessageScheme.findOne({ contactId, chat });
 
-
         if (existingConversation) {
             return res.status(200).json({
                 success: true,
@@ -72,7 +71,6 @@ export const postDataMessage = async (req, res) => {
                 data: existingConversation
             });
         }
-
 
         const newMessage = new MessageScheme({
             contactId,

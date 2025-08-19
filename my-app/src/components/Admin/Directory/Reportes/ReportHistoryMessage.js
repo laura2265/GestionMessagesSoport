@@ -109,14 +109,15 @@ function ReportHistoryMessage(){
 
             const empleadosConDatos = await Promise.all(dataEmple.map(async (user) => {
                 const idEmple = user.idEmple;
-                const chatId = user.cahtId;
+                const chatId = user.chatId;
                 const chatContact = user.chatName;
                 const FechaRegister = user.createdAt;
 
                 const userData = await fetchUser(idEmple);
                 const manychatData = await fetchManychat(chatId);
                 const message = await fetchMessage(chatId);
-
+                
+            console.log('data manychat: ', chatId)
                 return { idEmple, chatId, chatContact,FechaRegister, userData, manychatData, message };
             }));
 
