@@ -96,11 +96,10 @@ export const postDataMessage = async (req, res) => {
         });
     }
 };
-
 export const addMessageToConversation = async (req, res) => {
     try {
         const { contactId } = req.params;
-        const { chat = 'local' } = req.query;
+        const { chat } = req.query;
         const { messages } = req.body;
 
         if (!messages || !Array.isArray(messages) || messages.length === 0) {
@@ -110,7 +109,7 @@ export const addMessageToConversation = async (req, res) => {
             });
         }
 
-        const { sender, message, idMessageClient } = messages[0];
+        const { sender, message, idMessageClient } = messages[0]; // ✅ Extraer datos correctos
 
         if (!sender || !message || !idMessageClient) {
             return res.status(400).json({
@@ -123,7 +122,7 @@ export const addMessageToConversation = async (req, res) => {
             sender,
             message,
             idMessageClient,
-            timeStamp: new Date(),
+            timeStamp: new Date()
         };
 
         const UploadNewConversation = await MessageScheme.findOneAndUpdate(
@@ -153,4 +152,3 @@ export const addMessageToConversation = async (req, res) => {
         });
     }
 };
-

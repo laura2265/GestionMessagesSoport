@@ -17,25 +17,39 @@ function buildMessageId(subscribed, messageText) {
         ? `${subscribed}-${messageText.split('/').pop().split('?')[0]}`
         : `${subscribed}-${messageText.slice(-10)}`;
 }
+
+const mapSenderToDe = (s) => {
+  if (s === 'Cliente') return 'usuario';
+  if (s === 'Sistema') return 'sistema';
+  return 'agente';
+};
+
 async function saveMessage({ chatId, nombreClient, chatuser, sender, message, messageId, numDocTitular }) {
   const body = {
     contactId: chatId,
     usuario: { nombre: nombreClient, documento: numDocTitular },
-    messages: [{ sender, message, idMessageClient: messageId }],
+    messages: [{ 
+      sender: sender, 
+      message: message, 
+      idMessageClient: messageId,
+      timeStamp: new Date().toISOString(),
+    }],
     chat: chatuser,
   };
+  console.log(body)
 
+  // 1) Buscar conversación existente
   const getResponse = await fetch(
     `http://localhost:3001/message/?contactId=${chatId}&chat=${chatuser}`
   );
   const data = await getResponse.json();
   const docs = data?.data?.docs || [];
-
   let existingDoc = docs.find(d =>
     String(d.contactId) === String(chatId) &&
     (d.chat === chatuser || (!d.chat && !chatuser))
   );
-
+  console.log('existing ', existingDoc)
+  // 2) Crear si no existe
   if (!existingDoc) {
     const createRes = await fetch('http://localhost:3001/message/', {
       method: 'POST',
@@ -45,52 +59,66 @@ async function saveMessage({ chatId, nombreClient, chatuser, sender, message, me
     if (!createRes.ok) {
       throw new Error(`Error al crear la conversación: ${await createRes.text()}`);
     }
+    console.log('ay mi dios')
     const createdJson = await createRes.json();
     existingDoc = createdJson?.data || createdJson;
     console.log('Conversación creada (POST)', existingDoc._id);
+    return; // ya guardamos el primer mensaje en el POST
   }
 
-  try {
-    const response = await fetch(`http://localhost:3001/message/${existingDoc._id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        messages: 
-        [{ 
-          sender, 
-          message, 
-          idMessageClient: messageId 
+  // 3) Anexar si ya existe (PUT con conversacion)
+  const response = await fetch(`http://localhost:3001/message/${existingDoc.contactId}?chat=${chatuser}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ 
+        messages: [
+            {
+                sender: sender, 
+                message: message, 
+                idMessageClient: messageId,
+                timeStamp: new Date().toISOString()
+            }
+        ]
+    }),
+  });
 
-        }] 
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Error al subir el mensaje (PUT): ${await response.text()}`);
-    }
-
-    const result = await response.json();
-    console.log('Mensaje guardado en conversación:', existingDoc._id, result);
-  } catch (err) {
-    throw err;
+  console.log('ayy mi dios')
+  if (!response.ok) {
+    throw new Error(`Error al subir el mensaje (PUT): ${await response.text()}`);
   }
+
+  const result = await response.json();
+  console.log('Mensaje guardado en conversación:', existingDoc._id, result);
 }
 
-async function appendIfNotExists({ chatId, chatuser, sender = 'Sistema', message, idMessageClient }) {
-  
-    // Antes (mal): /message/${chatId}
-    const q = await fetch(`http://localhost:3001/message/?contactId=${chatId}&chat=${chatuser}`);
-    const data = await q.json();
-    const doc = data?.data?.docs?.[0];
-    if (!doc) throw new Error('No existe conversación');
 
-    const docId = doc._id || doc.id; // preferiblemente _id
-    await fetch(`http://localhost:3001/message/${docId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: [{ sender, message, idMessageClient: idMessageClient }] }),
-    });
-    return true;
+async function appendIfNotExists({ chatId, chatuser, sender = 'Sistema', message, idMessageClient }) {
+  const q = await fetch(`http://localhost:3001/message/?contactId=${chatId}&chat=${chatuser}`);
+  const data = await q.json();
+  const doc = data?.data?.docs?.[0];
+  if (!doc) throw new Error('No existe conversación');
+
+  // Evita duplicar por idMessageClient
+  const yaEsta = (doc.conversacion || []).some(m => m.idMessageClient === idMessageClient);
+  if (yaEsta) return false;
+
+  const docId = doc._id || doc.id;
+  const res = await fetch(`http://localhost:3001/message/${docId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ 
+      conversacion: [{ 
+        de: mapSenderToDe(sender), 
+        mensaje: message, 
+        idMessageClient, 
+        timeStamp: new Date().toISOString(),
+        origen: chatuser
+      }] 
+    }),
+  });
+
+  if (!res.ok) throw new Error(`Error al anexar: ${await res.text()}`);
+  return true;
 }
 
 
@@ -116,89 +144,93 @@ function MessageChat() {
                 for (let user of assignedEmple) {
                     try {
                         const { chatId, nombreClient, numDocTitular, categoriaTicket, Descripcion, chatName } = user;
+                        
                         if (!chatId) continue;
                         const chatuser = getChatUserType(chatName);
                         const convKey = `${chatId}|${chatuser}`;
 
                         // Verificar si ya existe conversación
                         const getConv = await fetch(`http://localhost:3001/message/?contactId=${chatId}&chat=${chatuser}`);
+                        
                         const getData = await getConv.json();
+                        console.log('get', getData)
                         const existeConversacion = getData?.data?.docs?.length > 0;
+                        console.log('exist: ', existeConversacion);
 
                             if (!existeConversacion) {
+                                console.log('siu');
                                 // Nueva conversación: crear
+                                if(chatuser === 'local'){
+                                    console.log(`✅ Chat local detectado (${chatId}) → No consulto ManyChat`);
+                                    const today = new Date().toISOString().slice(0,10);
+                                    const inicio = { de: 'sistema', mensaje: '🟢 Inicio de conversación', idMessageClient: `${chatId}-inicio-${today}`, timeStamp: new Date().toISOString(), origen: chatuser };
+
+                                    if (!pendienteConversacion.current.has(convKey)) {
+                                        pendienteConversacion.current.set(convKey, {
+                                            contactId: chatId,
+                                            usuario: { nombre: nombreClient, documento: numDocTitular },
+                                            chat: chatuser,
+                                            conversacion: [inicio],
+                                        });
+                                    }
+                                }
                                 const responseMany = await fetch(`http://localhost:3001/manychat/${chatId}`);
                                 if (!responseMany.ok) throw new Error('Error al consultar Manychat');
 
                                 const dataMany = (await responseMany.json()).cliente.data;
                                 const messageText = dataMany.last_input_text;
                                 const messageId = buildMessageId(dataMany.subscribed, messageText);
+                                console.log('data many: ', messageText)
 
-                                const messageInit = {
-                                    sender: 'Sistema',
-                                    message: '🟢 Inicio de conversación',
-                                    idMessageClient: `${chatId}-inicio`,
-                                };
-
-                                
-                                // Construye los textos de sistema igual que en el POST inicial
+                                // Opcional: “Inicio de conversación” 1 vez por día
+                                const today = new Date().toISOString().slice(0,10);
+                                const inicio = { de: 'sistema', mensaje: '🟢 Inicio de conversación', idMessageClient: `${chatId}-inicio-${today}`, timeStamp: new Date().toISOString(), origen: chatuser };
+                                                            
                                 const descripcionText  = Array.isArray(Descripcion) && Descripcion.length > 0 ? Descripcion[0] : null;
                                 const descripcionExtra = Array.isArray(Descripcion) && Descripcion.length > 1 ? Descripcion[1] : null;
-                                                            
                                 const motivoTexto = descripcionText
                                   ? `📝 Motivo del contacto: ${categoriaTicket}, con la descripción: ${descripcionText}` + (descripcionExtra ? `  Detalle adicional: ${descripcionExtra}` : '')
                                   : `📝 Motivo del contacto: ${categoriaTicket}`;
-                     
-                                // Opcional: “Inicio de conversación” 1 vez por día
-                                const today = new Date().toISOString().slice(0,10);
+                                                            
+                                const motivo = { de: 'sistema', mensaje: motivoTexto, idMessageClient: `${chatId}-motivo-${today}`, timeStamp: new Date().toISOString(), origen: chatuser };
+                                const real   = { de: 'usuario', mensaje: messageText, idMessageClient: messageId, timeStamp: new Date().toISOString(), origen: chatuser };
+                                                            
+                                // Si quieres además añadirlos "por si ya existe" con id únicos diarios:
                                 await appendIfNotExists({ chatId, chatuser, sender:'Sistema', message:'🟢 Inicio de conversación', idMessageClient:`${chatId}-inicio-${today}` });
                                 await appendIfNotExists({ chatId, chatuser, sender:'Sistema', message: motivoTexto, idMessageClient:`${chatId}-motivo-${today}` });
 
-                                const messageMotivo = {
-                                sender: 'Sistema',
-                                message: motivoTexto,
-                                idMessageClient: `${chatId}-motivo`,
-                                };
-
-                                const messageReal = {
-                                    sender: 'Cliente',
-                                    message: messageText,
-                                    idMessageClient: messageId,
-                                };
 
                                 if (!pendienteConversacion.current.has(convKey)) {
-                                    const mensajeInicial = [messageInit, messageMotivo, messageReal]
-                                    console.log('💬 Acumulando conversación:', {
+                                  const conversacionInicial = [inicio, motivo, real];
+                                  pendienteConversacion.current.set(convKey, {
                                     contactId: chatId,
-                                    motivo: motivoTexto,
-                                    messages: mensajeInicial,
-                                    });
-
-                                    pendienteConversacion.current.set(convKey, {
-                                        contactId: chatId,
-                                        usuario: { nombre: nombreClient, documento: numDocTitular },
-                                        chat: chatuser,
-                                        motivo: motivoTexto,
-                                        messages: mensajeInicial,
-                                    });
+                                    usuario: { nombre: nombreClient, documento: numDocTitular },
+                                    chat: chatuser,
+                                    conversacion: conversacionInicial,
+                                  });
                                 }
                             } else {
+
                             const responseMany = await fetch(`http://localhost:3001/manychat/${chatId}`);
                             if (!responseMany.ok) throw new Error('Error al consultar Manychat');
 
                             const dataMany = (await responseMany.json()).cliente.data;
                             const messageText = dataMany.last_input_text;
                             const messageId = buildMessageId(dataMany.subscribed, messageText);
+                            console.log('message id: ', messageId)
 
                             const refreshConv = await fetch(`http://localhost:3001/message/?contactId=${chatId}&chat=${chatuser}`);
+                           
                             const refreshData = await refreshConv.json();
                             const allMessages = refreshData?.data?.docs?.flatMap(doc => doc.messages || []) || [];
+                             console.log('refresh: ', allMessages);
 
                             const messageExists = allMessages.some(msg => msg.idMessageClient === messageId);
-                            const notifiedSet = notifiedMessagesRef.current.get(chatId) || new Set();
-
-                            if (!notifiedMessagesRef.current.has(chatId)) {
-                                notifiedMessagesRef.current.set(chatId, notifiedSet);
+                            console.log('message exist: ', messageExists)   
+                            const notifiedKey = `${chatId}|${chatuser}`
+                            const notifiedSet = notifiedMessagesRef.current.get(notifiedKey) || new Set();
+                            if (!notifiedMessagesRef.current.has(notifiedKey)) {
+                              notifiedMessagesRef.current.set(notifiedKey, notifiedSet);
                             }
 
                             if (messageText && messageId && !messageExists && !notifiedSet.has(messageId)) {
@@ -232,13 +264,13 @@ function MessageChat() {
                 // Al final del interval, guardar todas las conversaciones pendientes
                 for (const [key, convData] of pendienteConversacion.current.entries()) {
                     try {
-                        const check = await fetch(`http://localhost:3001/message/?contactId=${encodeURIComponent(convData.contactId)}&chat=${encodeURIComponent(convData.chat || '')}`)
+                        const check = await fetch(`http://localhost:3001/message/?contactId=${convData.contactId}&chat=${convData.chat || ''}`)
                         const checkData = await check.json();
                        const existsNow = (checkData?.data?.docs || []).some(d =>
                           String(d.contactId) === String(convData.contactId) &&
                           (d.chat === convData.chat || (!d.chat && !convData.chat))
                         );
-                        
+
                         if(existsNow){
                             console.log(`Conversacion para ${convData.contactId} ya existe(race), omitiendo (POST)`);
                             pendienteConversacion.current.delete(key);
