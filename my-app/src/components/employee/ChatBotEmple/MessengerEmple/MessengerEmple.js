@@ -429,7 +429,7 @@ function MessengerEmple (){
 
                     console.log('detalles del cliente son: ', detallesClient)
 
-                    setWisphubInfo(detallesClient)
+                    setWisphubInfo(detallesClient);
                 }
 
             }catch(error){
@@ -444,7 +444,6 @@ function MessengerEmple (){
         return ()=>clearInterval(intervalId)
     }, [activeContact]);
 
-    //enviar mensaje
     return(
         <>
             <div className={theme === 'light'?'app light': 'app dark'}>
