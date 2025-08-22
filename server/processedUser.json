@@ -1,26 +1,10 @@
 [
   {
-    "id": "7950419098379258",
-    "Motivo": "Falla de conexión",
-    "message": "No tengo internet",
-    "numDoc": "1031122610",
+    "id": "7df58a7f-dc4f-4c81-9876-d54818a2bfac",
+    "Motivo": "❎ No funciono",
+    "message": null,
+    "numDoc": "1033742607",
     "contactado": true,
-    "processedAt": "2025-08-20T20:30:44.099Z"
-  },
-  {
-    "id": "8185321031556733",
-    "Motivo": "Falla de conexión",
-    "message": "Internet lento",
-    "numDoc": "1023372330",
-    "contactado": true,
-    "processedAt": "2025-08-21T16:55:35.118Z"
-  },
-  {
-    "id": "1138345911",
-    "Motivo": "Falla de conexión",
-    "message": "Señal de Televisión",
-    "numDoc": "1021663933",
-    "contactado": true,
-    "processedAt": "2025-08-21T16:55:35.122Z"
+    "processedAt": "2025-08-22T18:46:20.209Z"
   }
 ]

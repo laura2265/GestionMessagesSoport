@@ -22,6 +22,10 @@ function MessengerEmple (){
     const fileInputRef = useRef(null);
     const [wisphubInfo, setWisphubInfo] = useState(null);
 
+    
+    const botomRef = useRef(null);
+    useEffect(()=>{ botomRef.current?.scrollIntoView({ behavior:'smooth' }); },[messages]);
+
     const handleKeyPress = (e) =>{
         if(e.key === 'Enter'){
             handleSendMessage();
@@ -564,6 +568,8 @@ function MessengerEmple (){
                                 ) : (
                                     <p className="nullData">No hay mensajes disponibles <time datetime="20:00">20:00 </time>.</p>
                                 )}
+
+                                <div ref={botomRef}></div>
                                 </div>
 
                                 <div className="contenttextMessage">

@@ -41,6 +41,11 @@ function LocalEmple (){
   const keyId = v => String(v ?? '').trim();
   const uniqById = (arr = []) => Array.from(new Map(arr.map(x => [keyId(x.id), x])).values());
 
+
+  
+  const botomRef = useRef(null);
+  useEffect(()=>{ botomRef.current?.scrollIntoView({ behavior:'smooth' }); },[messages]);
+
   const extractMessageText = (raw) => {
     if (raw == null) return '';
     if (typeof raw === 'string') return raw;
@@ -139,7 +144,6 @@ function LocalEmple (){
     }
   };
 
-  // ---------- API mensajes ----------
   const ensureConversationExists = async (contact) => {
     if (!contact?.id) return;
     try {
@@ -468,6 +472,8 @@ function LocalEmple (){
                   ) : (
                     <p className="nullData">No hay mensajes disponibles.</p>
                   )}
+                  
+                  <div ref={botomRef}></div>
                 </div>
 
                 <div className="contenttextMessage">

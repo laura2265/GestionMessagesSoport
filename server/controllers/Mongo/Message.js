@@ -96,59 +96,47 @@ export const postDataMessage = async (req, res) => {
         });
     }
 };
+
+// controllers/Message.js
 export const addMessageToConversation = async (req, res) => {
-    try {
-        const { contactId } = req.params;
-        const { chat } = req.query;
-        const { messages } = req.body;
+  try {
+    const { contactId } = req.params;
+    const { chat } = req.query;
+    const { messages } = req.body;
 
-        if (!messages || !Array.isArray(messages) || messages.length === 0) {
-            return res.status(400).json({
-                success: false,
-                message: 'No se recibió ningún mensaje'
-            });
-        }
-
-        const { sender, message, idMessageClient } = messages[0]; // ✅ Extraer datos correctos
-
-        if (!sender || !message || !idMessageClient) {
-            return res.status(400).json({
-                success: false,
-                message: 'Faltan datos para subir el mensaje'
-            });
-        }
-
-        const newMessage = {
-            sender,
-            message,
-            idMessageClient,
-            timeStamp: new Date()
-        };
-
-        const UploadNewConversation = await MessageScheme.findOneAndUpdate(
-            { contactId, chat }, 
-            { $push: { messages: newMessage } },
-            { new: true, upsert: true, setDefaultsOnInsert: true }
-        );
-
-        if (!UploadNewConversation) {
-            return res.status(404).json({
-                success: false,
-                message: 'Conversación no encontrada'
-            });
-        }
-
-        res.status(200).json({
-            success: true,
-            data: UploadNewConversation
-        });
-
-    } catch (error) {
-        console.error('❌ Error al subir la conversacion: ', error);
-        res.status(500).json({
-            success: false,
-            message: 'Error al subir los mensajes a la conversacion',
-            error: error.message
-        });
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+      return res.status(400).json({ success: false, message: 'No se recibió ningún mensaje' });
     }
+
+    const { sender, message, idMessageClient } = messages[0];
+    if (!sender || !message || !idMessageClient) {
+      return res.status(400).json({ success: false, message: 'Faltan datos para subir el mensaje' });
+    }
+
+    const newMessage = { sender, message, idMessageClient, timeStamp: new Date() };
+
+    const result = await MessageScheme.updateOne(
+      { contactId, chat, "messages.idMessageClient": { $ne: idMessageClient } },
+      { $push: { messages: newMessage } }
+    );
+
+    if (result.matchedCount === 0) {
+      // No hay doc con ese contactId/chat
+      return res.status(404).json({ success: false, message: 'Conversación no encontrada' });
+    }
+
+    if (result.modifiedCount === 0) {
+      return res.status(200).json({ success: true, message: 'Mensaje duplicado ignorado' });
+    }
+
+    const updated = await MessageScheme.findOne({ contactId, chat }).lean();
+    return res.status(200).json({ success: true, data: updated });
+  } catch (error) {
+    console.error('❌ Error al subir la conversacion: ', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al subir los mensajes a la conversacion',
+      error: error.message
+    });
+  }
 };

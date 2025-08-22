@@ -10,13 +10,16 @@ function getChatUserType(name) {
 }
 
 function buildMessageId(subscribed, messageText) {
-    if (!messageText) return null;
-    const isImage = messageText.includes('scontent.xx.fbcdn.net');
-    const isAudio = messageText.includes('cdn.fbsbx.com');
-    return isImage || isAudio
-        ? `${subscribed}-${messageText.split('/').pop().split('?')[0]}`
-        : `${subscribed}-${messageText.slice(-10)}`;
+  if (!messageText) return null;
+  const base = `${subscribed || 'na'}|${messageText}`;     
+  let hash = 0;                                            
+  for (let i = 0; i < base.length; i++) {
+    hash = ((hash << 5) - hash) + base.charCodeAt(i);
+    hash |= 0; // to 32-bit
+  }
+  return `mc-${hash}`;
 }
+
 
 const mapSenderToDe = (s) => {
   if (s === 'Cliente') return 'usuario';
@@ -36,6 +39,7 @@ async function saveMessage({ chatId, nombreClient, chatuser, sender, message, me
     }],
     chat: chatuser,
   };
+
   console.log(body)
 
   // 1) Buscar conversación existente
@@ -66,6 +70,12 @@ async function saveMessage({ chatId, nombreClient, chatuser, sender, message, me
     return; // ya guardamos el primer mensaje en el POST
   }
 
+    const messageAlreadyExists = (existingDoc.messages || []).some(m => m.idMessageClient === messageId);
+    if (messageAlreadyExists) {
+      console.log('Mensaje ya existe, no se envía PUT');
+      return;
+    }
+
   // 3) Anexar si ya existe (PUT con conversacion)
   const response = await fetch(`http://localhost:3001/message/${existingDoc.contactId}?chat=${chatuser}`, {
     method: 'PUT',
@@ -81,6 +91,7 @@ async function saveMessage({ chatId, nombreClient, chatuser, sender, message, me
         ]
     }),
   });
+
 
   console.log('ayy mi dios')
   if (!response.ok) {
@@ -131,15 +142,16 @@ function MessageChat() {
 
     useEffect(() => {
         const intervalId = setInterval(async () => {
-            try {
-                const EmpleId = localStorage.getItem('UserId');
-
-                const responseEmple = await fetch(`http://localhost:3001/asignaciones/`);
-                if (!responseEmple.ok) throw new Error('Error al consultar asignaciones');
+        try {
+            const EmpleId = localStorage.getItem('UserId');
+            const responseEmple = await fetch(`http://localhost:3001/asignaciones/`);
+            if (!responseEmple.ok) throw new Error('Error al consultar asignaciones');
 
                 const dataEmple = (await responseEmple.json()).data.docs;
                 const assignedEmple = dataEmple.filter((emple) => emple.idEmple === EmpleId);
                 if (!assignedEmple.length) return;
+                const processedThisTick = new Set();
+
                 let newNotifications = [];
                 for (let user of assignedEmple) {
                     try {
@@ -147,7 +159,10 @@ function MessageChat() {
 
                         if (!chatId) continue;
                         const chatuser = getChatUserType(chatName);
-                        const convKey = `${chatId}|${chatuser}`;
+                        const key = `${chatId}|${chatuser}`;
+
+                        if (processedThisTick.has(key)) continue;
+                        processedThisTick.add(key);
 
                         const getConv = await fetch(`http://localhost:3001/message/?contactId=${chatId}&chat=${chatuser}`);
                         const getData = await getConv.json();
@@ -155,12 +170,11 @@ function MessageChat() {
                         const existeConversacion = getData?.data?.docs?.length > 0;
                         console.log('exist: ', existeConversacion);
 
-
                         if (!existeConversacion) {
                             console.log(`Nueva conversación detectada para ${chatId}, creando...`);
-                                                    
+
                             const today = new Date().toISOString().slice(0, 10);
-                                                    
+
                             // Mensaje de inicio
                             const inicio = {
                                 sender: 'Sistema',
@@ -168,22 +182,21 @@ function MessageChat() {
                                 idMessageClient: `${chatId}-inicio-${today}`,
                                 timeStamp: new Date().toISOString()
                             };
-                        
+
                             // Motivo
                             const descripcionText = Array.isArray(Descripcion) && Descripcion.length > 0 ? Descripcion[0] : null;
                             const descripcionExtra = Array.isArray(Descripcion) && Descripcion.length > 1 ? Descripcion[1] : null;
                             const motivoTexto = descripcionText
                                 ? `📝 Motivo del contacto: ${categoriaTicket}, con la descripción: ${descripcionText}` + (descripcionExtra ? `  Detalle adicional: ${descripcionExtra}` : '')
                                 : `📝 Motivo del contacto: ${categoriaTicket}`;
-                        
+
                             const motivo = {
                                 sender: 'Sistema',
                                 message: motivoTexto,
                                 idMessageClient: `${chatId}-motivo-${today}`,
                                 timeStamp: new Date().toISOString()
                             };
-                        
-                            // Último mensaje del cliente (si existe)
+
                             let real = null;
                             try {
                                 const responseMany = await fetch(`http://localhost:3001/manychat/${chatId}`);
@@ -227,7 +240,7 @@ function MessageChat() {
                                 console.error(`❌ Error al crear conversación para ${chatId}:`, await response.text());
                             }
                         
-                            continue; // salta al siguiente usuario
+                            continue;
                         } else {
 
                             const responseMany = await fetch(`http://localhost:3001/manychat/${chatId}`);
@@ -249,8 +262,11 @@ function MessageChat() {
                                 ? `📝 Motivo del contacto: ${categoriaTicket}, con la descripción: ${descripcionText}` + (descripcionExtra ? `  Detalle adicional: ${descripcionExtra}` : '')
                                 : `📝 Motivo del contacto: ${categoriaTicket}`;
 
-                            const motivoId = `${chatId}-motivo-${new Date().toISOString().slice(0, 10)}`;
-                            const motivoYaExiste = allMessages.some(m => m.idMessageClient === motivoId);
+                            const motivoId = `${chatId}-motivo`;
+
+                            const motivoYaExiste = allMessages.some(m => 
+                                m.idMessageClient === motivoId || m.message === motivoTexto
+                            );
 
                             if (!motivoYaExiste) {
                                 await fetch(`http://localhost:3001/message/${chatId}?chat=${chatuser}`, {
@@ -265,13 +281,16 @@ function MessageChat() {
                                         }]
                                     })
                                 });
+                                console.log(`Motivo agregado a ${chatId}`);
                             }
+
                             const messageExists = allMessages.some(msg => msg.idMessageClient === messageId);
                             console.log('message exist: ', messageExists);
                             const notifiedKey = `${chatId}|${chatuser}`
                             const notifiedSet = notifiedMessagesRef.current.get(notifiedKey) || new Set();
                             if (!notifiedMessagesRef.current.has(notifiedKey)) {
                               notifiedMessagesRef.current.set(notifiedKey, notifiedSet);
+
                             }
 
                             if (messageText && messageId && !messageExists && !notifiedSet.has(messageId)) {

@@ -7,6 +7,7 @@ import ModoClaro from '../../../../assets/img/soleado.png';
 import { useRef } from "react";
 import jsPDF from "jspdf";
 import { useNavigate } from "react-router-dom";
+import { Console } from "console";
 
 function ReportHistoryMessage(){
     const {theme, toggleTheme} = useContext(ThemeContext);
@@ -67,32 +68,23 @@ function ReportHistoryMessage(){
     },[navigate]);
 
     const fetchMessage = async (chatId) => {
-        try{
-            const response = await fetch(`http://localhost:3001/message`,{
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-
-            if(!response.ok){
-                throw new Error('Error al consultar los datos')
-            }
-
-            const dataMessage = await response.json();
-            const resultsMessage = dataMessage.data.docs;
-
-            const conversacion = resultsMessage.find((conv)=> conv.contactId === chatId)
-
-            if(!conversacion){
-                return [];
-            }
-
-            const mensajesOrdenados = conversacion.messages.sort((a,b)=> new  Date(a.timeStamp) - Date(b.timeStamp))
-            return mensajesOrdenados;
-        }catch(error){
-            console.error('Error al moemnto de consultar los datos de la api:', error)
-        }
+      try{
+        const response = await fetch(`http://localhost:3001/message`,{
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        if(!response.ok) throw new Error('Error al consultar los datos');
+        const dataMessage = await response.json();
+        const resultsMessage = dataMessage.data.docs;
+        const conversacion = resultsMessage.find((conv)=> conv.contactId === chatId);
+        if(!conversacion) return [];
+        return conversacion.messages
+          .slice()
+          .sort((a,b)=> new Date(a.timeStamp) - new Date(b.timeStamp));
+      }catch(error){
+        console.error('Error al moemnto de consultar los datos de la api:', error);
+        return [];  // <-- SIEMPRE un array
+      }
     };
 
     const fetchEmpleAsosiado = async () => {
@@ -108,17 +100,24 @@ function ReportHistoryMessage(){
             const dataEmple = resultEmple.data.docs;
 
             const empleadosConDatos = await Promise.all(dataEmple.map(async (user) => {
-                const idEmple = user.idEmple;
-                const chatId = user.chatId;
-                const chatContact = user.chatName;
-                const FechaRegister = user.createdAt;
+              const idEmple = user.idEmple;
+              const chatId = user.chatId;
+              const chatContact = user.chatName;
+              const FechaRegister = user.createdAt;
 
-                const userData = await fetchUser(idEmple);
-                const manychatData = await fetchManychat(chatId);
-                const message = await fetchMessage(chatId);
-                
-            console.log('data manychat: ', chatId)
-                return { idEmple, chatId, chatContact,FechaRegister, userData, manychatData, message };
+              const userData = await fetchUser(idEmple);        // objeto o null
+              const manychatData = await fetchManychat(chatId); // objeto o null
+              const message = await fetchMessage(chatId);       // array
+
+              return {
+                idEmple,
+                chatId,
+                chatContact,
+                FechaRegister,
+                userData,
+                manychatData,
+                message
+              };
             }));
 
             setEmpleAsociado(empleadosConDatos);
@@ -131,209 +130,233 @@ function ReportHistoryMessage(){
     };
 
     const fetchUser = async (idEmple) => {
-        try {
-            const responseUser = await fetch(`http://localhost:3001/user/`, {
-                method: "GET",
-                headers: { "Content-Type": "application/json" }
-            });
-
-            if (!responseUser.ok) throw new Error("Error al consultar usuario");
-                const resultUser = await responseUser.json();
-                const dataUser = resultUser.data.docs;
-
-                return dataUser.filter((user) => user._id === idEmple) || null;
-
-        } catch (error) {
-            console.error("Error al consultar usuario:", error);
-            return null;
-
-        }
+      try {
+        const responseUser = await fetch(`http://localhost:3001/user/`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" }
+        });
+        if (!responseUser.ok) throw new Error("Error al consultar usuario");
+        const resultUser = await responseUser.json();
+        const dataUser = resultUser.data.docs;
+        return dataUser.find((u) => u._id === idEmple) || null;   // <-- objeto o null
+      } catch (error) {
+        console.error("Error al consultar usuario:", error);
+        return null;
+      }
     };
 
     const fetchManychat = async (chatId) => {
-        try {
-            const responseMany = await fetch(`http://localhost:3001/manychat/${chatId}`, {
-                method: 'GET',
-                headers: { 'Content-Type': 'application/json' }
-            });
+      try {
 
-            if (!responseMany.ok) throw new Error(`Error al consultar ManyChat`);
-            const resultMessage = await responseMany.json();
-            return resultMessage.cliente.data || null;
+        const responseMany = await fetch(`http://localhost:3001/manychat/${chatId}`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        });
 
-        } catch (error) {
-            console.error(`Error al consultar ManyChat: ${error}`);
-            return null;
-        }
+        if (!responseMany.ok) throw new Error(`Error al consultar ManyChat`);
+        const resultMessage = await responseMany.json();
+        return resultMessage?.cliente?.data || null;
+      } catch (error) {
+        console.error(`Error al consultar ManyChat: ${error}`);
+        return null;
+      }
     };
-
-    function groupMessagesByDate(messages) {
-        return messages.reduce((acc, message) => {
-            const date = new Date(message.updatedAt).toLocaleDateString();
-
-            if (!acc[date]) {
-                acc[date] = [];
-            }
-
-            acc[date].push(message);
-            acc[date].sort((a, b) => new Date(a.updatedAt) - new Date(b.updatedAt));
-            return acc;
-        }, {});
-    }
 
     const generateReport = () => {
-        if (empleAsociado.length === 0) {
-          alert('No hay datos para generar el reporte.');
-          return;
+      if (empleAsociado.length === 0) {
+        alert('No hay datos para generar el reporte.');
+        return;
       }
-      const doc = new jsPDF({
-          orientation: 'p',
-          unit: "mm",
-          format: 'a4'
-      });
-  
-      const esURL = (texto) => {
-          const regex = /https?:\/\/[^\s]+/;
-          return regex.test(texto);
-      };
-  
-      const loadImageAsBase64 = async (url) => {
-          const response = await fetch(url);
-          const blob = await response.blob();
-          return new Promise((resolve, reject) => {
-              const reader = new FileReader();
-              reader.onloadend = () => resolve(reader.result);
-              reader.onerror = reject;
-              reader.readAsDataURL(blob);
-          });
-      };
-      const marginLeft = 15;
-      const marginRight = 15;
-      const marginTop = 25;
-      const maxTextWidth = doc.internal.pageSize.width - marginLeft - marginRight;
-      const pageHeight = doc.internal.pageSize.height;
-      const lineHeight = 10;
-      let yOffset = marginTop;
-  
+
+      const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+
+      // ====== LAYOUT Y ESTILO ======
+      const margin = { top: 25, right: 15, bottom: 18, left: 15 };
+      const page = { w: doc.internal.pageSize.width, h: doc.internal.pageSize.height };
+      const contentW = page.w - margin.left - margin.right;
+      const lineH = 7;
+      let y = margin.top;
+
+      const setBody = () => { doc.setFont('helvetica', 'normal'); doc.setFontSize(11); doc.setTextColor(20,20,20); };
+      const setSubtle = () => { doc.setFont('helvetica', 'italic'); doc.setFontSize(10); doc.setTextColor(120,120,120); };
+      const setStrong = () => { doc.setFont('helvetica', 'bold'); doc.setFontSize(12); doc.setTextColor(20,20,20); };
+
       const addHeader = () => {
-          doc.setFontSize(12);
-          doc.setFont("helvetica", "bold");
-          doc.text('Reporte de Empleados Asociados', marginLeft, yOffset);
-          yOffset += lineHeight;
+        doc.setFillColor(41,128,185);
+        doc.rect(0, 0, page.w, 20, 'F');
+        doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.setTextColor(255,255,255);
+        doc.text('Reporte de Empleados Asociados', page.w/2, 12, { align:'center' });
+        doc.setFontSize(10);
+        doc.text(`Generado: ${new Date().toLocaleString()}`, margin.left, 18);
+        setBody();
       };
-  
-      const addNewPageIfNeeded = (extra = 10) => {
-          if (yOffset + extra > pageHeight) {
-              doc.addPage();
-              yOffset = marginTop;
-              addHeader();
-          }
+
+      const addFooters = () => {
+        const total = doc.getNumberOfPages();
+        for (let i = 1; i <= total; i++) {
+          doc.setPage(i);
+          setSubtle();
+          doc.text(`Página ${i} de ${total}`, page.w - margin.right, page.h - 8, { align: 'right' });
+        }
+        setBody();
       };
-  
+
+      const newPage = () => { doc.addPage(); addHeader(); y = margin.top; };
+
+      const ensureSpace = (needed) => {
+        if (y + needed > page.h - margin.bottom) newPage();
+      };
+
+      // Quita caracteres problemáticos y acentos si no tienes fuente UTF-8
+      const cleanText = (txt = '') => {
+        const t = String(txt)
+          .replace(/\r\n|\r|\n/g, ' ')                         // líneas a espacio
+          .normalize('NFD').replace(/[\u0300-\u036f]/g, '');   // quita diacríticos
+        // quita controles invisibles
+        return t.replace(/[^\x09\x0A\x0D\x20-\x7E\u00A0-\u00FF]/g, '');
+      };
+
+      // Parte tokens muuuuy largos (URLs, comandos) para que no desborden
+      const hardWrapLongTokens = (txt, maxChunk = 28) => {
+        return txt.split(' ').map(tok => {
+          if (tok.length <= maxChunk) return tok;
+          return tok.match(new RegExp(`.{1,${maxChunk}}`, 'g')).join(' ');
+        }).join(' ');
+      };
+
+      // Escribir bloque con wrapping y salto de página seguro
+      const writeBlock = (txt, x, opts = {}) => {
+        const { bullet = '', color = [20,20,20], indent = 0, size = 11, bold = false } = opts;
+        doc.setTextColor(...color);
+        doc.setFont('helvetica', bold ? 'bold' : 'normal'); 
+        doc.setFontSize(size);
+
+        const prefix = bullet ? `${bullet} ` : '';
+        const safe = hardWrapLongTokens(cleanText(txt));
+        const lines = doc.splitTextToSize(prefix + safe, contentW - indent);
+        // altura necesaria y salto de página si no cabe
+        const needed = lines.length * lineH;
+        ensureSpace(needed);
+
+        lines.forEach(line => {
+          doc.text(line, margin.left + indent, y);
+          y += lineH;
+        });
+
+        setBody(); // reset
+      };
+
+      // Carga imagen remota -> base64
+      const loadImageAsBase64 = async (url) => {
+        const res = await fetch(url); const blob = await res.blob();
+        return new Promise((resolve, reject) => {
+          const r = new FileReader();
+          r.onloadend = () => resolve(r.result);
+          r.onerror = reject;
+          r.readAsDataURL(blob);
+        });
+      };
+
+      const isURL = (t='') => /^https?:\/\/\S+$/i.test(String(t).trim());
+
+      const writeImage = async (src, label) => {
+        try {
+          const b64 = await loadImageAsBase64(src);
+          const imgW = Math.min(120, contentW); // ancho seguro
+          const imgH = 65;                      // alto fijo razonable
+          ensureSpace(imgH + lineH*2);
+          setSubtle(); doc.text(label, margin.left + 20, y); y += 4;
+          doc.addImage(b64, 'JPEG', margin.left + 20, y, imgW, imgH);
+          y += imgH + lineH/2;
+          setBody();
+        } catch {
+          writeBlock('(Error al cargar imagen)', margin.left + 20, { color:[150,0,0] });
+        }
+      };
+
+      // ====== RENDER ======
       addHeader();
 
-      const processMessages = async()=>{
-        for(const emple of empleAsociado){
-            addNewPageIfNeeded();
-  
-              doc.setFontSize(14);
-              doc.setFont("helvetica", "bold");
-              doc.text(`Empleado:`, marginLeft, yOffset);
-  
-              doc.setFontSize(12);
-              doc.setFont("helvetica", "normal");
-              doc.text(`${emple.userData[0].name} (${emple.userData[0].email})`, marginLeft + 25, yOffset);
-              yOffset += lineHeight;
-  
-              doc.setFont("helvetica", "normal");
-              doc.text(`Atendió al siguiente cliente:`, marginLeft + 10, yOffset);
-              yOffset += lineHeight;
-  
-              doc.setFont("helvetica", "bold");
-              doc.text(`Cliente:`, marginLeft + 20, yOffset);
-              doc.setFont("helvetica", "normal");
-              doc.text(`${emple.manychatData.name}`, marginLeft + 40, yOffset);
-              yOffset += lineHeight;
-  
-              doc.setFont("helvetica", "bold");
-              doc.text(`Chat ID: `, marginLeft + 20, yOffset);
-              doc.setFont("helvetica", "normal");
-              doc.text(`${emple.chatId}`, marginLeft + 40, yOffset);
-              yOffset += lineHeight;
+      const groupedByDate = (messages = []) => {
+        return messages.reduce((acc, m) => {
+          const d = m?.updatedAt ? new Date(m.updatedAt).toLocaleDateString() : 'Sin fecha';
+          (acc[d] ||= []).push(m);
+          return acc;
+        }, {});
+      };
 
+      const colorCliente = [39,174,96];
+      const colorEmpleado = [41,128,185];
+      const colorSistema  = [192,57,43];
 
-               doc.setFont("helvetica", "bold");
-              doc.text(`Fecha de contacto:`, marginLeft + 20, yOffset);
-              doc.setFont("helvetica", "normal");
-              doc.text(`${new Date(emple.FechaRegister).toLocaleDateString()}`, marginLeft + 55, yOffset);
-              yOffset += lineHeight;
-  
-              doc.setFont("helvetica", "bold");
-              doc.text("Chat: ", marginLeft + 20, yOffset);
-              doc.setFont("helvetica", "normal");
-              doc.text(`${emple.chatContact}`, marginLeft + 35, yOffset);
-              yOffset += lineHeight;
-  
-              doc.setFont("helvetica", "bold");
-              doc.text('Mensajes:', marginLeft + 10, yOffset);
-              yOffset += lineHeight;
-  
-              const groupedMessages = groupMessagesByDate(emple.message);
+      const getSender = (s) => (s === 'Cliente' ? 'Cliente' : s === 'Empleado' ? 'Empleado' : 'Sistema');
+      const getColor  = (s) => (s === 'Cliente' ? colorCliente : s === 'Empleado' ? colorEmpleado : colorSistema);
 
-              if(Object.keys(groupedMessages).length === 0){
-                  doc.text('No hay mensajes disponibles', marginLeft, yOffset);
-                  yOffset += lineHeight;
-              }else{
-                for(const [date, messagesOnDate] of Object.entries(groupedMessages)){
-                    for(const message of messagesOnDate){
-                        addNewPageIfNeeded();
-                        doc.setFontSize(12);
-                        doc.setFont("helvetica", "normal");
-                
-                        const senderText = message.sender === 'Cliente' ? 'Cliente: ' : 'Empleado: ';
-                        const xOffset = marginLeft + 25;
-                        const hora = message.timeStamp
-                        ? new Date(message.timeStamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                        : 'Sin hora';
-                        
-                        doc.setFont("helvetica", "bold");
-                        doc.text(`•  ${senderText}`, marginLeft, yOffset);
-                        doc.setFont("helvetica", "normal");
+      const titleSection = (txt) => {
+        ensureSpace(lineH + 6);
+        doc.setFillColor(245,245,245);
+        doc.rect(margin.left, y - 5, contentW, lineH + 4, 'F');
+        setStrong(); doc.text(txt, margin.left + 2, y);
+        y += lineH;
+        setBody();
+      };
 
-                        if(esURL(message.message)){
-                          try{
-                              const base64Image = await loadImageAsBase64(message.message)
-                              addNewPageIfNeeded(35);
-                              doc.text(`Imagen - ${hora}`, xOffset, yOffset);
-                                yOffset += 5;
-                          
-                                doc.addImage(base64Image, 'JPEG', xOffset, yOffset, 50, 30);
-                                yOffset += 35;
-                          }catch(error){
-                                doc.text('(Error al cargar imagen)', xOffset, yOffset);
-                                yOffset += lineHeight;
-                          }
-                        }else{
-                          const cleanText = message.message.replace(/[^const cleanText = message.message.replace(/[^\x00-const cleanText = message.message.replace(/[^\x00-\x7F]/g, "");
-                            const wrappedText = doc.splitTextToSize(`${cleanText} - ${hora}`, maxTextWidth - 25);
-                            wrappedText.forEach(line => {
-                                addNewPageIfNeeded();
-                                doc.text(line, xOffset, yOffset);
-                                yOffset += lineHeight;
-                            });
-                        }
-                    }
+      (async () => {
+        for (const emple of empleAsociado) {
+          // Sección empleado
+          titleSection('Empleado');
+          writeBlock(`${emple.userData?.name ?? 'Empleado no encontrado'}`, margin.left, { bold:true });
+          writeBlock(`Email: ${emple.userData?.email ?? 'Sin email'}`, margin.left);
+
+          // Sección cliente
+          titleSection('Cliente');
+          writeBlock(`Nombre: ${emple.manychatData?.name ?? 'Cliente desconocido'}`, margin.left);
+          writeBlock(`Chat: ${emple.chatContact ?? '—'} (ID: ${emple.chatId})`, margin.left);
+          writeBlock(`Fecha de contacto: ${emple.FechaRegister ? new Date(emple.FechaRegister).toLocaleDateString() : '—'}`, margin.left);
+
+          // Sección mensajes
+          titleSection('Mensajes');
+          groupedByDate(emple.message);
+          if (!Object.keys(groupedByDate).length) {
+            writeBlock('No hay mensajes disponibles', margin.left, { color:[120,120,120] });
+          } else {
+            for (const [date, msgs] of Object.entries(groupedByDate)) {
+              setSubtle(); ensureSpace(lineH); doc.text(`[${date}]`, margin.left, y); y += lineH - 1; setBody();
+
+              // Orden cronológico
+              msgs.sort((a,b) => new Date(a?.updatedAt || 0) - new Date(b?.updatedAt || 0));
+
+              for (const m of msgs) {
+                const sender = getSender(m?.sender);
+                const color  = getColor(sender);
+                const hora = m?.timeStamp
+                  ? new Date(m.timeStamp).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })
+                  : 'Sin hora';
+
+                if (m?.message && isURL(m.message)) {
+                  await writeImage(m.message, `${sender} · Imagen - ${hora}`);
+                } else {
+                  const text = `${sender}: ${m?.message ?? ''} - ${hora}`;
+                  writeBlock(text, margin.left, { color, indent: 20, bullet: '•' });
                 }
               }
-        }
-        const pdfBlob = doc.output('blob');
-          const url = URL.createObjectURL(pdfBlob);
-          setPdfUrl(url);
-          setShowPreview(true);
-      }
+            }
+          }
 
-      processMessages();
+          // espacio entre empleados
+          ensureSpace(lineH * 2);
+          y += 3;
+        }
+
+        addFooters();
+        const blob = doc.output('blob');
+        const url = URL.createObjectURL(blob);
+        setPdfUrl(url);
+        setShowPreview(true);
+      })();
     };
+
+
 
     return(
         <>
@@ -364,20 +387,21 @@ function ReportHistoryMessage(){
                         <div className="contentReports">
                             <div className="reports-container">
                                 {empleAsociado.length > 0 ? (
-                                    <ul>
-                                        {empleAsociado.map((empleado, index) => (
-                                            <li key={index} className="report-item">
-                                                <strong>{empleado.userData[0].name}</strong>
-                                                <p>Cliente asignado: {empleado.manychatData.name}</p>
-                                                <p>Chat de contacto: {empleado.chatContact}</p>
-                                                <p>{new Date(empleado.FechaRegister).toLocaleString([],{hour: '2-digit', minute: '2-digit'})}</p>
-                                                <p>{new Date(empleado.FechaRegister).toLocaleDateString()}</p>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                ):(
-                                    <p>No hay datos cargados.</p>
+                                  <ul>
+                                    {empleAsociado.map((empleado, index) => (
+                                      <li key={index} className="report-item">
+                                        <strong>{empleado.userData?.name ?? 'Empleado no encontrado'}</strong>
+                                        <p>Cliente asignado: {empleado.manychatData?.name ?? 'Cliente desconocido'}</p>
+                                        <p>Chat de contacto: {empleado.chatContact ?? '—'}</p>
+                                        <p>{empleado.FechaRegister ? new Date(empleado.FechaRegister).toLocaleString([],{hour: '2-digit', minute: '2-digit'}) : '—'}</p>
+                                        <p>{empleado.FechaRegister ? new Date(empleado.FechaRegister).toLocaleDateString() : '—'}</p>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                ) : (
+                                  <p>No hay datos cargados.</p>
                                 )}
+
                             </div>
 
                             {showPreview && pdfUrl &&(

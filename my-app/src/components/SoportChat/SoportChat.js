@@ -77,72 +77,25 @@ async function postConversacion(contactId, usuario = {}) {
 
 async function putConversacionMensaje(contactId, de, mensaje) {
   try {
-    // 1) Guardar en conversacion-server
-    const response1 = await fetch(`http://localhost:3001/conversacion-server/${encodeURIComponent(contactId)}/mensaje`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ de, mensaje }) 
-    });
-
-    if (!response1.ok) {
-      console.error("❌ Error en conversacion-server:", await response1.text());
-    }
-
-    // Construir el nuevo mensaje
-    const newMsg = {
-      sender: de === 'usuario' ? 'Cliente' : 'Empleado',
-      message: typeof mensaje === 'string' ? mensaje : (mensaje?.text || mensaje?.mensaje || ''),
-      idMessageClient: `msg_${Date.now()}-${(typeof mensaje === 'string'
-        ? mensaje
-        : (mensaje?.text || mensaje?.mensaje || '')
-      ).length}`
-    };
-
-    // 2) Intentar el PUT a message
-    let response2 = await fetch(`http://localhost:3001/message/${encodeURIComponent(contactId)}?chat=local`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: [newMsg] })
-    });
-
-    // 3) Si falla, hacemos POST para crear la conversación y luego reintentamos el PUT
-    if (!response2.ok) {
-      console.warn("⚠️ No existe la conversación en message, creando una nueva...");
-
-      const createRes = await fetch(`http://localhost:3001/message`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contactId,
-          usuario: newMsg.sender,
-          chat: "local",
-          messages: [newMsg]
-        })
-      });
-
-      if (!createRes.ok) {
-        throw new Error("❌ No se pudo crear la conversación en message: " + await createRes.text());
-      }
-
-      // Reintentamos el PUT
-      response2 = await fetch(`http://localhost:3001/message/${encodeURIComponent(contactId)}?chat=local`, {
+    const response = await fetch(
+      `http://localhost:3001/conversacion-server/${encodeURIComponent(contactId)}/mensaje`,
+      {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: [newMsg] })
-      });
+        body: JSON.stringify({ de, mensaje }),
+      }
+    );
+
+    if (!response.ok) {
+      console.error("❌ Error en conversacion-server:", await response.text());
     }
 
-    return {
-      conversacion: await response1.json().catch(() => null),
-      message: await response2.json().catch(() => null)
-    };
-
+    return { conversacion: await response.json().catch(() => null) };
   } catch (err) {
     console.error("⚠️ Error en putConversacionMensaje:", err.message);
     return { error: err.message };
   }
 }
-
 
 async function saveToConversacion(contactId, de, mensaje, usuarioHint) {
   try {

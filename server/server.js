@@ -123,70 +123,60 @@ async function fetchAndProcessUsers() {
 
         for (const user of allUsers) {
             const { idUser, Motivo } = user;
-
-            const claveActual = JSON.stringify({
-                motivo: Motivo,
-                message: user.message,
-                numDoc: user.numDoc
-            });
-
-            if (processedUserMap.get(idUser) === claveActual) {
-                console.log(`⚠️ Usuario ${idUser} ya procesado sin cambios`);
-                continue;
-            }
-
-            // Registrar nuevo usuario procesado
-            processedUserMap.set(idUser, claveActual);
-            processedUsers.push({
-                id: idUser,
-                Motivo: Motivo || null,
-                message: user.message || null,
-                numDoc: user.numDoc || null,
-                contactado: true,
-                processedAt: new Date().toISOString()
-            });
-
-            await saveProcessedUser(processedUsers);
-
             if (user.tipo === 'mongo') {
-                console.log(`📩 Nuevo mensaje MongoDB: ${idUser} - "${Motivo}"`);
-                const conv = (mongoMensajes.find(m => m.id === idUser)?.conversacion || [])
-                .filter(m => m.de === 'usuario')
-                .map(m => {
-                  const raw = typeof m.mensaje === 'string'
-                    ? m.mensaje
-                    : (m.mensaje?.text || m.mensaje?.texto || m.mensaje?.message || m.mensaje?.mensaje || '');
-                  // normalización: minúsculas + sin tildes
-                  const text = String(raw)
-                    .toLowerCase()
-                    .normalize('NFD').replace(/\p{Diacritic}/gu, '');
-                  const ts = new Date(m.timeStamp || m.createdAt || 0).getTime();
-                  return { ts, text };
-                })
-                .sort((a, b) => a.ts - b.ts);
-
-                if (!conv.length) {
-                  console.log(`Mongo: sin mensajes del usuario → No asignar`);
+                const convDoc = mongoMensajes.find(m => m.id === idUser);
+                const mensajesUsuario = (convDoc?.conversacion || [])
+                  .filter(m => m.de === 'usuario')
+                  .sort((a, b) => new Date(b.timeStamp || b.createdAt || 0) - new Date(a.timeStamp || a.createdAt || 0));
+                          
+                if (!mensajesUsuario.length) {
+                  console.log(`Mongo: sin mensajes del usuario → no procesar`);
                   continue;
                 }
-
-                const NO_RE = /\b(no\s*funciono|no\s*funciona|no\s*sirvio|no\s*carga|sigue\s*igual)\b/;
-                const SI_RE = /\b(si\s*funciono|si\s*funciona|quedo\s*listo|solucionado)\b/;
-
-                let lastStatus = null;
-                for (const m of conv) {
-                  if (NO_RE.test(m.text)) lastStatus = 'NO';
-                  else if (SI_RE.test(m.text)) lastStatus = 'SI';
-                }
-
-                if (lastStatus === 'NO') {
-                    console.log(`Mongo: último estado = NO → Requiere soporte → Asignar`);
-                    EmpleAssigned(idUser);
-                } else {
-                    console.log(`Mongo: último estado = ${lastStatus ?? 'ninguno'} → No asignar`);
-                }
-
-            } else if (user.tipo === 'sheets') {
+              
+                  // Tomamos SOLO el último mensaje del usuario
+                  const lastRaw = mensajesUsuario[0]?.mensaje;
+                  const lastText = (typeof lastRaw === 'string'
+                    ? lastRaw
+                    : (lastRaw?.text || lastRaw?.texto || lastRaw?.message || lastRaw?.mensaje || '')
+                  )
+                    .toLowerCase()
+                    .normalize('NFD').replace(/\p{Diacritic}/gu, ''); // quita tildes
+              
+                  // ✅ FILTRO ESTRICTO: solo si dice "no funciona" o "no funciono"
+                  const disparaSoporte =
+                    lastText.includes('no funciona') || lastText.includes('no funciono');
+              
+                  if (!disparaSoporte) {
+                    console.log(`Mongo: último mensaje NO requiere soporte ("${lastText}") → no procesar`);
+                    continue;
+                  }
+              
+                  // 🛡️ DEDUPE: no procesar el mismo id si ya lo hicimos con este trigger
+                  const claveActual = JSON.stringify({ origen: 'mongo', trigger: 'no_funciona' });
+                  if (processedUserMap.get(idUser) === claveActual) {
+                    console.log(`⚠️ ${idUser} ya procesado (mongo/no_funciona)`);
+                    continue;
+                  }
+              
+                  // ⛑️ Asignar y registrar como procesado (sin tocar tu lógica de Sheets)
+                  console.log(`Mongo: último mensaje indica "no funciona" → asignar`);
+                  EmpleAssigned(idUser);
+              
+                  processedUserMap.set(idUser, claveActual);
+                  processedUsers.push({
+                    id: idUser,
+                    Motivo: '❎ No funciono',
+                    message: null,
+                    numDoc: user.numDoc || null,
+                    contactado: true,
+                    processedAt: new Date().toISOString()
+                  });
+                  await saveProcessedUser(processedUsers);
+              
+                  await delay(1000);
+                  continue;
+                }else if (user.tipo === 'sheets') {
                 const { sheet, chat } = user;
                 const chatsValidos = ['ChatBotMessenger', 'ChatBotInstagram', 'ChatBotTelegram']
                 const HojasValidacion = {
@@ -225,7 +215,6 @@ async function fetchAndProcessUsers() {
                         continue;
                     }
                 }
-
 
                 if (asignacionDirecta.includes(sheet)) {
                     console.log(`📄 ${sheet} - Hoja con datos sensibles → Enviar a soporte`);
