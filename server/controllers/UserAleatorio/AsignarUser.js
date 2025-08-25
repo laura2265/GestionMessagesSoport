@@ -17,6 +17,30 @@ function textFromMensaje(mensaje) {
   return String(mensaje);
 }
 
+function resolveDocumento(cliente = {}) {
+  const toStr = v => (v == null ? '' : String(v)).trim();
+
+  const candidates = [
+    cliente.numDocTitular,
+    cliente.documento,            // Sheet7
+    cliente.CedulaTitular,        // Sheet9/Sheet12
+    cliente.DocumentoTitular,     // Sheet15
+    cliente.DocumentoTirular,     // typos
+    cliente.DocumentoTirularOtro,
+    cliente?.usuario?.documento,  // conversacion-server
+  ].map(toStr);
+
+  const value = candidates.find(v => v.length > 0) || '';
+  // Debug útil
+  try {
+    const clavesDoc = Object.keys(cliente).filter(k => /doc|cedu|titul/i.test(k));
+    console.log('[DOC DEBUG] keys:', clavesDoc.reduce((acc, k) => ({...acc, [k]: cliente[k]}), {}));
+  } catch (e) {}
+  console.log('[DOC DEBUG] valor resuelto:', value || '(vacío)');
+  return value;
+}
+
+
 function pick(arr, idx) {
   if (!Array.isArray(arr)) return undefined;
   return arr[idx];
@@ -152,7 +176,6 @@ function generarDescripcionPorConversacionLocal(cliente) {
   return desc.length ? desc : ['📄 Conversación local sin detalles identificables'];
 }
 
-
 export const AsignarUserPost = async (req, res) => {
   console.log("Entro al asignar empleado");
   try {
@@ -205,15 +228,7 @@ export const AsignarUserPost = async (req, res) => {
         cliente.sheet = null;
         cliente.chatName = 'ChatBotLocal'; 
         // Documento
-        cliente.numDocTitular =
-          cliente.numDocTitular ||
-          cliente.CedulaTitular ||
-          cliente.DocumentoTitular ||
-          cliente.DocumentoTirular ||
-          cliente.DocumentoTirularOtro ||
-          cliente.documento ||
-          cliente.usuario?.documento ||
-          '';
+        cliente.numDocTitular = resolveDocumento(cliente)
         // Mensaje principal (por si lo necesitas en categoría)
         if (Array.isArray(cliente.conversacion)) {
           const msgUsuarioOrdenado = cliente.conversacion
@@ -225,6 +240,7 @@ export const AsignarUserPost = async (req, res) => {
         }
       }
     }
+
 
     console.log("[DEBUG] Buscando asignación previa para ID:", cliente?.id);
 
@@ -268,6 +284,8 @@ export const AsignarUserPost = async (req, res) => {
       nombreEmple: empleAsignado.name,
       categoriaTicket: categoria,
     });
+
+    console.log('Los datos de la nueva asignacion son: ', nuevaAsignacion);
 
     res.status(200).json({
       success: true,

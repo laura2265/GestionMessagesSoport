@@ -233,7 +233,7 @@ const getDataFetch = async (req, res) => {
                 }else if(`Sheet${index+1}` === `Sheet7`){
                     const NombreTitularIndex = headers.indexOf('NombreTitular');
                     const DocumentoTitularIndex = headers.indexOf('DocumentoTirular');
-                    const NumeroTelefonoIndex = headers.indexOf('DocumentoTirular');
+                    const NumeroTelefonoIndex = headers.indexOf('NumeroTelefono');
                     const EmailIndex = headers.indexOf('Email');
                     const TipoServidorIndex = headers.indexOf('TipoServicio');
                     const MotivoSolicitudIndex = headers.indexOf('MotivoSolicitud');
@@ -269,30 +269,29 @@ const getDataFetch = async (req, res) => {
                         })
                     }
 
-                }else if(`Sheet${index+1}` === `Sheet9`){
-                    const CambioDeMegasIndex = headers.indexOf('CambioDeMegas');
-                    const ServicioActualIndex = headers.indexOf('TipoDeServicioActual');
-                    const PlanSolicitudIndex = headers.indexOf('PlanQueSolicita');
-                    const DuracionServicioIndex = headers.indexOf('DuracionConServicio');
-                    const CedulaTitularIndex = headers.indexOf('CedulaTitular');
+                } else if (`Sheet${index+1}` === `Sheet9`) {
+                  const CambioDeMegasIndex = headers.indexOf('CambioDeMegas');
+                  const ServicioActualIndex = headers.indexOf('TipoDeServicioActual');
+                  const PlanSolicitudIndex = headers.indexOf('PlanQueSolicita');
+                  const DuracionServicioIndex = headers.indexOf('DuracionConServicio');
+                  const CedulaTitularIndex = headers.indexOf('CedulaTitular');
 
-                    if(idIndex !== -1 && NameIndex !== -1 && chatIndex !== -1 && messageIndex !== -1 && DescriptionCambioDelPlan !== -1){
-                        rows.forEach(row => {
-                            formattedData.push({
-                                sheet: `Sheet9`,
-                                id: row[idIndex],
-                                Name: row[NameIndex],
-                                chatName: row[chatIndex],
-                                Message: row[messageIndex],
-                                CambioMegas: row[CambioDeMegasIndex],
-                                ServicioActual: row[ServicioActualIndex],
-                                PlanSolicitado: row[PlanSolicitudIndex],
-                                DuracionServicio: row[DuracionServicioIndex],
-                                CedulaTitular: row[CedulaTitularIndex],
-                            });
-                        });
-                    }
-
+                  if (idIndex !== -1 && NameIndex !== -1 && chatIndex !== -1 && messageIndex !== -1) {
+                    rows.forEach(row => {
+                      formattedData.push({
+                        sheet: `Sheet9`,
+                        id: row[idIndex],
+                        Name: row[NameIndex],
+                        chatName: row[chatIndex],
+                        Message: row[messageIndex],
+                        CambioMegas: row[CambioDeMegasIndex],
+                        ServicioActual: row[ServicioActualIndex],
+                        PlanSolicitado: row[PlanSolicitudIndex],
+                        DuracionServicio: row[DuracionServicioIndex],
+                        CedulaTitular: row[CedulaTitularIndex],
+                      });
+                    });
+                  }
                 }else if(`Sheet${index+1}` === `Sheet10`){
                     if(idIndex !== -1 && NameIndex !== -1 && chatIndex !== -1 && messageIndex !== -1){
                         rows.forEach(row => {
@@ -312,7 +311,7 @@ const getDataFetch = async (req, res) => {
                     const FechaPeticionIndex = headers.indexOf('FechaPeticion');
                     const MotivoPeticionIndex = headers.indexOf('MotivoPeticion');
 
-                    if(idIndex !== -1 && NameIndex !== -1 && chatIndex !== -1 && messageIndex !== -1 && DescriptionPQR !== -1){
+                    if(idIndex !== -1 && NameIndex !== -1 && chatIndex !== -1 && messageIndex !== -1){
                         rows.forEach(row => {
                             formattedData.push({
                                 sheet: `Sheet12`,
@@ -373,7 +372,7 @@ const getDataFetch = async (req, res) => {
                     const TitularServicioIndex = headers.indexOf('TitularServicio');
                     const MotivoOtroIndex = headers.indexOf('MotivoOtro');
 
-                    if(idIndex !== -1 && NameIndex !== -1 && chatIndex !== -1 && messageIndex !== -1 && descriptionOtro !== -1){
+                    if(iidIndex !== -1 && NameIndex !== -1 && chatIndex !== -1 && messageIndex !== -1){
                         rows.forEach(row => {
                             formattedData.push({
                                 sheet: `Sheet15`,

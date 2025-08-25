@@ -472,7 +472,7 @@ function LocalEmple (){
                   ) : (
                     <p className="nullData">No hay mensajes disponibles.</p>
                   )}
-                  
+
                   <div ref={botomRef}></div>
                 </div>
 

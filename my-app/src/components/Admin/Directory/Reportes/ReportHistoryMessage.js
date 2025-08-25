@@ -7,7 +7,6 @@ import ModoClaro from '../../../../assets/img/soleado.png';
 import { useRef } from "react";
 import jsPDF from "jspdf";
 import { useNavigate } from "react-router-dom";
-import { Console } from "console";
 
 function ReportHistoryMessage(){
     const {theme, toggleTheme} = useContext(ThemeContext);
@@ -162,25 +161,52 @@ function ReportHistoryMessage(){
       }
     };
 
+    // Normaliza y devuelve un objeto Date o null
+    const getMessageDate = (m) => {
+      const raw = m?.timeStamp || m?.updatedAt || m?.createdAt || null;
+      if (!raw) return null;
+      const d = new Date(raw);
+      return isNaN(d.getTime()) ? null : d;
+    };
+    
+    const formatDate = (d) => {
+      if (!d) return null;
+      const dd = String(d.getDate()).padStart(2, '0');
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const yyyy = d.getFullYear();
+      return `${dd}/${mm}/${yyyy}`;
+    };
+    
+    // Agrupa mensajes por fecha (clave yyyy-mm-dd para estabilidad)
+    const groupMessagesByDateSafe = (messages = [], fallbackDate) => {
+      return messages.reduce((acc, m) => {
+        const d = getMessageDate(m) || (fallbackDate ? new Date(fallbackDate) : null);
+        const key = d ? `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}` : '__no_date__';
+        (acc[key] ||= []).push(m);
+        return acc;
+      }, {});
+    };
+
+      
     const generateReport = () => {
       if (empleAsociado.length === 0) {
         alert('No hay datos para generar el reporte.');
         return;
       }
-
+    
       const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
-
+    
       // ====== LAYOUT Y ESTILO ======
       const margin = { top: 25, right: 15, bottom: 18, left: 15 };
       const page = { w: doc.internal.pageSize.width, h: doc.internal.pageSize.height };
       const contentW = page.w - margin.left - margin.right;
       const lineH = 7;
       let y = margin.top;
-
+    
       const setBody = () => { doc.setFont('helvetica', 'normal'); doc.setFontSize(11); doc.setTextColor(20,20,20); };
       const setSubtle = () => { doc.setFont('helvetica', 'italic'); doc.setFontSize(10); doc.setTextColor(120,120,120); };
       const setStrong = () => { doc.setFont('helvetica', 'bold'); doc.setFontSize(12); doc.setTextColor(20,20,20); };
-
+    
       const addHeader = () => {
         doc.setFillColor(41,128,185);
         doc.rect(0, 0, page.w, 20, 'F');
@@ -190,9 +216,9 @@ function ReportHistoryMessage(){
         doc.text(`Generado: ${new Date().toLocaleString()}`, margin.left, 18);
         setBody();
       };
-
+    
       const addFooters = () => {
-        const total = doc.getNumberOfPages();
+        const total = (doc.getNumberOfPages && doc.getNumberOfPages()) || doc.internal.getNumberOfPages();
         for (let i = 1; i <= total; i++) {
           doc.setPage(i);
           setSubtle();
@@ -200,53 +226,53 @@ function ReportHistoryMessage(){
         }
         setBody();
       };
-
+    
       const newPage = () => { doc.addPage(); addHeader(); y = margin.top; };
-
+    
       const ensureSpace = (needed) => {
         if (y + needed > page.h - margin.bottom) newPage();
       };
-
-      // Quita caracteres problemáticos y acentos si no tienes fuente UTF-8
+    
+      // ====== TEXT HELPERS ======
+      // Limpia caracteres problemáticos y diacríticos (si tu fuente no es UTF-8 completa)
       const cleanText = (txt = '') => {
         const t = String(txt)
-          .replace(/\r\n|\r|\n/g, ' ')                         // líneas a espacio
-          .normalize('NFD').replace(/[\u0300-\u036f]/g, '');   // quita diacríticos
-        // quita controles invisibles
+          .replace(/\r\n|\r|\n/g, ' ')
+          .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
         return t.replace(/[^\x09\x0A\x0D\x20-\x7E\u00A0-\u00FF]/g, '');
       };
-
-      // Parte tokens muuuuy largos (URLs, comandos) para que no desborden
+    
+      // Parte tokens largos (URLs/comandos) para evitar desbordes
       const hardWrapLongTokens = (txt, maxChunk = 28) => {
         return txt.split(' ').map(tok => {
           if (tok.length <= maxChunk) return tok;
           return tok.match(new RegExp(`.{1,${maxChunk}}`, 'g')).join(' ');
         }).join(' ');
       };
-
-      // Escribir bloque con wrapping y salto de página seguro
+    
+      // Escribe párrafo con wrapping y salto seguro
       const writeBlock = (txt, x, opts = {}) => {
         const { bullet = '', color = [20,20,20], indent = 0, size = 11, bold = false } = opts;
         doc.setTextColor(...color);
         doc.setFont('helvetica', bold ? 'bold' : 'normal'); 
         doc.setFontSize(size);
-
+      
         const prefix = bullet ? `${bullet} ` : '';
         const safe = hardWrapLongTokens(cleanText(txt));
         const lines = doc.splitTextToSize(prefix + safe, contentW - indent);
-        // altura necesaria y salto de página si no cabe
+      
         const needed = lines.length * lineH;
         ensureSpace(needed);
-
+      
         lines.forEach(line => {
           doc.text(line, margin.left + indent, y);
           y += lineH;
         });
-
-        setBody(); // reset
+      
+        setBody();
       };
-
-      // Carga imagen remota -> base64
+    
+      // ====== IMÁGENES ======
       const loadImageAsBase64 = async (url) => {
         const res = await fetch(url); const blob = await res.blob();
         return new Promise((resolve, reject) => {
@@ -256,14 +282,14 @@ function ReportHistoryMessage(){
           r.readAsDataURL(blob);
         });
       };
-
+    
       const isURL = (t='') => /^https?:\/\/\S+$/i.test(String(t).trim());
-
+    
       const writeImage = async (src, label) => {
         try {
           const b64 = await loadImageAsBase64(src);
-          const imgW = Math.min(120, contentW); // ancho seguro
-          const imgH = 65;                      // alto fijo razonable
+          const imgW = Math.min(120, contentW);
+          const imgH = 65;
           ensureSpace(imgH + lineH*2);
           setSubtle(); doc.text(label, margin.left + 20, y); y += 4;
           doc.addImage(b64, 'JPEG', margin.left + 20, y, imgW, imgH);
@@ -273,25 +299,42 @@ function ReportHistoryMessage(){
           writeBlock('(Error al cargar imagen)', margin.left + 20, { color:[150,0,0] });
         }
       };
-
-      // ====== RENDER ======
-      addHeader();
-
-      const groupedByDate = (messages = []) => {
+    
+      // ====== FECHAS (NORMALIZACIÓN) ======
+      const getMessageDate = (m) => {
+        const raw = m?.timeStamp || m?.updatedAt || m?.createdAt || null;
+        if (!raw) return null;
+        const d = new Date(raw);
+        return isNaN(d.getTime()) ? null : d;
+      };
+    
+      const formatDate = (d) => {
+        if (!d) return null;
+        const dd = String(d.getDate()).padStart(2, '0');
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const yyyy = d.getFullYear();
+        return `${dd}/${mm}/${yyyy}`;
+      };
+    
+      const groupMessagesByDateSafe = (messages = [], fallbackDate) => {
         return messages.reduce((acc, m) => {
-          const d = m?.updatedAt ? new Date(m.updatedAt).toLocaleDateString() : 'Sin fecha';
-          (acc[d] ||= []).push(m);
+          const d = getMessageDate(m) || (fallbackDate ? new Date(fallbackDate) : null);
+          const key = d ? `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}` : '__no_date__';
+          (acc[key] ||= []).push(m);
           return acc;
         }, {});
       };
-
+    
+      // ====== RENDER ======
+      addHeader();
+    
       const colorCliente = [39,174,96];
       const colorEmpleado = [41,128,185];
       const colorSistema  = [192,57,43];
-
+    
       const getSender = (s) => (s === 'Cliente' ? 'Cliente' : s === 'Empleado' ? 'Empleado' : 'Sistema');
       const getColor  = (s) => (s === 'Cliente' ? colorCliente : s === 'Empleado' ? colorEmpleado : colorSistema);
-
+    
       const titleSection = (txt) => {
         ensureSpace(lineH + 6);
         doc.setFillColor(245,245,245);
@@ -300,39 +343,53 @@ function ReportHistoryMessage(){
         y += lineH;
         setBody();
       };
-
+    
       (async () => {
         for (const emple of empleAsociado) {
           // Sección empleado
           titleSection('Empleado');
           writeBlock(`${emple.userData?.name ?? 'Empleado no encontrado'}`, margin.left, { bold:true });
           writeBlock(`Email: ${emple.userData?.email ?? 'Sin email'}`, margin.left);
-
+        
           // Sección cliente
           titleSection('Cliente');
           writeBlock(`Nombre: ${emple.manychatData?.name ?? 'Cliente desconocido'}`, margin.left);
           writeBlock(`Chat: ${emple.chatContact ?? '—'} (ID: ${emple.chatId})`, margin.left);
           writeBlock(`Fecha de contacto: ${emple.FechaRegister ? new Date(emple.FechaRegister).toLocaleDateString() : '—'}`, margin.left);
-
+        
           // Sección mensajes
           titleSection('Mensajes');
-          groupedByDate(emple.message);
-          if (!Object.keys(groupedByDate).length) {
+        
+          const groups = groupMessagesByDateSafe(emple.message ?? [], emple.FechaRegister);
+        
+          if (!Object.keys(groups).length) {
             writeBlock('No hay mensajes disponibles', margin.left, { color:[120,120,120] });
           } else {
-            for (const [date, msgs] of Object.entries(groupedByDate)) {
-              setSubtle(); ensureSpace(lineH); doc.text(`[${date}]`, margin.left, y); y += lineH - 1; setBody();
-
-              // Orden cronológico
-              msgs.sort((a,b) => new Date(a?.updatedAt || 0) - new Date(b?.updatedAt || 0));
-
+            for (const [key, msgs] of Object.entries(groups)) {
+              // Orden cronológico por fecha/hora normalizada
+              msgs.sort((a, b) => {
+                const da = getMessageDate(a);
+                const db = getMessageDate(b);
+                return (da?.getTime() || 0) - (db?.getTime() || 0);
+              });
+            
+              // Fecha visible (de la primera del grupo o fallback a FechaRegister)
+              const firstDate = getMessageDate(msgs[0]) || (emple.FechaRegister ? new Date(emple.FechaRegister) : null);
+              const visibleDate = formatDate(firstDate) || 'Sin fecha';
+            
+              setSubtle();
+              ensureSpace(lineH);
+              doc.text(`[${visibleDate}]`, margin.left, y);
+              y += lineH;
+              setBody();
+            
               for (const m of msgs) {
                 const sender = getSender(m?.sender);
                 const color  = getColor(sender);
-                const hora = m?.timeStamp
-                  ? new Date(m.timeStamp).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })
-                  : 'Sin hora';
-
+              
+                const d = getMessageDate(m) || (emple.FechaRegister ? new Date(emple.FechaRegister) : null);
+                const hora = d ? d.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }) : 'Sin hora';
+              
                 if (m?.message && isURL(m.message)) {
                   await writeImage(m.message, `${sender} · Imagen - ${hora}`);
                 } else {
@@ -342,12 +399,12 @@ function ReportHistoryMessage(){
               }
             }
           }
-
+        
           // espacio entre empleados
           ensureSpace(lineH * 2);
           y += 3;
         }
-
+      
         addFooters();
         const blob = doc.output('blob');
         const url = URL.createObjectURL(blob);
@@ -355,6 +412,8 @@ function ReportHistoryMessage(){
         setShowPreview(true);
       })();
     };
+
+
 
 
 

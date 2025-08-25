@@ -33,13 +33,6 @@ function Directory(){
                     <div className="containerDirectory">
                         <div className="cuadroContentDirectory">
                             <div className="cardsReport">
-                                <img className="imgClient" src={Cliente} />
-                                <p>Reporte de los clientes activos he inactivos y los mensajes realizados por el clientes</p>
-                                <div className="buttonReports">
-                                    <Link className="buttonReport" to={'/report-client'}>Reportes</Link>
-                                </div>
-                            </div>
-                            <div className="cardsReport">
                             <img className="imgClient" src={Empleado} />
                                 <p>Reporte de los empleados activo he inactivos y que acciones realizo el empleado</p>
                                 <div className="buttonReports">
